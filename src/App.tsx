@@ -1,7 +1,7 @@
 import { Toaster } from "react-hot-toast";
 import Side from "./components/Side";
 import DashBoardTemplate from "./templates/DashBoard";
-import StorageTemplate from "./templates/Storage";
+import StorageTemplate from "./templates/Storages";
 import SettingsTemplate from "./templates/Settings";
 import type { ReactElement } from "react";
 
