@@ -9,7 +9,9 @@ const Side = () => {
     <div className="w-80 h-full bg-zinc-800 flex flex-col justify-between border-r border-zinc-700">
       <div>
         <header className="flex w-full h-20 border-b border-zinc-700 items-center justify-start gap-4 p-4">
-          {Icons.shield}
+          <div className="h-12 w-12 justify-center items-center flex rounded-lg bg-blue-400">
+            {Icons.shield}
+          </div>
           <div className="flex flex-col items-start justify-start">
             <h2 className="text-white font-bold text-xl">5Vault</h2>
             <span className="text-sm text-zinc-400">Secure your data</span>

@@ -3,6 +3,7 @@ import useVisualContext from "../hook/useVisualContext";
 import Content from "../utils/Content";
 import Icons from "../utils/Icons";
 import InputWithIcon from "../components/InputWithIcon";
+import Storage from "../components/Storage";
 
 const StorageTemplate = () => {
   const { language } = useVisualContext();
@@ -29,8 +30,11 @@ const StorageTemplate = () => {
           </button>
         </span>
       </header>
-      <div className="flex-1 overflow-y-auto">
-        
+      <div className="flex flex-wrap overflow-y-auto w-full justify-center gap-10">
+        <Storage id="1" name="Storage 1" size={100} type="SSD" />
+        <Storage id="2" name="Storage 2" size={200} type="HDD" />
+        <Storage id="3" name="Storage 3" size={300} type="SSD" />
+        <Storage id="4" name="Storage 4" size={400} type="HDD" />
       </div>
     </div>
   );
