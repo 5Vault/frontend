@@ -14,7 +14,9 @@ const Side = () => {
           </div>
           <div className="flex flex-col items-start justify-start">
             <h2 className="text-white font-bold text-xl">5Vault</h2>
-            <span className="text-sm text-zinc-400">Secure your data</span>
+            <span className="text-sm text-zinc-400">
+              Host your files securely
+            </span>
           </div>
         </header>
         <span>

@@ -14,7 +14,8 @@ createRoot(document.getElementById("root")!).render(
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<App section="dashboard" />} />
-          <Route path="/storage" element={<App section="storage" />} />
+          <Route path="/storages" element={<App section="storages" />} />
+          <Route path="/storage/:id" element={<App section="storage" />} />
           <Route path="/settings" element={<App section="settings" />} />
         </Routes>
       </BrowserRouter>

@@ -5,7 +5,7 @@ import Icons from "../utils/Icons";
 import InputWithIcon from "../components/InputWithIcon";
 import Storage from "../components/Storage";
 
-const StorageTemplate = () => {
+const StoragesTemplate = () => {
   const { language } = useVisualContext();
   return (
     <div className="flex flex-col items-center justify-start w-full h-full gap-8 px-24 py-10">
@@ -30,14 +30,42 @@ const StorageTemplate = () => {
           </button>
         </span>
       </header>
-      <div className="flex flex-wrap overflow-y-auto w-full justify-center gap-10">
-        <Storage id="1" name="Storage 1" size={100} type="SSD" />
-        <Storage id="2" name="Storage 2" size={200} type="HDD" />
-        <Storage id="3" name="Storage 3" size={300} type="SSD" />
-        <Storage id="4" name="Storage 4" size={400} type="HDD" />
+      <div className="flex flex-wrap overflow-y-auto w-full justify-center gap-10 p-2">
+        <Storage
+          id="1"
+          name="Storage 1"
+          size={100}
+          used={50}
+          totalFiles={10}
+          lastAccessed={new Date()}
+        />
+        <Storage
+          id="2"
+          name="Storage 2"
+          size={200}
+          used={100}
+          totalFiles={20}
+          lastAccessed={new Date()}
+        />
+        <Storage
+          id="3"
+          name="Storage 3"
+          size={300}
+          used={150}
+          totalFiles={30}
+          lastAccessed={new Date()}
+        />
+        <Storage
+          id="4"
+          name="Storage 4"
+          size={400}
+          used={200}
+          totalFiles={40}
+          lastAccessed={new Date()}
+        />
       </div>
     </div>
   );
 };
 
-export default StorageTemplate;
+export default StoragesTemplate;

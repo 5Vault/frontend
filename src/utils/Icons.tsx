@@ -6,7 +6,10 @@ import {
   FileStack,
   HardDrive,
   House,
+  Key,
   Plus,
+  RefreshCw,
+  Save,
   Search,
   Settings,
   Shield,
@@ -27,6 +30,9 @@ const Icons = {
   goto: <ArrowRight size={20} />,
   files: <Files size={24} />,
   search: <Search size={20} />,
+  key: <Key size={20} />,
+  save: <Save size={20} />,
+  refresh: <RefreshCw size={20} />
 };
 
 export default Icons;

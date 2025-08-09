@@ -4,3 +4,13 @@ export type VisualContextType = {
   theme: "light" | "dark";
   setTheme: (theme: "light" | "dark") => void;
 };
+
+export type AuthContextType = {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+  } | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+};

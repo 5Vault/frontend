@@ -9,7 +9,7 @@ const Content = {
       },
       icon: Icons.home,
     },
-    storage: {
+    storages: {
       labels: {
         ptBR: "Armazenamento",
         enUS: "Storage",
@@ -26,35 +26,33 @@ const Content = {
   },
   dashboard: {
     top: {
-        one: {
-            labels: {
-                ptBR: "Bem vindo(a) ao Painel de Controle",
-                enUS: "Welcome to the Dashboard",
-            },
+      one: {
+        labels: {
+          ptBR: "Bem vindo(a) ao Painel de Controle",
+          enUS: "Welcome to the Dashboard",
         },
-        two: {
-            labels: {
-                ptBR: "Gerenciar armazenamento em nuvem com facilidade",
-                enUS: "Manage your cloud storage infrastructure with ease",
-            },
+      },
+      two: {
+        labels: {
+          ptBR: "Gerenciar armazenamento em nuvem com facilidade",
+          enUS: "Manage your cloud storage infrastructure with ease",
         },
-        three: {
-            labels: {
-                ptBR: "Ver todos os storages",
-                enUS: "View all storages",
-            },
+      },
+      three: {
+        labels: {
+          ptBR: "Ver todos os storages",
+          enUS: "View all storages",
         },
-        four: {
-            labels: {
-                ptBR: "Adicionar Storage",
-                enUS: "Add Storage",
-            },
+      },
+      four: {
+        labels: {
+          ptBR: "Adicionar Storage",
+          enUS: "Add Storage",
         },
-    }
+      },
+    },
   },
-  home: {
-    
-  }
+  home: {},
 };
 
 export default Content;

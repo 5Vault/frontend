@@ -1,11 +1,13 @@
 import { Toaster } from "react-hot-toast";
 import Side from "./components/Side";
 import DashBoardTemplate from "./templates/DashBoard";
-import StorageTemplate from "./templates/Storages";
+import StorageTemplate from "./templates/Storage";
 import SettingsTemplate from "./templates/Settings";
 import type { ReactElement } from "react";
+import { useParams } from "react-router-dom";
+import StoragesTemplate from "./templates/Storages";
 
-type SectionType = "dashboard" | "storage" | "settings";
+type SectionType = "dashboard" | "storages" | "settings" | "storage";
 
 interface AppProps {
   section: SectionType;
@@ -30,13 +32,16 @@ const toasterConfig = {
   },
 };
 
-const templates: Record<SectionType, ReactElement> = {
-  dashboard: <DashBoardTemplate />,
-  storage: <StorageTemplate />,
-  settings: <SettingsTemplate />,
-};
-
 function App({ section }: AppProps) {
+  const { id } = useParams<{ id?: string }>();
+
+  const templates: Record<SectionType, ReactElement> = {
+    dashboard: <DashBoardTemplate />,
+    storages: <StoragesTemplate />,
+    settings: <SettingsTemplate />,
+    storage: <StorageTemplate id={id} />,
+  };
+
   return (
     <div className="flex h-screen w-screen">
       <Side />
