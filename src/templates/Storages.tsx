@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import useVisualContext from "../hook/useVisualContext";
-import Content from "../utils/Content";
+import dashboardContent from "../utils/contents/DashBoard";
 import Icons from "../utils/Icons";
 import InputWithIcon from "../components/InputWithIcon";
 import Storage from "../components/Storage";
@@ -26,7 +26,7 @@ const StoragesTemplate = () => {
             }}
           >
             {Icons.add}
-            {Content.dashboard.top.four.labels[language]}
+            {dashboardContent.addStorage[language]}
           </button>
         </span>
       </header>

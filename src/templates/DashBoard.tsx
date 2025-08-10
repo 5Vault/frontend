@@ -2,7 +2,7 @@ import Box from "../components/Box";
 import RecentItem from "../components/RecentItem";
 import RecentItems from "../components/RecentItems";
 import useVisualContext from "../hook/useVisualContext";
-import Content from "../utils/Content";
+import dashboardContent from "../utils/contents/DashBoard";
 import Icons from "../utils/Icons";
 import toast from "react-hot-toast";
 
@@ -13,16 +13,16 @@ const DashBoardTemplate = () => {
       <header className="w-full flex justify-between items-center">
         <span className="flex flex-col gap-4">
           <h2 className="text-4xl font-bold">
-            {Content.dashboard.top.one.labels[language]}, Caio
+            {dashboardContent.welcome[language]}
           </h2>
           <h5 className="text-sm text-zinc-400 tracking-wide">
-            {Content.dashboard.top.two.labels[language]}
+            {dashboardContent.subtitle[language]}
           </h5>
         </span>
         <span className="flex gap-2">
           <button className="h-10 flex justify-start items-center gap-2 border-1 border-zinc-100/15 px-4">
             {Icons.storage}
-            {Content.dashboard.top.three.labels[language]}
+            {dashboardContent.viewAll[language]}
           </button>
           <button
             className="h-10 flex justify-start items-center gap-2 border-0.5 border-zinc-100 px-4 bg-[#00000039]"
@@ -31,7 +31,7 @@ const DashBoardTemplate = () => {
             }}
           >
             {Icons.add}
-            {Content.dashboard.top.four.labels[language]}
+            {dashboardContent.addStorage[language]}
           </button>
         </span>
       </header>
@@ -85,7 +85,7 @@ const DashBoardTemplate = () => {
             <span className="text-sm text-zinc-400">Storage 3</span>
           </RecentItem>
         </RecentItems>
-        <RecentItems icon={Icons.files} label="Recent Files" >
+        <RecentItems icon={Icons.files} label="Recent Files">
           <RecentItem icon={Icons.files} label="File 1" subLabel="1 MB">
             <span className="text-sm text-zinc-400">File 1</span>
           </RecentItem>

@@ -6,6 +6,7 @@ import { Route, BrowserRouter, Routes } from "react-router";
 
 import VisualProvider from "./provider/VisualProvider.tsx";
 import Home from "./templates/Home.tsx";
+import AccountTemplate from "./templates/Account.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -17,6 +18,7 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/storages" element={<App section="storages" />} />
           <Route path="/storage/:id" element={<App section="storage" />} />
           <Route path="/settings" element={<App section="settings" />} />
+          <Route path="/account" element={<AccountTemplate />} />
         </Routes>
       </BrowserRouter>
     </VisualProvider>
