@@ -12,7 +12,7 @@ const VisualProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <VisualContext.Provider
-      value={{ language, theme, setTheme, toggleLanguage }}
+      value={{ language, theme, setTheme, toggleLanguage, setLanguage }}
     >
       {children}
     </VisualContext.Provider>

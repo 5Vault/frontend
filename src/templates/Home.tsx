@@ -1,5 +1,6 @@
 import Logo from "../assets/logo.png";
 import Card from "../components/Card";
+import HomeTop from "../components/HomeTop";
 import useVisualContext from "../hook/useVisualContext";
 import Content from "../utils/Content";
 import homeContent from "../utils/contents/Home";
@@ -10,30 +11,7 @@ const Home = () => {
 
   return (
     <div className="flex flex-col items-center justify-start h-screen w-screen">
-      <header className="w-full h-24 flex justify-between p-4">
-        <span className="flex items-center gap-2">
-          <img src={Logo} alt="Logo" className="h-12" />
-          <span className="text-3xl font-bold">5Vault</span>
-        </span>
-        <span className="flex items-center gap-2">
-          <button
-            className="border border-zinc-100/10 text-white py-2 px-4 rounded"
-            onClick={() => {
-              window.location.href = "/account/?mode=login";
-            }}
-          >
-            Login
-          </button>
-          <button
-            className="bg-blue-500 text-white py-2 px-4 rounded"
-            onClick={() => {
-              window.location.href = "/account/?mode=register";
-            }}
-          >
-            Register
-          </button>
-        </span>
-      </header>
+      <HomeTop />
       <div className="flex gap-12 items-center justify-evenly w-[80%] px-10 mt-44">
         <div className="text-center w-[50%]">
           <h1 className="text-2xl font-bold">

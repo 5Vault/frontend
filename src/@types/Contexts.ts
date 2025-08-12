@@ -1,6 +1,7 @@
 export type VisualContextType = {
   language: "enUS" | "ptBR";
   toggleLanguage: () => void;
+  setLanguage: (language: "enUS" | "ptBR") => void;
   theme: "light" | "dark";
   setTheme: (theme: "light" | "dark") => void;
 };
