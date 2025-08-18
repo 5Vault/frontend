@@ -4,6 +4,7 @@ import Select, { type StylesConfig } from "react-select";
 import useVisualContext from "../hook/useVisualContext";
 import toast from "react-hot-toast";
 import useAuthContext from "../hook/useAuthContext";
+import Icons from "../utils/Icons";
 
 interface SelectOption {
   value: string;
@@ -152,27 +153,34 @@ const HomeTop = () => {
         )}
       </nav>
       <span className="flex items-center gap-2">
-        {!user ?
-        <>
-        <button
-          className="border border-zinc-100/10 text-white py-2 px-4 rounded"
-          onClick={() => {
-            window.location.href = "/account/?mode=login";
-          }}
-        >
-          Login
-        </button>
-        <button
-          className="bg-blue-500 text-white py-2 px-4 rounded"
-          onClick={() => {
-            window.location.href = "/account/?mode=register";
-          }}
-        >
-          Register
-        </button>
-        </> :
-          <button onClick={() => window.location.href="/dashboard"}>Dashboard</button>
-        }
+        {!user ? (
+          <>
+            <button
+              className="border border-zinc-100/10 text-white py-2 px-4 rounded"
+              onClick={() => {
+                window.location.href = "/account/?mode=login";
+              }}
+            >
+              Login
+            </button>
+            <button
+              className="text-white py-2 px-4 rounded bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]"
+              onClick={() => {
+                window.location.href = "/account/?mode=register";
+              }}
+            >
+              Register
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => (window.location.href = "/dashboard")}
+            className="rounded-full h-fit w-fit bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] flex gap-2"
+          >
+            {Icons.dashboard}
+            Dashboard
+          </button>
+        )}
       </span>
     </header>
   );

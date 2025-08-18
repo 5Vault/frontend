@@ -6,6 +6,7 @@ import axios from "axios";
 const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [key, setKey] = useState<string | null>(null);
 
   const fetchUserData = async (token: string) => {
     try {

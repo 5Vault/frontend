@@ -58,7 +58,7 @@ const Side = () => {
         </div>
         <div className="flex items-center justify-center">
           <button
-            className="p-2 bg-blue-500 rounded-md text-white"
+            className="p-2 bg-[var(--primary-contrast-light)] rounded-md text-white"
             onClick={logout}
           >
             Sair

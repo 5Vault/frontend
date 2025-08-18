@@ -11,6 +11,7 @@ import {
   HardDrive,
   House,
   Key,
+  LayoutDashboard,
   LockKeyhole,
   Plus,
   RefreshCw,
@@ -46,6 +47,7 @@ const Icons = {
   account: <CircleUser size={32} />,
   conigure: <FileSliders size={32} />,
   folder: <Folder size={32} />,
+  dashboard: <LayoutDashboard size={20}/>
 };
 
 export default Icons;

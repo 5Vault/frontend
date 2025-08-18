@@ -33,7 +33,7 @@ const DashBoardTemplate = () => {
             {dashboardContent.viewAll[language]}
           </button>
           <button
-            className="h-10 flex justify-start items-center gap-2 border-0.5 border-zinc-100 px-4 bg-[#00000039]"
+            className="h-10 flex justify-start items-center gap-2 bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] px-4"
             onClick={soon}
           >
             {Icons.add}
@@ -47,18 +47,11 @@ const DashBoardTemplate = () => {
             <h2 className="text-2xl font-bold">3672.0 GB</h2>
             <div className="w-full h-2 bg-zinc-200 rounded-full">
               <div
-                className="h-full bg-zinc-500 rounded-full"
+                className="h-full bg-[var(--primary-contrast-light)] rounded-full"
                 style={{ width: "70%" }}
               />
             </div>
           </div>
-        </Box>
-        <Box
-          label="Active Storage"
-          footer="3 total storages"
-          icon={Icons.activity}
-        >
-          <h2 className="text-4xl font-bold flex items-center h-full">3</h2>
         </Box>
         <Box
           label="Total Files"
@@ -80,18 +73,7 @@ const DashBoardTemplate = () => {
         </Box>
       </div>
       <div className="w-full flex justify-center gap-10">
-        <RecentItems icon={Icons.storage2} label="Recent Storages">
-          <RecentItem icon={Icons.storage2} label="Storage 1" subLabel="2 GB">
-            <span className="text-sm text-zinc-400">Storage 1</span>
-          </RecentItem>
-          <RecentItem icon={Icons.storage2} label="Storage 2" subLabel="5 GB">
-            <span className="text-sm text-zinc-400">Storage 2</span>
-          </RecentItem>
-          <RecentItem icon={Icons.storage2} label="Storage 3" subLabel="10 GB">
-            <span className="text-sm text-zinc-400">Storage 3</span>
-          </RecentItem>
-        </RecentItems>
-        <RecentItems icon={Icons.files} label="Recent Files">
+        <RecentItems icon={Icons.files} label="Recent Files" width="w-225">
           <RecentItem icon={Icons.files} label="File 1" subLabel="1 MB">
             <span className="text-sm text-zinc-400">File 1</span>
           </RecentItem>
@@ -117,3 +99,27 @@ const DashBoardTemplate = () => {
 };
 
 export default DashBoardTemplate;
+
+{
+  /* <RecentItems icon={Icons.storage2} label="Recent Storages">
+<RecentItem icon={Icons.storage2} label="Storage 1" subLabel="2 GB">
+<span className="text-sm text-zinc-400">Storage 1</span>
+</RecentItem>
+<RecentItem icon={Icons.storage2} label="Storage 2" subLabel="5 GB">
+<span className="text-sm text-zinc-400">Storage 2</span>
+</RecentItem>
+<RecentItem icon={Icons.storage2} label="Storage 3" subLabel="10 GB">
+<span className="text-sm text-zinc-400">Storage 3</span>
+</RecentItem>
+</RecentItems> */
+}
+
+{
+  /* <Box
+label="Active Storage"
+footer="3 total storages"
+icon={Icons.activity}
+>
+<h2 className="text-4xl font-bold flex items-center h-full">3</h2>
+</Box> */
+}

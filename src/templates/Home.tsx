@@ -21,7 +21,7 @@ const Home = () => {
             {homeContent.two[language] || ""}
           </p>
           <span className="flex gap-2 mt-6">
-            <button className="bg-blue-500">
+            <button className="bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]">
               {homeContent.three[language] || ""}
             </button>
             <button className="border border-zinc-100/10">
@@ -98,7 +98,7 @@ const Home = () => {
                   key={key}
                   className={` shadow-md rounded-lg p-4 flex flex-col items-center justify-between gap-2 h-90 w-80 ${
                     key === "pro"
-                      ? "border-2 border-blue-500"
+                      ? "border-2 border-[var(--primary-contrast-light)]"
                       : "border border-zinc-100/10"
                   }`}
                 >
@@ -118,7 +118,9 @@ const Home = () => {
                   </span>
                   <button
                     className={`w-full border border-zinc-100/10 text-gray-400 py-2 rounded ${
-                      key === "pro" ? "bg-blue-500 text-white" : ""
+                      key === "pro"
+                        ? "bg-[var(--primary-contrast-light)] text-white"
+                        : ""
                     } hover:bg-blue-400 hover:text-white transition-colors`}
                   >
                     Escolher
