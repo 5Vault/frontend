@@ -8,6 +8,11 @@ import toast from "react-hot-toast";
 
 const DashBoardTemplate = () => {
   const { language } = useVisualContext();
+
+  const soon = () => {
+    toast.error("Em breve!");
+  };
+
   return (
     <div className="flex flex-col h-full items-center px-24 py-10 gap-10">
       <header className="w-full flex justify-between items-center">
@@ -20,15 +25,16 @@ const DashBoardTemplate = () => {
           </h5>
         </span>
         <span className="flex gap-2">
-          <button className="h-10 flex justify-start items-center gap-2 border-1 border-zinc-100/15 px-4">
+          <button
+            className="h-10 flex justify-start items-center gap-2 border-1 border-zinc-100/15 px-4"
+            onClick={soon}
+          >
             {Icons.storage}
             {dashboardContent.viewAll[language]}
           </button>
           <button
             className="h-10 flex justify-start items-center gap-2 border-0.5 border-zinc-100 px-4 bg-[#00000039]"
-            onClick={() => {
-              toast.success("Adicionado com sucesso!");
-            }}
+            onClick={soon}
           >
             {Icons.add}
             {dashboardContent.addStorage[language]}

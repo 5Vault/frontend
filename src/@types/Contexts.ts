@@ -6,12 +6,19 @@ export type VisualContextType = {
   setTheme: (theme: "light" | "dark") => void;
 };
 
+export type User = {
+  user_id: string;
+  email: string;
+  name: string;
+  username: string;
+  phone: string;
+};
+
 export type AuthContextType = {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-  } | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
+  user: User | null;
+  setUser: (user: User | null) => void;
+  logout: () => void;
+  fetchUserData: (token: string) => Promise<User | null>;
+  loading: boolean;
+  refreshAccessToken: () => Promise<string | null>;
 };

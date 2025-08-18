@@ -1,4 +1,4 @@
-import Logo from "../assets/logo.png";
+import Logo from "../assets/logow.png";
 import Card from "../components/Card";
 import HomeTop from "../components/HomeTop";
 import useVisualContext from "../hook/useVisualContext";

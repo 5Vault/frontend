@@ -1,6 +1,9 @@
+import useAuthContext from "../hook/useAuthContext";
 import Icons from "../utils/Icons";
 
 const SettingsTemplate = () => {
+  const { user } = useAuthContext();
+
   return (
     <div className="flex flex-col h-full items-start px-24 py-10 gap-10">
       <header className="w-full flex flex-col">
@@ -23,7 +26,7 @@ const SettingsTemplate = () => {
             </label>
             <input
               type="text"
-              defaultValue="Caio Reis"
+              defaultValue={user?.name}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <p className="text-xs text-blue-600 mt-1">Name cannot be changed</p>
@@ -35,7 +38,7 @@ const SettingsTemplate = () => {
             </label>
             <input
               type="email"
-              defaultValue="caiodtr@gmail.com"
+              defaultValue={user?.email}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <p className="text-xs text-blue-600 mt-1">
@@ -45,22 +48,11 @@ const SettingsTemplate = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-200 mb-2">
-              Company
-            </label>
-            <input
-              type="text"
-              placeholder="Your company name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-2">
               Phone
             </label>
             <input
               type="tel"
-              placeholder="+1 (555) 123-4567"
+              defaultValue={user?.phone || ""}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>

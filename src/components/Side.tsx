@@ -1,17 +1,21 @@
 import useVisualContext from "../hook/useVisualContext";
 import Content from "../utils/Content";
-import Icons from "../utils/Icons";
+// import Icons from "../utils/Icons";
+import Logo from "../assets/logow.png";
+import useAuthContext from "../hook/useAuthContext";
 
 const Side = () => {
   const { language } = useVisualContext();
+  const { user, logout } = useAuthContext();
 
   return (
-    <div className="w-80 h-full bg-zinc-800 flex flex-col justify-between border-r border-zinc-700">
+    <div className="w-80 h-full flex flex-col justify-between border-r border-zinc-700">
       <div>
         <header className="flex w-full h-20 border-b border-zinc-700 items-center justify-start gap-4 p-4">
-          <div className="h-12 w-12 justify-center items-center flex rounded-lg bg-blue-400">
+          {/* <div className="h-12 w-12 justify-center items-center flex rounded-lg bg-blue-400">
             {Icons.shield}
-          </div>
+          </div> */}
+          <img src={Logo} alt="Logo" className="h-12" />
           <div className="flex flex-col items-start justify-start">
             <h2 className="text-white font-bold text-xl">5Vault</h2>
             <span className="text-sm text-zinc-400">
@@ -43,12 +47,22 @@ const Side = () => {
         </span>
       </div>
       <div className="flex w-full h-20 border-t border-zinc-700 items-center justify-start p-4 gap-4">
-        <span className="p-4 bg-blue-300/15 rounded-full w-13 h-13 flex items-center justify-center">
-          C
+        <span className="p-4 bg-blue-300/15 rounded-full w-13 h-13 flex items-center justify-center font-bold">
+          {user?.name?.charAt(0).toUpperCase()}
         </span>
         <div className="flex flex-col items-start justify-start">
-          <span className="text-white">Caio Reis</span>
-          <span className="text-sm text-zinc-400">caiodtn@gmail.com</span>
+          <span className="text-white">{user?.name || "Nome do Usuário"}</span>
+          <span className="text-sm text-zinc-400">
+            {user?.email || "Email do Usuário"}
+          </span>
+        </div>
+        <div className="flex items-center justify-center">
+          <button
+            className="p-2 bg-blue-500 rounded-md text-white"
+            onClick={logout}
+          >
+            Sair
+          </button>
         </div>
       </div>
     </div>

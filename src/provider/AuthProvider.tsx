@@ -1,23 +1,84 @@
-import { useState, type ReactNode } from "react";
-import type { AuthContextType } from "../@types/Contexts";
+import { useEffect, useState, type ReactNode } from "react";
+import type { User } from "../@types/Contexts";
 import AuthContext from "../context/AuthContext";
+import axios from "axios";
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<AuthContextType["user"]>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    const login = async (email: string, password: string) => {
-        // Implement login logic
-    };
+  const fetchUserData = async (token: string) => {
+    try {
+      const response = await axios.get("http://localhost:8000/api/v1/user/", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        timeout: 10000,
+      });
+      const userObj = {
+        user_id: response.data.id,
+        email: response.data.email,
+        name: response.data.name,
+        username: response.data.username,
+        phone: response.data.phone,
+      };
+      setUser(userObj);
+      return userObj;
+    } catch (error) {
+      console.error("Erro ao buscar dados do usuário", error);
+      setUser(null);
+      localStorage.removeItem("token");
+      return null;
+    }
+  };
 
-    const logout = async () => {
-        // Implement logout logic
-    };
+  const logout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+    window.location.href = "/";
+  };
 
-    return (
-        <AuthContext.Provider value={{ user, login, logout }}>
-            {children}
-        </AuthContext.Provider>
-    );
-}
+  const refreshAccessToken = async () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const response = await axios.post(
+          "http://localhost:8000/api/v1/refresh-token/",
+          { token }
+        );
+        const newToken = response.data.token;
+        localStorage.setItem("token", newToken);
+        return newToken;
+      } catch (error) {
+        console.error("Erro ao atualizar token", error);
+      }
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchUserData(token).finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        setUser,
+        logout,
+        refreshAccessToken,
+        fetchUserData,
+        loading,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
 export default AuthProvider;

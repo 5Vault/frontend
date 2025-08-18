@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import Logo from "../assets/logo.png";
+import Logo from "../assets/logow.png";
 import Select, { type StylesConfig } from "react-select";
 import useVisualContext from "../hook/useVisualContext";
 import toast from "react-hot-toast";
+import useAuthContext from "../hook/useAuthContext";
 
 interface SelectOption {
   value: string;
@@ -28,6 +29,8 @@ const HomeTop = () => {
       href: "/contact",
     },
   ];
+
+  const { user } = useAuthContext();
   const [settings, settingsSet] = useState<boolean>(false);
   const { setLanguage, language } = useVisualContext();
   const ref = useRef<HTMLDivElement>(null);
@@ -72,7 +75,11 @@ const HomeTop = () => {
   return (
     <header className="w-full h-24 flex justify-between p-4">
       <span className="flex items-center gap-2">
-        <img src={Logo} alt="Logo" className="h-12" />
+        <img
+          src={Logo}
+          alt="Logo"
+          className="h-12 transition-transform duration-300 hover:scale-110 hover:rotate-3 cursor-pointer animate-pulse"
+        />
         <span className="text-3xl font-bold">5Vault</span>
       </span>
       <nav className="flex items-center gap-4 relative">
@@ -145,6 +152,8 @@ const HomeTop = () => {
         )}
       </nav>
       <span className="flex items-center gap-2">
+        {!user ?
+        <>
         <button
           className="border border-zinc-100/10 text-white py-2 px-4 rounded"
           onClick={() => {
@@ -161,6 +170,9 @@ const HomeTop = () => {
         >
           Register
         </button>
+        </> :
+          <button onClick={() => window.location.href="/dashboard"}>Dashboard</button>
+        }
       </span>
     </header>
   );
