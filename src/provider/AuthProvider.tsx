@@ -10,7 +10,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserData = async (token: string) => {
     try {
-      const response = await axios.get("http://localhost:8000/api/v1/user/", {
+      const response = await axios.get(import.meta.env.VITE_SERVER_URL +"/user/", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -45,7 +45,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (token) {
       try {
         const response = await axios.post(
-          "http://localhost:8000/api/v1/refresh-token/",
+          import.meta.env.VITE_SERVER_URL + "/refresh-token/",
           { token }
         );
         const newToken = response.data.token;

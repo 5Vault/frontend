@@ -30,7 +30,6 @@ const SettingsTemplate = () => {
               defaultValue={user?.name}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            <p className="text-xs text-blue-600 mt-1">Name cannot be changed</p>
           </div>
 
           <div>
@@ -42,9 +41,6 @@ const SettingsTemplate = () => {
               defaultValue={user?.email}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            <p className="text-xs text-blue-600 mt-1">
-              Email cannot be changed
-            </p>
           </div>
 
           <div>
@@ -59,8 +55,12 @@ const SettingsTemplate = () => {
           </div>
         </div>
         <div className="w-full h-0.5 bg-gray-200/20 my-8" />
-        <div className="flex justify-end mt-8">
-          <button className="flex items-center gap-2 bg-zinc-900 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors">
+        <div className="flex justify-end mt-8 gap-2">
+          <button className="flex items-center gap-2 text-white px-6 py-2 rounded-md bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] hover:bg-[var(--primary-contrast-light)] transition-colors">
+            {Icons.edit}
+            Edit Profile
+          </button>
+          <button className="flex items-center gap-2 bg-zinc-900 text-white px-6 py-2 rounded-md hover:bg-[var(--primary-contrast-light)] transition-colors">
             {Icons.save}
             Save Profile
           </button>
@@ -78,18 +78,6 @@ const SettingsTemplate = () => {
             Secret Access Key
           </label>
           <InputHidden value={key ?? "No Key"} />
-        </div>
-
-        <div className="w-full h-0.5 bg-gray-200/20 my-8" />
-        <div className="flex justify-end mt-8 gap-2">
-          <button className="flex items-center gap-2 bg-zinc-900 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors">
-            {Icons.refresh}
-            Reset Keys
-          </button>
-          <button className="flex items-center gap-2 bg-zinc-900 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors">
-            {Icons.save}
-            Save Profile
-          </button>
         </div>
       </div>
     </div>

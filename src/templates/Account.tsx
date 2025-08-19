@@ -56,7 +56,7 @@ const Login = () => {
 
     setLoading(true);
     axios
-      .post("http://127.0.0.1:8000/api/v1/login/try", formData)
+      .post(import.meta.env.VITE_SERVER_URL + "/login/try", formData)
       .then((res) => res.data)
       .then((data) => {
         if (data.token) {
