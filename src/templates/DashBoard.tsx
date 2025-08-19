@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import type { DashBoardType } from "../@types/Storage";
 import Box from "../components/Box";
 import RecentItem from "../components/RecentItem";
 import RecentItems from "../components/RecentItems";
@@ -5,20 +7,51 @@ import useVisualContext from "../hook/useVisualContext";
 import dashboardContent from "../utils/contents/DashBoard";
 import Icons from "../utils/Icons";
 import toast from "react-hot-toast";
+import useAxios from "../utils/axiosConfig";
+import useAuthContext from "../hook/useAuthContext";
 
 const DashBoardTemplate = () => {
   const { language } = useVisualContext();
+  const { user } = useAuthContext();
+  const [dashData, setDashData] = useState<DashBoardType | null>(null);
+
+  const axiosInstance = useAxios();
 
   const soon = () => {
     toast.error("Em breve!");
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axiosInstance.get("/file/stats");
+        setDashData(response.data);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const getStoragePercent = () => {
+    if (!dashData || !dashData.total_size || !dashData.used_size) return 0;
+    if (dashData.total_size === 0) return 0;
+    return Math.min(
+      100,
+      Math.round((dashData.used_size / dashData.total_size) * 100)
+    );
+  };
+
+  const formatGB = (bytes?: number) =>
+    bytes ? (bytes / (1024 * 1024 * 1024)).toFixed(2) : "0.00";
 
   return (
     <div className="flex flex-col h-full items-center px-24 py-10 gap-10">
       <header className="w-full flex justify-between items-center">
         <span className="flex flex-col gap-4">
           <h2 className="text-4xl font-bold">
-            {dashboardContent.welcome[language]}
+            {dashboardContent.welcome[language]}, {user?.name}
           </h2>
           <h5 className="text-sm text-zinc-400 tracking-wide">
             {dashboardContent.subtitle[language]}
@@ -42,13 +75,19 @@ const DashBoardTemplate = () => {
         </span>
       </header>
       <div className="w-full flex justify-center gap-8">
-        <Box label="Total Storage" footer="2357.1 GB used" icon={Icons.drive}>
+        <Box
+          label="Total Storage"
+          footer={` ${formatGB(dashData?.total_size)} GB used`}
+          icon={Icons.drive}
+        >
           <div className="flex items-center flex-col justify-center h-[80%]">
-            <h2 className="text-2xl font-bold">3672.0 GB</h2>
+            <h2 className="text-2xl font-bold">
+              {formatGB(dashData?.used_size)} GB
+            </h2>
             <div className="w-full h-2 bg-zinc-200 rounded-full">
               <div
                 className="h-full bg-[var(--primary-contrast-light)] rounded-full"
-                style={{ width: "70%" }}
+                style={{ width: `${getStoragePercent()}%` }}
               />
             </div>
           </div>
@@ -59,7 +98,7 @@ const DashBoardTemplate = () => {
           icon={Icons.fileStack}
         >
           <h2 className="text-4xl font-bold flex items-center h-full">
-            70.128
+            {dashData?.total_files}
           </h2>
         </Box>
         <Box
@@ -74,24 +113,29 @@ const DashBoardTemplate = () => {
       </div>
       <div className="w-full flex justify-center gap-10">
         <RecentItems icon={Icons.files} label="Recent Files" width="w-225">
-          <RecentItem icon={Icons.files} label="File 1" subLabel="1 MB">
-            <span className="text-sm text-zinc-400">File 1</span>
-          </RecentItem>
-          <RecentItem icon={Icons.files} label="File 2" subLabel="2 MB">
-            <span className="text-sm text-zinc-400">File 2</span>
-          </RecentItem>
-          <RecentItem icon={Icons.files} label="File 3" subLabel="3 MB">
-            <span className="text-sm text-zinc-400">File 3</span>
-          </RecentItem>
-          <RecentItem icon={Icons.files} label="File 4" subLabel="4 MB">
-            <span className="text-sm text-zinc-400">File 4</span>
-          </RecentItem>
-          <RecentItem icon={Icons.files} label="File 5" subLabel="5 MB">
-            <span className="text-sm text-zinc-400">File 5</span>
-          </RecentItem>
-          <RecentItem icon={Icons.files} label="File 6" subLabel="6 MB">
-            <span className="text-sm text-zinc-400">File 6</span>
-          </RecentItem>
+          {dashData?.recent_files.map((file) => (
+            <RecentItem
+              key={file.id}
+              icon={
+                file.file_type === "image/jpeg" ||
+                file.file_type === "image/png"
+                  ? Icons.image
+                  : file.file_type === "video/mp4"
+                  ? Icons.video
+                  : file.file_type === "audio/mpeg"
+                  ? Icons.audio
+                  : Icons.files
+              }
+              label={file.file_id}
+              subLabel={(file.file_size / (1024 * 1024)).toFixed(2) + " MB"}
+            >
+              <img
+                src={file.file_url}
+                alt={file.file_id}
+                className="w-18 h-18 rounded"
+              />
+            </RecentItem>
+          ))}
         </RecentItems>
       </div>
     </div>

@@ -53,13 +53,18 @@ const StoragesTemplate = () => {
           </button>
         </span>
       </header>
-      <div className="flex flex-col overflow-y-auto w-full justify-center gap-2 p-2">
+      <div className="flex flex-col overflow-y-auto w-full items-center justify-center gap-2 p-2">
         {files.map((file) => (
           <div
             key={file.id}
-            className="border border-zinc-100/10 rounded-lg p-2 flex items-center gap-2 justify-evenly"
+            className="border border-zinc-100/10 rounded-lg p-2 flex items-center gap-4 justify-start w-fit min-w-220 hover:scale-105 transition-all duration-200 cursor-pointer"
           >
-            <h2 className="text-sm text-zinc-400">{file.file_id}</h2>
+            <img
+              src={file.file_url}
+              alt={file.file_id}
+              className="w-18 h-18 rounded"
+            />
+            <h2 className="text-lg ">{file.file_id}</h2>
 
             {file.file_type === "image/jpeg" ||
             file.file_type === "image/png" ? (
@@ -71,16 +76,12 @@ const StoragesTemplate = () => {
             ) : (
               <p className="flex items-center gap-2">{Icons.files} Arquivo</p>
             )}
-            <p>{new Date(file.uploaded_at).toLocaleString()}</p>
+            <p className="text-zinc-400">
+              {new Date(file.uploaded_at).toLocaleString()}
+            </p>
             <p className="text-sm text-zinc-400">
               {(file.file_size / (1024 * 1024)).toFixed(2)} MB
             </p>
-
-            <img
-              src={file.file_url}
-              alt={file.file_id}
-              className="w-18 h-18 rounded"
-            />
           </div>
         ))}
       </div>

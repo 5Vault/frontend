@@ -1,24 +1,24 @@
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+// import { jwtDecode } from "jwt-decode";
 import useAuthContext from "../hook/useAuthContext";
 
 const useAxios = () => {
   const { refreshAccessToken } = useAuthContext();
 
   const axiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_SERVER_URL,
+    baseURL: "http://localhost:8000/api/v1",
   });
 
   axiosInstance.interceptors.request.use(
     async (config) => {
-      let token = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
       if (token) {
-        const decodedToken = jwtDecode(token);
-        const currentTime = Date.now() / 1000;
+        // const decodedToken = jwtDecode(token);
+        // const currentTime = Date.now() / 1000;
         // Fix: Check if exp exists before comparing
-        if (decodedToken.exp && decodedToken.exp < currentTime) {
-          token = await refreshAccessToken();
-        }
+        // if (decodedToken.exp && decodedToken.exp < currentTime) {
+        //   token = await refreshAccessToken();
+        // }
         if (token) {
           config.headers["Authorization"] = `Bearer ${token}`;
         }

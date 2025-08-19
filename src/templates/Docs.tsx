@@ -5,7 +5,7 @@ import style from "react-syntax-highlighter/dist/esm/styles/prism/material-dark"
 // Register the language before using SyntaxHighlighter
 
 const luaCode = `
-local uploadURL = "https://liberty-storage.onrender.com/"
+local uploadURL = "http://localhost:8000/api/v1/file/upload/"
 exports['screenshot']:requestScreenshotUpload(uploadURL, 'file',
 function(data)
   local response = json.decode(data)

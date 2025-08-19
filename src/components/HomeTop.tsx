@@ -74,7 +74,7 @@ const HomeTop = () => {
   }, []);
 
   return (
-    <header className="w-full h-24 flex justify-between p-4">
+    <header className="w-full h-24 flex justify-between py-4 px-10">
       <span className="flex items-center gap-2">
         <img
           src={Logo}

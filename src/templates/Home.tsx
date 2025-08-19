@@ -96,7 +96,7 @@ const Home = () => {
               return (
                 <div
                   key={key}
-                  className={` shadow-md rounded-lg p-4 flex flex-col items-center justify-between gap-2 h-90 w-80 ${
+                  className={` shadow-md rounded-lg p-4 flex flex-col items-center justify-between gap-2 h-90 w-80 hover:scale-102 ${
                     key === "pro"
                       ? "border-2 border-[var(--primary-contrast-light)]"
                       : "border border-zinc-100/10"
@@ -121,7 +121,7 @@ const Home = () => {
                       key === "pro"
                         ? "bg-[var(--primary-contrast-light)] text-white"
                         : ""
-                    } hover:bg-blue-400 hover:text-white transition-colors`}
+                    } hover:bg-[var(--primary-contrast-dark)] hover:text-white transition-colors`}
                   >
                     Escolher
                   </button>

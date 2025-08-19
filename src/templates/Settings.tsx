@@ -1,8 +1,9 @@
+import InputHidden from "../components/InputHidden";
 import useAuthContext from "../hook/useAuthContext";
 import Icons from "../utils/Icons";
 
 const SettingsTemplate = () => {
-  const { user,key } = useAuthContext();
+  const { user, key } = useAuthContext();
 
   return (
     <div className="flex flex-col h-full items-start px-24 py-10 gap-10">
@@ -76,11 +77,7 @@ const SettingsTemplate = () => {
           <label className="block text-sm font-medium text-gray-200 mb-2">
             Secret Access Key
           </label>
-          <input
-            type="password"
-            defaultValue={key || "No key available"}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+          <InputHidden value={key ?? "No Key"} />
         </div>
 
         <div className="w-full h-0.5 bg-gray-200/20 my-8" />

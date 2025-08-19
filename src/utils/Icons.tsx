@@ -3,6 +3,8 @@ import {
   ArrowRight,
   CircleUser,
   Database,
+  Eye,
+  EyeOff,
   Files,
   FileSliders,
   FileStack,
@@ -53,7 +55,9 @@ const Icons = {
   dashboard: <LayoutDashboard size={20}/>,
   image: <Image size={24} />,
   video: <Video size={24} />,
-  audio: <Headphones size={24}/>
+  audio: <Headphones size={24}/>,
+  openEye: <Eye size={24} />,
+  closeEye: <EyeOff size={24} />,
 };
 
 export default Icons;
