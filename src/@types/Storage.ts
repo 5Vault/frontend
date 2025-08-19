@@ -5,5 +5,6 @@ export type File = {
     file_id: string;
     file_type: string;
     file_url: string;
+    file_size: number;
     uploaded_at: string;
 }

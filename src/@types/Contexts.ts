@@ -20,5 +20,6 @@ export type AuthContextType = {
   logout: () => void;
   fetchUserData: (token: string) => Promise<User | null>;
   loading: boolean;
+  key: string | null;
   refreshAccessToken: () => Promise<string | null>;
 };

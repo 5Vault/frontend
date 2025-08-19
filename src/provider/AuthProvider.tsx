@@ -24,6 +24,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         phone: response.data.phone,
       };
       setUser(userObj);
+      setKey(response.data.api_key || null);
       return userObj;
     } catch (error) {
       console.error("Erro ao buscar dados do usuário", error);
@@ -75,6 +76,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         refreshAccessToken,
         fetchUserData,
         loading,
+        key,
       }}
     >
       {children}

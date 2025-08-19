@@ -9,7 +9,9 @@ import {
   FileText,
   Folder,
   HardDrive,
+  Headphones,
   House,
+  Image,
   Key,
   LayoutDashboard,
   LockKeyhole,
@@ -20,6 +22,7 @@ import {
   Search,
   Settings,
   Shield,
+  Video,
   Zap,
 } from "lucide-react";
 
@@ -47,7 +50,10 @@ const Icons = {
   account: <CircleUser size={32} />,
   conigure: <FileSliders size={32} />,
   folder: <Folder size={32} />,
-  dashboard: <LayoutDashboard size={20}/>
+  dashboard: <LayoutDashboard size={20}/>,
+  image: <Image size={24} />,
+  video: <Video size={24} />,
+  audio: <Headphones size={24}/>
 };
 
 export default Icons;

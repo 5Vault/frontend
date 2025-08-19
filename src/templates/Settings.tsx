@@ -2,7 +2,7 @@ import useAuthContext from "../hook/useAuthContext";
 import Icons from "../utils/Icons";
 
 const SettingsTemplate = () => {
-  const { user } = useAuthContext();
+  const { user,key } = useAuthContext();
 
   return (
     <div className="flex flex-col h-full items-start px-24 py-10 gap-10">
@@ -72,29 +72,17 @@ const SettingsTemplate = () => {
           <h3 className="text-xl font-semibold">API Key</h3>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-2">
-              Access Key ID
-            </label>
-            <input
-              type="text"
-              defaultValue="AKIAIOSFODNN7EXAMPLE"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-2">
-              Secret Access Key
-            </label>
-            <input
-              type="password"
-              defaultValue={"********"}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-200 mb-2">
+            Secret Access Key
+          </label>
+          <input
+            type="password"
+            defaultValue={key || "No key available"}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
         </div>
+
         <div className="w-full h-0.5 bg-gray-200/20 my-8" />
         <div className="flex justify-end mt-8 gap-2">
           <button className="flex items-center gap-2 bg-zinc-900 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors">
