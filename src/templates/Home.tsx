@@ -32,10 +32,10 @@ const Home = () => {
         <img src={Logo} alt="Logo" className="h-68" />
       </div>
 
-      <div className="w-fit px-10 mt-16 py-4">
+      <div className="w-fit px-2 mt-16 py-4">
         {/* Benefícios */}
         <div className="mb-16">
-          <h2 className="text-xl font-bold mb-8">Benefícios</h2>
+          <h2 className="text-xl font-bold mb-8">Benefits</h2>
           <div className="flex justify-center gap-2">
             {Object.keys(homeContent.benefits).map((key) => {
               const benefit = homeContent.benefits[key];
@@ -65,22 +65,22 @@ const Home = () => {
 
         {/* Como Funciona */}
         <div className="mb-16">
-          <h2 className="text-xl font-bold mb-8">Como Funciona</h2>
+          <h2 className="text-xl font-bold mb-8">How it works ?</h2>
           <div className="flex justify-center gap-2">
             <Card
               icon={Icons.account}
-              title="Crie sua conta"
-              description="1º Passo"
+              title="Create your account"
+              description="1st Step"
             />
             <Card
               icon={Icons.conigure}
-              title="Configure seu servidor"
-              description="2º Passo"
+              title="Configure your server"
+              description="2nd Step"
             />
             <Card
               icon={Icons.folder}
-              title="Armazene seus arquivos"
-              description="3º Passo"
+              title="Store your files"
+              description="3rd Step"
             />
           </div>
         </div>

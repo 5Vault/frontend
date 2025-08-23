@@ -29,6 +29,10 @@ const HomeTop = () => {
       label: "Contact",
       href: "/contact",
     },
+    {
+      label: "Tiers",
+      href: "/tiers",
+    }
   ];
 
   const { user } = useAuthContext();
@@ -101,12 +105,12 @@ const HomeTop = () => {
             </a>
           );
         })}
-        <div
+        {/* <div
           className="text-sm text-zinc-400 hover:text-white transition-colors cursor-pointer"
           onClick={() => settingsSet(!settings)}
         >
           Settings
-        </div>
+        </div> */}
         {settings && (
           <div
             className="absolute right-0 top-full mt-2 w-48 bg-zinc-800 rounded-lg shadow-lg flex flex-col p-4"

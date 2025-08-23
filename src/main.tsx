@@ -13,6 +13,7 @@ import AboutUsTemplate from "./templates/AboutUs.tsx";
 import AuthProvider from "./provider/AuthProvider.tsx";
 
 import PrivateRoutes from "./routes/PrivateRoute.tsx";
+import TiersTemplate from "./templates/Tiers.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -31,6 +32,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/docs" element={<DocsTemplate />} />
             <Route path="/contact" element={<ContactTemplate />} />
             <Route path="/about-us" element={<AboutUsTemplate />} />
+            <Route path="/tiers" element={<TiersTemplate />} />
           </Routes>
         </BrowserRouter>
       </VisualProvider>

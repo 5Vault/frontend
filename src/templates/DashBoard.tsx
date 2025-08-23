@@ -32,7 +32,18 @@ const DashBoardTemplate = () => {
     };
 
     fetchData();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array to run only on mount
+
+  const handleFileUploaded = async () => {
+    // Refresh dashboard data when a new file is uploaded
+    try {
+      const response = await axiosInstance.get("/file/stats");
+      setDashData(response.data);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    }
+  };
 
   const getStoragePercent = () => {
     if (!dashData || !dashData.total_size || !dashData.used_size) return 0;
@@ -112,7 +123,12 @@ const DashBoardTemplate = () => {
         </Box>
       </div>
       <div className="w-full flex justify-center gap-10">
-        <RecentItems icon={Icons.files} label="Recent Files" width="w-225">
+        <RecentItems 
+          icon={Icons.files} 
+          label="Recent Files" 
+          width="w-225"
+          onFileUploaded={handleFileUploaded}
+        >
           {dashData?.recent_files.map((file) => (
             <RecentItem
               key={file.id}
