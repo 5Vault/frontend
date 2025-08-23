@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { DashBoardType } from "../@types/Storage";
 import Box from "../components/Box";
-import RecentItem from "../components/RecentItem";
+// import RecentItem from "../components/RecentItem";
 import RecentItems from "../components/RecentItems";
 import useVisualContext from "../hook/useVisualContext";
 import dashboardContent from "../utils/contents/DashBoard";
@@ -9,9 +9,12 @@ import Icons from "../utils/Icons";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
 import useAuthContext from "../hook/useAuthContext";
+import File from "../components/File";
+import useFileModalContext from "../hook/useFileModalContext";
 
 const DashBoardTemplate = () => {
   const { language } = useVisualContext();
+  const {setFile} = useFileModalContext();
   const { user } = useAuthContext();
   const [dashData, setDashData] = useState<DashBoardType | null>(null);
 
@@ -126,31 +129,32 @@ const DashBoardTemplate = () => {
         <RecentItems 
           icon={Icons.files} 
           label="Recent Files" 
-          width="w-225"
+          width="w-176"
           onFileUploaded={handleFileUploaded}
         >
           {dashData?.recent_files.map((file) => (
-            <RecentItem
-              key={file.id}
-              icon={
-                file.file_type === "image/jpeg" ||
-                file.file_type === "image/png"
-                  ? Icons.image
-                  : file.file_type === "video/mp4"
-                  ? Icons.video
-                  : file.file_type === "audio/mpeg"
-                  ? Icons.audio
-                  : Icons.files
-              }
-              label={file.file_id}
-              subLabel={(file.file_size / (1024 * 1024)).toFixed(2) + " MB"}
-            >
-              <img
-                src={file.file_url}
-                alt={file.file_id}
-                className="w-18 h-18 rounded"
-              />
-            </RecentItem>
+            <File key={file.id} file={file} setFile={setFile} wFull/>
+            // <RecentItem
+            //   key={file.id}
+            //   icon={
+            //     file.file_type === "image/jpeg" ||
+            //     file.file_type === "image/png"
+            //       ? Icons.image
+            //       : file.file_type === "video/mp4"
+            //       ? Icons.video
+            //       : file.file_type === "audio/mpeg"
+            //       ? Icons.audio
+            //       : Icons.files
+            //   }
+            //   label={file.file_id}
+            //   subLabel={(file.file_size / (1024 * 1024)).toFixed(2) + " MB"}
+            // >
+            //   <img
+            //     src={file.file_url}
+            //     alt={file.file_id}
+            //     className="w-18 h-18 rounded"
+            //   />
+            // </RecentItem>
           ))}
         </RecentItems>
       </div>

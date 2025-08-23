@@ -42,7 +42,7 @@ const Content: ContentType = {
       },
       icon: Icons.home,
     },
-    storages: {
+    storage: {
       labels: {
         ptBR: "Armazenamento",
         enUS: "Storage",

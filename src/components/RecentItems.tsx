@@ -109,7 +109,7 @@ const RecentItems = ({
           {icon}
           <span className="font-semibold text-3xl">{label}</span>
         </span>
-        <span className="text-sm text-zinc-400 flex gap-2 items-center">
+        <span className="text-sm text-zinc-400 flex gap-2 items-center" onClick={() => {window.location.href = "/storage"}}>
           <span>View All</span>
           {Icons.goto}
         </span>

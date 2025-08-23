@@ -10,6 +10,7 @@ import {
   FileSliders,
   FileStack,
   FileText,
+  Flag,
   Folder,
   HardDrive,
   Headphones,
@@ -62,6 +63,7 @@ const Icons = {
   closeEye: <EyeOff size={24} />,
   edit: <SquarePen size={24} />,
   date: <CalendarArrowUp size={20} />,
+  flag: <Flag size={20} />
 };
 
 export default Icons;

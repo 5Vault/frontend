@@ -3,11 +3,13 @@ import Side from "./components/Side";
 import DashBoardTemplate from "./templates/DashBoard";
 import SettingsTemplate from "./templates/Settings";
 import type { ReactElement } from "react";
-import StoragesTemplate from "./templates/Storages";
+import StorageTemplate from "./templates/Storage";
+import useFileModalContext from "./hook/useFileModalContext";
+import ItemView from "./components/ItemView";
 
 type SectionType =
   | "dashboard"
-  | "storages"
+  | "storage"
   | "settings"
 
 interface AppProps {
@@ -35,16 +37,20 @@ const toasterConfig = {
 
 const templates: Record<SectionType, ReactElement> = {
   dashboard: <DashBoardTemplate />,
-  storages: <StoragesTemplate />,
+  storage: <StorageTemplate />,
   settings: <SettingsTemplate />,
 };
 
 function App({ section }: AppProps) {
+
+  const { file, setFile } = useFileModalContext();
+
   return (
     <div className="flex h-screen w-screen">
       <Side />
       {/* Generic */}
-      <main className="flex-1 p-6 w-full h-full justify-center">
+      <main className="flex-1 p-6 w-full h-full justify-center relative">
+        {file && <ItemView file={file} setFile={setFile}/>}
         {templates[section]}
       </main>
       <Toaster {...toasterConfig} />

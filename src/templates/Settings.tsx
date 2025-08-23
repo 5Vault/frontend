@@ -6,7 +6,7 @@ const SettingsTemplate = () => {
   const { user, key } = useAuthContext();
 
   return (
-    <div className="flex flex-col h-full items-start px-24 py-10 gap-10">
+    <div className="flex flex-col h-full items-start px-24 py-10 gap-10 overflow-y-auto">
       <header className="w-full flex flex-col">
         <h2 className="text-4xl font-bold">Configuration</h2>
         <h5 className="text-sm text-zinc-400 tracking-wide">
@@ -67,17 +67,44 @@ const SettingsTemplate = () => {
         </div>
       </div>
 
-      <div className="rounded-lg p-8 shadow-sm w-full border border-zinc-100/10">
-        <div className="flex items-center gap-3 mb-8">
-          {Icons.key}
-          <h3 className="text-xl font-semibold">API Key</h3>
+      <div className="flex w-full gap-8">
+        <div className="rounded-lg p-8 shadow-sm w-full border border-zinc-100/10">
+          <div className="flex items-center gap-3 mb-8">
+            {Icons.key}
+            <h3 className="text-xl font-semibold">API Key</h3>
+          </div>
+            <div className="mt-2 text-sm text-zinc-400">
+              API Key used to authenticate requests to the 5Vault service. Don't share it with anyone.
+            </div>
+
+          <div className="w-full h-0.5 bg-gray-200/20 my-4" />
+          <div>
+            <label className="block text-sm font-medium text-gray-200 mb-2">
+              Secret Access Key
+            </label>
+            <InputHidden value={key ?? "No Key"} />
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-200 mb-2">
-            Secret Access Key
-          </label>
-          <InputHidden value={key ?? "No Key"} />
+        <div className="rounded-lg p-8 shadow-sm w-full border border-zinc-100/10">
+          <div className="flex items-center gap-3 mb-5">
+            {Icons.flag}
+            <h3 className="text-xl font-semibold">Free Tier</h3>
+            <button className="text-sm text-blue-500 hover:underline">
+              Upgrade Now
+            </button>
+          </div>
+
+          <div>            
+            <div className="mt-4 text-sm text-zinc-400">
+              Upgrade to a premium tier for more storage and advanced features.
+            </div>
+
+            <div className="w-full h-0.5 bg-gray-200/20 my-4" />
+            <div className="text-sm text-zinc-400">
+              Next Charge Date: <strong>2024-12-31</strong>
+            </div>
+          </div>
         </div>
       </div>
     </div>

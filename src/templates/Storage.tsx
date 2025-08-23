@@ -7,10 +7,12 @@ import Select from "react-select";
 import File from "../components/File";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
+import useFileModalContext from "../hook/useFileModalContext";
 
 
-const StoragesTemplate = () => {
+const StorageTemplate = () => {
   const { key } = useAuthContext();
+  const { setFile } = useFileModalContext();
   const [files, setFiles] = useState<FileType[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -178,13 +180,13 @@ const StoragesTemplate = () => {
       )}
       
       <div className="flex items-center justify-between w-full"></div>
-      <div className="flex flex-wrap overflow-y-auto w-full items-center justify-center gap-2 p-2">
+      <div className="flex flex-col overflow-y-auto w-full items-center justify-start gap-2 p-2">
         {files.map((file) => (
-          <File file={file} key={file.file_id} />
+          <File file={file} key={file.file_id} setFile={setFile} />
         ))}
       </div>
     </div>
   );
 };
 
-export default StoragesTemplate;
+export default StorageTemplate;

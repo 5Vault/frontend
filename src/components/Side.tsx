@@ -27,16 +27,24 @@ const Side = () => {
           {Object.entries(Content.side).map(([key, value]) => (
             <div
               key={key}
-              className="flex items-center p-4 hover:bg-zinc-700"
+              className={`flex items-center p-4 hover:bg-zinc-700 ${
+                  window.location.pathname === `/${key}`
+                    ? "bg-[#00000038]"
+                    : "text-zinc-200"
+                }`}
               onClick={() => {
                 window.location.href = `/${key}`;
               }}
             >
-              <span className="mr-2">{value.icon}</span>
+              <span className={`mr-2 ${
+                  window.location.pathname === `/${key}`
+                    ? "text-zinc-200"
+                    : "text-zinc-500"
+                }`}>{value.icon}</span>
               <span
                 className={`${
                   window.location.pathname === `/${key}`
-                    ? "text-zinc-50"
+                    ? "text-zinc-200"
                     : "text-zinc-500"
                 }`}
               >
