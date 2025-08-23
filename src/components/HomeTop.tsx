@@ -18,16 +18,12 @@ const HomeTop = () => {
       href: "/",
     },
     {
-      label: "Docs",
-      href: "/docs",
+      label: "Products",
+      href: "/products",
     },
     {
       label: "About Us",
       href: "/about-us",
-    },
-    {
-      label: "Contact",
-      href: "/contact",
     },
     {
       label: "Tiers",

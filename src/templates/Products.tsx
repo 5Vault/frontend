@@ -27,7 +27,7 @@ UploadScreenshotClient(function(success, url)
 end)
 `;
 
-const DocsTemplate = () => {
+const ProductsTemplate = () => {
   return (
     <div className="flex flex-col items-center justify-start min-h-screen w-screen">
       <HomeTop />
@@ -45,4 +45,4 @@ const DocsTemplate = () => {
   );
 };
 
-export default DocsTemplate;
+export default ProductsTemplate;

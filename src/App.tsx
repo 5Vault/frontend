@@ -1,7 +1,6 @@
 import { Toaster } from "react-hot-toast";
 import Side from "./components/Side";
 import DashBoardTemplate from "./templates/DashBoard";
-import StorageTemplate from "./templates/Storage";
 import SettingsTemplate from "./templates/Settings";
 import type { ReactElement } from "react";
 import StoragesTemplate from "./templates/Storages";
@@ -10,7 +9,6 @@ type SectionType =
   | "dashboard"
   | "storages"
   | "settings"
-  | "storage"
 
 interface AppProps {
   section: SectionType;
@@ -39,7 +37,6 @@ const templates: Record<SectionType, ReactElement> = {
   dashboard: <DashBoardTemplate />,
   storages: <StoragesTemplate />,
   settings: <SettingsTemplate />,
-  storage: <StorageTemplate />,
 };
 
 function App({ section }: AppProps) {

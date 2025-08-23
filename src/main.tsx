@@ -7,11 +7,9 @@ import { Route, BrowserRouter, Routes } from "react-router";
 import VisualProvider from "./provider/VisualProvider.tsx";
 import Home from "./templates/Home.tsx";
 import AccountTemplate from "./templates/Account.tsx";
-import DocsTemplate from "./templates/Docs.tsx";
-import ContactTemplate from "./templates/Contact.tsx";
+import ProductsTemplate from "./templates/Products.tsx";
 import AboutUsTemplate from "./templates/AboutUs.tsx";
 import AuthProvider from "./provider/AuthProvider.tsx";
-
 import PrivateRoutes from "./routes/PrivateRoute.tsx";
 import TiersTemplate from "./templates/Tiers.tsx";
 
@@ -24,13 +22,11 @@ createRoot(document.getElementById("root")!).render(
             <Route element={<PrivateRoutes />}>
               <Route path="/dashboard" element={<App section="dashboard" />} />
               <Route path="/storages" element={<App section="storages" />} />
-              <Route path="/storage/:id" element={<App section="storage" />} />
               <Route path="/settings" element={<App section="settings" />} />
             </Route>
             <Route path="/" element={<Home />} />
             <Route path="/account" element={<AccountTemplate />} />
-            <Route path="/docs" element={<DocsTemplate />} />
-            <Route path="/contact" element={<ContactTemplate />} />
+            <Route path="/products" element={<ProductsTemplate />} />
             <Route path="/about-us" element={<AboutUsTemplate />} />
             <Route path="/tiers" element={<TiersTemplate />} />
           </Routes>

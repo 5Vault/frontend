@@ -5,6 +5,7 @@ import useVisualContext from "../hook/useVisualContext";
 import Content from "../utils/Content";
 import homeContent from "../utils/contents/Home";
 import Icons from "../utils/Icons";
+import liberty from "../assets/liberty.png";
 
 const Home = () => {
   const { language } = useVisualContext();
@@ -60,6 +61,19 @@ const Home = () => {
               }
               return null;
             })}
+          </div>
+        </div>
+
+        {/* Servers */}
+        <div className="mb-16">
+          <h2 className="text-xl font-bold mb-8">In Use At</h2>
+          <div className="flex justify-start gap-12">
+            <img src={liberty} alt="Liberty" className="h-32" />
+            <img src={liberty} alt="Liberty" className="h-32" />
+            <img src={liberty} alt="Liberty" className="h-32" />
+            <img src={liberty} alt="Liberty" className="h-32" />
+            <img src={liberty} alt="Liberty" className="h-32" />
+            <img src={liberty} alt="Liberty" className="h-32" />
           </div>
         </div>
 
