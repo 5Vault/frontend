@@ -14,5 +14,5 @@ export type DashBoardType = {
   used_size: number;
   total_size: number;
   free_space: number;
-  recent_files: File[];
+  recent_files: FileType[];
 };
