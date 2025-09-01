@@ -66,7 +66,7 @@ const Home = () => {
 
         {/* Servers */}
         <div className="mb-16">
-          <h2 className="text-xl font-bold mb-8">In Use At</h2>
+          <h2 className="text-xl font-bold mb-8">Used By:</h2>
           <div className="flex justify-start gap-12">
             <img src={liberty} alt="Liberty" className="h-32" />
             <img src={liberty} alt="Liberty" className="h-32" />

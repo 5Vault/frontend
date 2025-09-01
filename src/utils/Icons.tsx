@@ -1,5 +1,6 @@
 import {
   Activity,
+  ArrowLeft,
   ArrowRight,
   CalendarArrowUp,
   CircleUser,
@@ -63,7 +64,10 @@ const Icons = {
   closeEye: <EyeOff size={24} />,
   edit: <SquarePen size={24} />,
   date: <CalendarArrowUp size={20} />,
-  flag: <Flag size={20} />
+  flag: <Flag size={20} />,
+  arrow_left: <ArrowLeft size={20} />,
+  arrow_right: <ArrowRight size={20} />,
+  
 };
 
 export default Icons;
