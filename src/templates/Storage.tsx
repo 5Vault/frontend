@@ -215,7 +215,7 @@ const StorageTemplate = () => {
                 label: "50 itens",
               },
             ]}
-            className="w-44"
+            className="w-34"
             value={{ value: itemsPerPage, label: `${itemsPerPage} itens` }}
             onChange={handleItemsPerPageChange}
             isSearchable={false}
@@ -273,7 +273,7 @@ const StorageTemplate = () => {
                 label: "Documentos",
               },
             ]}
-            className="w-64"
+            className="w-44"
             placeholder="Filtrar por tipo..."
             isClearable
             value={fileTypeFilter ? { value: fileTypeFilter, label: fileTypeFilter } : null}

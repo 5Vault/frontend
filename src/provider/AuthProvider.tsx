@@ -22,6 +22,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         name: response.data.name,
         username: response.data.username,
         phone: response.data.phone,
+        tier: response.data.tier || null,
       };
       setUser(userObj);
       setKey(response.data.api_key || null);

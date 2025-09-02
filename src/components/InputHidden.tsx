@@ -16,7 +16,7 @@ const InputHidden = ({
     <div className="flex items-center">
       <input
         type={hidden ? "password" : "text"}
-        className="min-w-110"
+        className="min-w-110 w-full"
         name="hiddenInput"
         value={value}
         onChange={

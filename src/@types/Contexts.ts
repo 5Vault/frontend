@@ -1,3 +1,5 @@
+import type { UserTier } from "./Tier";
+
 export type VisualContextType = {
   language: "enUS" | "ptBR";
   toggleLanguage: () => void;
@@ -12,6 +14,7 @@ export type User = {
   name: string;
   username: string;
   phone: string;
+  tier: UserTier | null;
 };
 
 export type AuthContextType = {
