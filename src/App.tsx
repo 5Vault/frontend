@@ -10,7 +10,7 @@ import ItemView from "./components/ItemView";
 type SectionType =
   | "dashboard"
   | "storage"
-  | "settings"
+  | "settings" 
 
 interface AppProps {
   section: SectionType;

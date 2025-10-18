@@ -1,12 +1,21 @@
-export type Tier = {  
+export type TierType = {  
+  id: string;
   name: string;
-  price: number;
-  features: string[];
+  cost: number;
+  description: {
+    en: string;
+    pt: string;
+  };
+  included: [{
+    en: string;
+    pt: string;
+  }];
+  
 };
 
 export type UserTier = {
   tierId: string;
-  tier: Tier;
+  tier: TierType;
   payment: {
     method: "credit_card" | "paypal";
     status: "paid" | "pending" | "failed";

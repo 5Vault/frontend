@@ -14,6 +14,7 @@ import PrivateRoutes from "./routes/PrivateRoute.tsx";
 import TiersTemplate from "./templates/Tiers.tsx";
 import FileModalProvider from "./provider/FileModalProvider.tsx";
 import UserTierTemplate from "./templates/UserTier.tsx";
+import CheckOut from "./templates/CheckOut.tsx";
 
 
 createRoot(document.getElementById("root")!).render(
@@ -28,6 +29,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/storage" element={<App section="storage" />} />
                 <Route path="/settings" element={<App section="settings" />} />
                 <Route path="/settings/tier" element={<UserTierTemplate />} />
+                <Route path="/checkout" element={<CheckOut />} />
               </Route>
               <Route path="/" element={<Home />} />
               <Route path="/account" element={<AccountTemplate />} />

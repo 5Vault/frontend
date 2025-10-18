@@ -3,30 +3,30 @@ import Icons from "../Icons";
 
 type HomeContentType = {
   one: {
-    ptBR: string;
-    enUS: string;
+    pt: string;
+    en: string;
   };
   two: {
-    ptBR: string;
-    enUS: string;
+    pt: string;
+    en: string;
   };
   three: {
-    ptBR: string;
-    enUS: string;
+    pt: string;
+    en: string;
   };
   four: {
-    ptBR: string;
-    enUS: string;
+    pt: string;
+    en: string;
   };
   benefits: {
     [key: string]: {
       title: {
-        ptBR: string;
-        enUS: string;
+        pt: string;
+        en: string;
       };
       description: {
-        ptBR: string;
-        enUS: string;
+        pt: string;
+        en: string;
       };
       icon?: ReactElement;
     };
@@ -35,51 +35,51 @@ type HomeContentType = {
 
 const homeContent: HomeContentType = {
   one: {
-    ptBR: "Armazenamento rápido e seguro para o seu servidor de FiveM",
-    enUS: "Fast and secure storage for your FiveM server",
+    pt: "Armazenamento rápido e seguro para o seu servidor de FiveM",
+    en: "Fast and secure storage for your FiveM server",
   },
   two: {
-    ptBR: "  Nossa plataforma é otimizada para servidores de FiveM, garantindo que você tenha acesso rápido com alta disponibilidade, baixa latência e confiável aos seus recursos.",
-    enUS: "Our platform is optimized for FiveM servers, ensuring you have fast access with high availability, low latency, and reliable resources.",
+    pt: "  Nossa plataforma é otimizada para servidores de FiveM, garantindo que você tenha acesso rápido com alta disponibilidade, baixa latência e confiável aos seus recursos.",
+    en: "Our platform is optimized for FiveM servers, ensuring you have fast access with high availability, low latency, and reliable resources.",
   },
   three: {
-    ptBR: "Começar Agora",
-    enUS: "Get Started Now",
+    pt: "Começar Agora",
+    en: "Get Started Now",
   },
   four: {
-    ptBR: "Conhecer Planos",
-    enUS: "View Plans",
+    pt: "Conhecer Planos",
+    en: "View Plans",
   },
   benefits: {
     one: {
-      title: { ptBR: "Alta Velocidade", enUS: "High Speed" },
+      title: { pt: "Alta Velocidade", en: "High Speed" },
       description: {
-        ptBR: "Transferência otimizada para FiveM.",
-        enUS: "Optimized transfer for FiveM.",
+        pt: "Transferência otimizada para FiveM.",
+        en: "Optimized transfer for FiveM.",
       },
       icon: Icons.rocket,
     },
     two: {
-      title: { ptBR: "Segurança Máxima", enUS: "Maximum Security" },
+      title: { pt: "Segurança Máxima", en: "Maximum Security" },
       description: {
-        ptBR: "Criptografia de ponta a ponta.",
-        enUS: "End-to-end encryption.",
+        pt: "Criptografia de ponta a ponta.",
+        en: "End-to-end encryption.",
       },
       icon: Icons.lock,
     },
     three: {
-      title: { ptBR: "Backups Automáticos", enUS: "Automatic Backups" },
+      title: { pt: "Backups Automáticos", en: "Automatic Backups" },
       description: {
-        ptBR: "Realize backups automáticos de seus dados.",
-        enUS: "Automatically back up your data.",
+        pt: "Realize backups automáticos de seus dados.",
+        en: "Automatically back up your data.",
       },
       icon: Icons.paper,
     },
     four: {
-      title: { ptBR: "Latência Baixa", enUS: "Low Latency" },
+      title: { pt: "Latência Baixa", en: "Low Latency" },
       description: {
-        ptBR: "Conexões rápidas e responsivas.",
-        enUS: "Fast and responsive connections.",
+        pt: "Conexões rápidas e responsivas.",
+        en: "Fast and responsive connections.",
       },
       icon: Icons.zap32,
     },

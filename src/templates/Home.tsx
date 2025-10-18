@@ -2,13 +2,14 @@ import Logo from "../assets/logow.png";
 import Card from "../components/Card";
 import HomeTop from "../components/HomeTop";
 import useVisualContext from "../hook/useVisualContext";
-import Content from "../utils/Content";
 import homeContent from "../utils/contents/Home";
 import Icons from "../utils/Icons";
 import liberty from "../assets/liberty.png";
+import type { TierType } from "../@types/Tier";
 
 const Home = () => {
-  const { language } = useVisualContext();
+  const { language, tiers } = useVisualContext();
+  
 
   return (
     <div className="flex flex-col items-center justify-start h-screen w-screen">
@@ -103,36 +104,33 @@ const Home = () => {
         <div>
           <h2 className="text-xl font-bold mb-8">Planos</h2>
           <div className="flex justify-center gap-4">
-            {(
-              Object.keys(Content.plans) as Array<keyof typeof Content.plans>
-            ).map((key) => {
-              const plan = Content.plans[key];
+            {tiers.map((tier: TierType) => {              
               return (
                 <div
-                  key={key}
+                  key={tier.id}
                   className={` shadow-md rounded-lg p-4 flex flex-col items-center justify-between gap-2 h-90 w-80 hover:scale-102 ${
-                    key === "pro"
+                    tier.id === "pro"
                       ? "border-2 border-[var(--primary-contrast-light)]"
                       : "border border-zinc-100/10"
                   }`}
                 >
                   <span className="font-bold text-3xl text-center">
-                    {plan.labels[language]}
+                    {tier.name}
                   </span>
                   <span className="text-zinc-200 text-2xl font-semibold">
-                    {plan.cost[language]}
+                    R$ {tier.cost} / {language === "en" ? "month" : "mês"}
                   </span>
                   <ul className="text-sm text-zinc-500 mt-2 bg-zinc-700 p-2 rounded-lg w-full h-34 flex flex-col justify-start">
-                    {plan.included[language].map((item) => (
-                      <li key={item}>{item}</li>
+                    {tier.included.map((item: { [key: string]: string }) => (
+                      <li key={item[language]}>{item[language]}</li>
                     ))}
                   </ul>
                   <span className="text-zinc-500 text-sm">
-                    {plan.description[language]}
+                    {tier.description[language]}
                   </span>
                   <button
                     className={`w-full border border-zinc-100/10 text-gray-400 py-2 rounded ${
-                      key === "pro"
+                      tier.id === "pro"
                         ? "bg-[var(--primary-contrast-light)] text-white"
                         : ""
                     } hover:bg-[var(--primary-contrast-dark)] hover:text-white transition-colors`}

@@ -1,11 +1,13 @@
-import type { UserTier } from "./Tier";
+import type { TierType, UserTier } from "./Tier";
 
 export type VisualContextType = {
-  language: "enUS" | "ptBR";
+  language: "en" | "pt";
   toggleLanguage: () => void;
-  setLanguage: (language: "enUS" | "ptBR") => void;
+  setLanguage: (language: "en" | "pt") => void;
   theme: "light" | "dark";
   setTheme: (theme: "light" | "dark") => void;
+  tiers: TierType[];
+  setTiers: (tiers: TierType[]) => void;
 };
 
 export type User = {
