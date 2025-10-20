@@ -5,7 +5,6 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #0d0d0e;
 
@@ -56,15 +55,10 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+select {
+  outline: none;
+}
+
+.bg-gdnt {
+  background: linear-gradient(45deg, #24242967 0%, #18181b2c 50%, #18181b67 100%);  
 }

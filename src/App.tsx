@@ -43,14 +43,14 @@ const templates: Record<SectionType, ReactElement> = {
 
 function App({ section }: AppProps) {
 
-  const { file, setFile } = useFileModalContext();
+  const { fileModal, setFileModal } = useFileModalContext();
 
   return (
     <div className="flex h-screen w-screen">
       <Side />
       {/* Generic */}
       <main className="flex-1 p-6 w-full h-full justify-center relative">
-        {file && <ItemView file={file} setFile={setFile}/>}
+        {fileModal && <ItemView file={fileModal} setFile={setFileModal}/>}
         {templates[section]}
       </main>
       <Toaster {...toasterConfig} />

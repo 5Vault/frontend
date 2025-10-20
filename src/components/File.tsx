@@ -1,36 +1,24 @@
 import { type FileType } from "../@types/Storage";
 import useAuthContext from "../hook/useAuthContext";
+import useFileModalContext from "../hook/useFileModalContext";
+import ToBlob from "../utils/blob";
 import Icons from "../utils/Icons";
 import { useEffect, useState } from "react";
 
-const File = ({file, setFile, wFull}: {file: FileType, setFile: (file: FileType | null) => void, wFull?: boolean}) => {
+const File = ({file, setFile, wFull}: {file: FileType,setFile: (file: FileType) => void, wFull?: boolean}) => {
 
     const { key } = useAuthContext();
     const [imageUrl, setImageUrl] = useState<string>("");
     const [loading, setLoading] = useState(true);
+    const { setFileModal } = useFileModalContext();
 
     useEffect(() => {
         const fetchURL = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(
-                    `${import.meta.env.VITE_SERVER_URL}/file/${file.file_id}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Api-Key": key || "",
-                        },
-                    }
-                );
-                
-                if (!response.ok) {
-                    throw new Error("Failed to fetch file");
-                }
-
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
+                const url = await ToBlob(file.file_id, key || "");
                 setImageUrl(url);
+                setFile({ ...file, blob: url });                
             } catch (error) {
                 console.error("Error fetching file:", error);
             } finally {
@@ -48,10 +36,11 @@ const File = ({file, setFile, wFull}: {file: FileType, setFile: (file: FileType 
                 URL.revokeObjectURL(imageUrl);
             }
         };
-    }, [file.file_id, key, imageUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [file.file_id, key]); // Removed imageUrl from dependencies
 
     return (
-        <div className={` bg-[#00000036] hover:border-1 hover:border-zinc-100/10 rounded-lg p-2 flex items-center gap-4 justify-between ${wFull ? "w-full" : "w-160"} hover:scale-102 transition-transform duration-200 cursor-pointer`} onClick={() => setFile(file)}>
+        <div className={` bg-[#00000036] hover:border-1 hover:border-zinc-100/10 rounded-lg p-2 flex items-center gap-4 justify-between ${wFull ? "w-full" : "w-160"} hover:scale-102 transition-transform duration-200 cursor-pointer`} onClick={() => setFileModal(file)}>
             {loading ? (
                 <div className="h-22 w-22 rounded bg-zinc-800 animate-pulse" />
             ) : (

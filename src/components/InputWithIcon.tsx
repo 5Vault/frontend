@@ -16,7 +16,7 @@ const InputWithIcon = ({
       </div>
       <input
         {...inputProps}
-        className={`w-full border border-gray-300 py-2 pl-10 pr-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${className}`}
+        className={`w-full border border-gray-100/20 py-2 pl-10 pr-4 rounded-lg focus:ring-2 focus:ring-[var(--primary-contrast-opacity)] focus:border-transparent outline-none ${className}`}
       />
     </div>
   );

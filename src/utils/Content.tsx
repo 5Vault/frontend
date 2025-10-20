@@ -5,8 +5,8 @@ type ContentType = {
   side: {
     [key: string]: {
       labels: {
-        ptBR: string;
-        enUS: string;
+        pt: string;
+        en: string;
       };
       icon: ReactNode;
     };
@@ -14,20 +14,20 @@ type ContentType = {
   plans: {
     [key: string]: {
       labels: {
-        ptBR: string;
-        enUS: string;
+        pt: string;
+        en: string;
       };
       cost: {
-        ptBR: string;
-        enUS: string;
+        pt: string;
+        en: string;
       };
       description: {
-        ptBR: string;
-        enUS: string;
+        pt: string;
+        en: string;
       };
       included: {
-        ptBR: string[];
-        enUS: string[];
+        pt: string[];
+        en: string[];
       };
     };
   };
@@ -37,22 +37,22 @@ const Content: ContentType = {
   side: {
     dashboard: {
       labels: {
-        ptBR: "Painel de Controle",
-        enUS: "Dashboard",
+        pt: "Painel de Controle",
+        en: "Dashboard",
       },
       icon: Icons.home,
     },
     storage: {
       labels: {
-        ptBR: "Armazenamento",
-        enUS: "Storage",
+        pt: "Armazenamento",
+        en: "Storage",
       },
       icon: Icons.storage,
     },
     settings: {
       labels: {
-        ptBR: "Configurações",
-        enUS: "Settings",
+        pt: "Configurações",
+        en: "Settings",
       },
       icon: Icons.settings,
     },
@@ -60,44 +60,44 @@ const Content: ContentType = {
   plans: {
     basic: {
       labels: {
-        ptBR: "Básico",
-        enUS: "Basic",
+        pt: "Básico",
+        en: "Basic",
       },
       cost: {
-        ptBR: "R$20/mês",
-        enUS: "R$20/month",
+        pt: "R$20/mês",
+        en: "R$20/month",
       },
       description: {
-        ptBR: "Ideal para servidores pequenos",
-        enUS: "Ideal for small servers",
+        pt: "Ideal para servidores pequenos",
+        en: "Ideal for small servers",
       },
       included: {
-        ptBR: ["Armazenamento de 100GB", "Suporte 24/7", "Request Ilimitados"],
-        enUS: ["100GB Storage", "24/7 Support", "Unlimited Requests"],
+        pt: ["Armazenamento de 100GB", "Suporte 24/7", "Request Ilimitados"],
+        en: ["100GB Storage", "24/7 Support", "Unlimited Requests"],
       },
     },
     pro: {
       labels: {
-        ptBR: "Profissional",
-        enUS: "Professional",
+        pt: "Profissional",
+        en: "Professional",
       },
       cost: {
-        ptBR: "R$50/mês",
-        enUS: "R$50/month",
+        pt: "R$50/mês",
+        en: "R$50/month",
       },
       description: {
-        ptBR: "Para comunidades médias",
-        enUS: "Ideal for medium communities",
+        pt: "Para comunidades médias",
+        en: "Ideal for medium communities",
       },
       included: {
-        ptBR: [
+        pt: [
           "Armazenamento de 250GB",
           "Suporte 24/7",
           "Request Ilimitados",
           "Keys com permissões",
           "Backup Automático",
         ],
-        enUS: [
+        en: [
           "250GB Storage",
           "24/7 Support",
           "Unlimited Requests",
@@ -108,19 +108,19 @@ const Content: ContentType = {
     },
     enterprise: {
       labels: {
-        ptBR: "Empresarial",
-        enUS: "Enterprise",
+        pt: "Empresarial",
+        en: "Enterprise",
       },
       cost: {
-        ptBR: "R$100/mês",
-        enUS: "R$100/month",
+        pt: "R$100/mês",
+        en: "R$100/month",
       },
       description: {
-        ptBR: "Para grandes empresas",
-        enUS: "Ideal for large enterprises",
+        pt: "Para grandes empresas",
+        en: "Ideal for large enterprises",
       },
       included: {
-        ptBR: [
+        pt: [
           "Armazenamento de 1TB",
           "Suporte 24/7",
           "Request Ilimitados",
@@ -128,7 +128,7 @@ const Content: ContentType = {
           "Backup Automático",
           "Crie até 6 storages",
         ],
-        enUS: [
+        en: [
           "1TB Storage",
           "24/7 Support",
           "Unlimited Requests",

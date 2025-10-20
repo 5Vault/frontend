@@ -1,6 +1,6 @@
 import type { FileType } from "./Storage";
 
 export type FileModal = {
-    file: FileType | null,
-    setFile: (file: FileType | null) => void
+    fileModal: FileType | null,
+    setFileModal: (file: FileType | null) => void
 }

@@ -4,16 +4,15 @@ import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
 import Icons from "../utils/Icons";
 import useAuthContext from "../hook/useAuthContext";
+import { FolderSync } from "lucide-react";
 
 const RecentItems = ({
-  label,
-  icon,
+  label,  
   width = "w-147",
   children,
   onFileUploaded,
 }: {
-  label: string;
-  icon: ReactNode;
+  label: string;  
   width?: string;
   children: ReactNode;
   onFileUploaded?: () => void;
@@ -94,25 +93,24 @@ const RecentItems = ({
 
   return (
     <div 
-      className={`flex flex-col items-center justify-between p-2 border rounded-lg transition-all duration-200 ${
+      className={`flex flex-col items-center justify-between p-2 border rounded-xl transition-all duration-200 ${
         isDragOver 
           ? 'border-dashed border-2 border-[var(--primary-contrast-light)] bg-[var(--primary-contrast-opacity)]' 
-          : 'border-zinc-100/15'
+          : 'border-zinc-100/15 bg-gdnt'
       } ${width}`}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <header className="flex items-center gap-2 justify-between w-full px-6 py-4">
-        <span className="flex gap-2 items-center">
-          {icon}
-          <span className="font-semibold text-3xl">{label}</span>
-        </span>
-        <span className="text-sm text-zinc-400 flex gap-2 items-center" onClick={() => {window.location.href = "/storage"}}>
-          <span>View All</span>
-          {Icons.goto}
-        </span>
+      <header className="flex items-center gap-2 justify-start w-full px-6 py-4 text-zinc-400">
+        <div className="p-2 bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] rounded-full flex items-center justify-center">
+          <FolderSync size={24} className="text-zinc-200" />
+        </div>
+        <span className="flex flex-col justify-start items-start ">
+          <span className="font-semibold text-lg">{label}</span>
+          <span className="font-semibold text-xs">Últimos Arquivos enviados para o seu storage</span>
+        </span>        
       </header>
       
       {isDragOver ? (
@@ -128,7 +126,7 @@ const RecentItems = ({
           <div className="text-sm text-zinc-400">Aguarde o upload do arquivo</div>
         </div>
       ) : (
-        <div className="flex flex-col w-full gap-1 p-4 h-120 max-h-120 items-start justify-start overflow-auto">
+        <div className="flex flex-col w-full gap-1 p-4 h-fit items-start justify-start overflow-auto">
           {children}
         </div>
       )}

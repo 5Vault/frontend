@@ -7,6 +7,7 @@ export type FileType = {
   file_url: string;
   file_size: number;
   uploaded_at: string;
+  blob?: string;
 };
 
 export type DashBoardType = {
@@ -15,4 +16,8 @@ export type DashBoardType = {
   total_size: number;
   free_space: number;
   recent_files: FileType[];
+  weekly_usage: {
+    day: string;
+    file_amount: number;
+  }[];
 };

@@ -1,26 +1,26 @@
 type dashboardContentType = {
     [key: string]: {
-        ptBR: string;
-        enUS: string;
+        pt: string;
+        en: string;
     };
 }
 
 const dashboardContent: dashboardContentType = {
   welcome: {
-    ptBR: "Bem vindo(a) ao Painel de Controle",
-    enUS: "Welcome to the Dashboard",
+    pt: "Bem vindo(a) ao Painel de Controle",
+    en: "Welcome to the Dashboard",
   },
   subtitle: {
-    ptBR: "Gerenciar armazenamento em nuvem com facilidade",
-    enUS: "Manage your cloud storage infrastructure with ease",
+    pt: "Gerenciar armazenamento em nuvem com facilidade",
+    en: "Manage your cloud storage infrastructure with ease",
   },
   viewAll: {
-    ptBR: "Ver todos os storages",
-    enUS: "View all storages",
+    pt: "Ver todos os storages",
+    en: "View all storages",
   },
   addStorage: {
-    ptBR: "Adicionar Storage",
-    enUS: "Add Storage",
+    pt: "Adicionar Storage",
+    en: "Add Storage",
   },
 };
 

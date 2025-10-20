@@ -29,7 +29,7 @@ const ItemView = ({file, setFile}: {file: FileType, setFile: (file: FileType | n
       <h1 className="text-4xl font-bold">{file.file_id}</h1>
       <p className="text-sm text-zinc-400">{file.file_type}</p>
       <div className="mt-4">
-        <img src={file.file_url} alt={file.file_id} className="max-w-full max-h-96 object-contain" />
+        <img src={file.blob} alt={file.file_id} className="max-w-full max-h-96 object-contain" />
       </div>      
     </div>
   );

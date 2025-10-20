@@ -7,11 +7,9 @@ import Select from "react-select";
 import File from "../components/File";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
-import useFileModalContext from "../hook/useFileModalContext";
 
 const StorageTemplate = () => {
-  const { key } = useAuthContext();
-  const { setFile } = useFileModalContext();
+  const { key } = useAuthContext();  
   const [files, setFiles] = useState<FileType[]>([]);
   const [totalFiles, setTotalFiles] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState<10 | 30 | 50>(10);
@@ -22,6 +20,12 @@ const StorageTemplate = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [fileTypeFilter, setFileTypeFilter] = useState<string>("");
   const axiosInstance = useAxios();
+
+  const setBlob = (file: FileType) => {
+    setFiles((prevFiles) =>
+      prevFiles.map((f) => (f.file_id === file.file_id ? { ...f, blob: file.blob } : f))
+    );
+  };
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -342,7 +346,7 @@ const StorageTemplate = () => {
         </div>
       )}
 
-      <div className="flex flex-col items-center justify-start w-full overflow-y-auto">
+      <div className="flex flex-col items-center justify-start w-full overflow-y-auto h-full">
         
         <div className="flex flex-col w-full items-center justify-start gap-2 p-2">
           {isLoading ? (
@@ -352,7 +356,7 @@ const StorageTemplate = () => {
             </div>
           ) : files.length > 0 ? (
             files.map((file) => (
-              <File file={file} key={file.file_id} setFile={setFile} />
+              <File file={file} key={file.file_id} setFile={setBlob}/>
             ))
           ) : (
             <div className="text-center py-8 text-zinc-400">

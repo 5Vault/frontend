@@ -3,10 +3,10 @@ import FileModalContext from "../context/FileModalContext";
 import type { FileType } from "../@types/Storage";
 
 const FileModalProvider = ({ children }: { children: ReactNode }) => {
-  const [file, setFile] = useState<FileType | null>(null);
+  const [fileModal, setFileModal] = useState<FileType | null>(null);
 
   return (
-    <FileModalContext.Provider value={{ file, setFile }}>
+    <FileModalContext.Provider value={{ fileModal, setFileModal }}>
       {children}
     </FileModalContext.Provider>
   );

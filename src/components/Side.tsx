@@ -31,7 +31,7 @@ const Side = () => {
                   window.location.pathname === `/${key}`
                     ? "bg-[#00000038]"
                     : "text-zinc-200"
-                }`}
+                } cursor-pointer`}
               onClick={() => {
                 window.location.href = `/${key}`;
               }}
