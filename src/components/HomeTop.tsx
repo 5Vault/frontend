@@ -116,22 +116,22 @@ const HomeTop = () => {
               <p>Language</p>
               <Select<SelectOption>
                 options={[
-                  { value: "enUS", label: "English" },
-                  { value: "ptBR", label: "Português - Brasil" },
+                  { value: "en", label: "English" },
+                  { value: "pt", label: "Português - Brasil" },
                 ]}
                 styles={selectStyles}
                 value={{
                   value: language,
-                  label: language === "ptBR" ? "Português - Brasil" : "English",
+                  label: language === "pt" ? "Português - Brasil" : "English",
                 }}
                 onChange={(selectedOption) => {
                   if (selectedOption) {
-                    if (selectedOption.value === "ptBR") {
-                      localStorage.setItem("language", "ptBR");
-                      setLanguage("ptBR");
-                    } else if (selectedOption.value === "enUS") {
-                      localStorage.setItem("language", "enUS");
-                      setLanguage("enUS");
+                    if (selectedOption.value === "pt") {
+                      localStorage.setItem("language", "pt");
+                      setLanguage("pt");
+                    } else if (selectedOption.value === "en") {
+                      localStorage.setItem("language", "en");
+                      setLanguage("en");
                     } else {
                       toast.error("Invalid language selected");
                     }
