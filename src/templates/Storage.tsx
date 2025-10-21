@@ -7,7 +7,7 @@ import Select from "react-select";
 import File from "../components/File";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
-import { Database, Settings } from "lucide-react";
+import { Database } from "lucide-react";
 
 const StorageTemplate = () => {
   const { key } = useAuthContext();  
