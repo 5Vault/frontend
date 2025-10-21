@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 
 type DashButtonProps = {
-    icon: ReactElement;
+    icon?: ReactElement;
     label: string;
     onClick: () => void;
 }

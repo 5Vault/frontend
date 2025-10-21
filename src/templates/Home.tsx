@@ -6,13 +6,14 @@ import homeContent from "../utils/contents/Home";
 import Icons from "../utils/Icons";
 import liberty from "../assets/liberty.png";
 import type { TierType } from "../@types/Tier";
+import DashButton from "../components/DashButton";
 
 const Home = () => {
   const { language, tiers } = useVisualContext();
   
 
   return (
-    <div className="flex flex-col items-center justify-start h-screen w-screen">
+    <div className="flex flex-col items-center justify-start h-screen w-screen bg-gdnt">
       <HomeTop />
       <div className="flex gap-12 items-center justify-evenly w-[80%] px-10 mt-44">
         <div className="text-center w-[50%]">
@@ -26,9 +27,8 @@ const Home = () => {
             <button className="bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]">
               {homeContent.three[language] || ""}
             </button>
-            <button className="border border-zinc-100/10">
-              {homeContent.four[language] || ""}
-            </button>
+            <DashButton label={homeContent.four[language] || ""} onClick={() => {}} />
+            
           </span>
         </div>
         <img src={Logo} alt="Logo" className="h-68" />
