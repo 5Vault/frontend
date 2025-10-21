@@ -8,6 +8,10 @@ type ContentType = {
         pt: string;
         en: string;
       };
+      sublabels?: {
+        pt: string;
+        en: string;
+      };
       icon: ReactNode;
     };
   };
@@ -40,6 +44,10 @@ const Content: ContentType = {
         pt: "Painel de Controle",
         en: "Dashboard",
       },
+      sublabels: {
+        pt: "Visão geral da sua conta",
+        en: "Overview of your account",
+      },      
       icon: Icons.home,
     },
     storage: {
@@ -47,12 +55,20 @@ const Content: ContentType = {
         pt: "Armazenamento",
         en: "Storage",
       },
+      sublabels: {
+        pt: "Gerencie seu armazenamento",
+        en: "Manage your storage",
+      },
       icon: Icons.storage,
     },
     settings: {
       labels: {
         pt: "Configurações",
         en: "Settings",
+      },
+      sublabels: {
+        pt: "Ajuste suas preferências",
+        en: "Adjust your preferences",
       },
       icon: Icons.settings,
     },

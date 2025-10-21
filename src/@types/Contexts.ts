@@ -1,4 +1,4 @@
-import type { TierType, UserTier } from "./Tier";
+import type { TierType } from "./Tier";
 
 export type VisualContextType = {
   language: "en" | "pt";
@@ -16,7 +16,11 @@ export type User = {
   name: string;
   username: string;
   phone: string;
-  tier: UserTier | null;
+  tier: string | null;
+  tier_name?: string;
+  tier_update_at?: string;
+  created_at: string;
+  updated_at?: string;
 };
 
 export type AuthContextType = {

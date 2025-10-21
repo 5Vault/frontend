@@ -1,6 +1,8 @@
+import { Settings } from "lucide-react";
 import InputHidden from "../components/InputHidden";
 import useAuthContext from "../hook/useAuthContext";
 import Icons from "../utils/Icons";
+import { formatDate } from "../utils/dateFormat";
 import { useState } from "react";
 
 const SettingsTemplate = () => {
@@ -39,15 +41,20 @@ const SettingsTemplate = () => {
   };
 
   return (
-    <div className="flex flex-col h-full items-start px-24 py-10 gap-10 overflow-y-auto">
-      <header className="w-full flex flex-col">
-        <h2 className="text-4xl font-bold">Configuration</h2>
-        <h5 className="text-sm text-zinc-400 tracking-wide">
-          Manage your profile, API keys, and storage preferences
-        </h5>
+    <div className="flex flex-col h-full items-start gap-4 overflow-y-auto">
+      <header className="w-full flex border border-zinc-800 p-4 rounded-xl bg-zinc-900/50 gap-4">
+        <span className="p-3 bg-[var(--primary-contrast-light)] rounded-xl flex items-center justify-center">
+          <Settings size={38} />
+        </span>
+        <span className="flex flex-col">
+          <h2 className="text-2xl font-bold">Configuration</h2>
+          <h5 className="text-sm text-zinc-400 tracking-wide">
+            Manage your profile, API keys, and storage preferences
+          </h5>
+        </span>
       </header>
 
-      <div className="rounded-lg p-8 shadow-sm w-full border border-zinc-100/10">
+      <div className="rounded-lg p-8 shadow-sm w-full border border-zinc-100/10 bg-zinc-900/50">
         <div className="flex items-center gap-3 mb-8">
           {Icons.settings}
           <h3 className="text-xl font-semibold">Profile Information</h3>
@@ -131,8 +138,9 @@ const SettingsTemplate = () => {
         </div>
       </div>
 
-      <div className="flex w-full gap-8">
-        <div className="rounded-lg p-8 shadow-sm w-full border border-zinc-100/10">
+          {/* API KEY */}
+      <div className="flex w-full gap-4">
+        <div className="rounded-lg p-8 shadow-sm w-full border border-zinc-100/10 bg-zinc-900/50">
           <div className="flex items-center gap-3 mb-8">
             {Icons.key}
             <h3 className="text-xl font-semibold">API Key</h3>
@@ -150,10 +158,10 @@ const SettingsTemplate = () => {
           </div>
         </div>
 
-        <div className="rounded-lg p-8 shadow-sm w-full border border-zinc-100/10">
+        <div className="rounded-lg p-8 shadow-sm w-full border border-zinc-100/10 bg-zinc-900/50">
           <div className="flex items-center gap-3 mb-5">
             {Icons.flag}
-            <h3 className="text-xl font-semibold">Free Tier</h3>
+            <h3 className="text-xl font-semibold">{user?.tier_name && user.tier_name + " Tier"}</h3>
             <button className="text-sm text-blue-500 hover:text-[var(--primary-contrast-light)] hover:underline" onClick={() => window.location.href = "/settings/tier"}>
               Upgrade Now
             </button>
@@ -161,12 +169,12 @@ const SettingsTemplate = () => {
 
           <div>            
             <div className="mt-4 text-sm text-zinc-400">
-              Upgrade to a premium tier for more storage and advanced features.
+              You are currently subscribed to the <strong>{user?.tier_name || "Free"}</strong> tier. Manage your subscription and billing information.
             </div>
 
             <div className="w-full h-0.5 bg-gray-200/20 my-4" />
             <div className="text-sm text-zinc-400">
-              Next Charge Date: <strong>2024-12-31</strong>
+              Next Charge Date: <strong>{user?.tier_update_at ? formatDate(user.tier_update_at) : "N/A"}</strong>
             </div>
           </div>
         </div>

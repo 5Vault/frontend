@@ -27,7 +27,7 @@ const Side = () => {
           {Object.entries(Content.side).map(([key, value]) => (
             <div
               key={key}
-              className={`flex items-center p-4 hover:bg-zinc-700 ${
+              className={`group flex items-center p-4 hover:bg-zinc-700 gap-2 ${
                   window.location.pathname === `/${key}`
                     ? "bg-[#00000038]"
                     : "text-zinc-200"
@@ -41,15 +41,25 @@ const Side = () => {
                     ? "text-zinc-200"
                     : "text-zinc-500"
                 }`}>{value.icon}</span>
-              <span
-                className={`${
-                  window.location.pathname === `/${key}`
-                    ? "text-zinc-200"
-                    : "text-zinc-500"
-                }`}
-              >
-                {value.labels[language]}
-              </span>
+                <div className="flex flex-col h-full justify-center">
+                  <span
+                    className={`text-sm font-bold ${
+                      window.location.pathname === `/${key}`
+                        ? "text-zinc-200"
+                        : "text-zinc-500"
+                    }`}
+                  >
+                    {value.labels[language]}
+                  </span>
+                  {value.sublabels && <span
+                    className={`text-xs text-zinc-500 ${
+                      window.location.pathname === `/${key}`
+                        && "text-zinc-400 opacity-100"
+                    }`}
+                  >
+                    {value.sublabels[language]}
+                  </span>}
+                </div>
             </div>
           ))}
         </span>

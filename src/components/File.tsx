@@ -3,6 +3,7 @@ import useAuthContext from "../hook/useAuthContext";
 import useFileModalContext from "../hook/useFileModalContext";
 import ToBlob from "../utils/blob";
 import Icons from "../utils/Icons";
+import { formatDate } from "../utils/dateFormat";
 import { useEffect, useState } from "react";
 
 const File = ({file, setFile, wFull}: {file: FileType,setFile: (file: FileType) => void, wFull?: boolean}) => {
@@ -74,7 +75,7 @@ const File = ({file, setFile, wFull}: {file: FileType,setFile: (file: FileType) 
                     <p className="flex items-center gap-2">
                         {Icons.date}
                         <span className="text-zinc-400">
-                            {new Date(file.uploaded_at).toLocaleString()}
+                            {formatDate(file.uploaded_at)}
                         </span>
                     </p>
                     <p className="text-sm flex items-center gap-2">

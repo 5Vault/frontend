@@ -46,7 +46,7 @@ function App({ section }: AppProps) {
   const { fileModal, setFileModal } = useFileModalContext();
 
   return (
-    <div className="flex h-screen w-screen">
+    <div className="flex h-screen w-screen bg-gdnt">
       <Side />
       {/* Generic */}
       <main className="flex-1 p-6 w-full h-full justify-center relative">

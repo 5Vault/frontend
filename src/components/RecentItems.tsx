@@ -96,7 +96,7 @@ const RecentItems = ({
       className={`flex flex-col items-center justify-between p-2 border rounded-xl transition-all duration-200 ${
         isDragOver 
           ? 'border-dashed border-2 border-[var(--primary-contrast-light)] bg-[var(--primary-contrast-opacity)]' 
-          : 'border-zinc-100/15 bg-gdnt'
+          : 'border-zinc-100/15 bg-zinc-900/50'
       } ${width}`}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}

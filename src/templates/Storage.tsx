@@ -7,6 +7,7 @@ import Select from "react-select";
 import File from "../components/File";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
+import { Database, Settings } from "lucide-react";
 
 const StorageTemplate = () => {
   const { key } = useAuthContext();  
@@ -186,7 +187,7 @@ const StorageTemplate = () => {
 
   return (
     <div
-      className={`relative flex flex-col items-center justify-start w-full h-full gap-8 px-24 py-10 transition-all duration-200 ${
+      className={`relative flex flex-col items-center justify-start w-full h-full gap-8 transition-all duration-200 ${
         isDragOver
           ? "bg-[var(--primary-contrast-opacity)] border-2 border-dashed border-[var(--primary-contrast-light)]"
           : ""
@@ -196,13 +197,18 @@ const StorageTemplate = () => {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <header className="w-full flex justify-between items-center">
-        <span className="flex flex-col gap-4">
-          <h2 className="text-4xl font-bold">Store Management</h2>
-          <h5 className="text-sm text-zinc-400 tracking-wide">
-            Monitor and manage your storage infrastructure.
-          </h5>
-        </span>
+      <header className="w-full flex justify-between items-center border border-zinc-800 p-4 rounded-xl bg-zinc-900/50">
+        <div className="flex gap-4">
+          <span className="p-3 bg-[var(--primary-contrast-light)] rounded-xl flex items-center justify-center">
+            <Database size={38} />
+          </span>
+          <span className="flex flex-col">
+            <h2 className="text-4xl font-bold">Store Management</h2>
+            <h5 className="text-sm text-zinc-400 tracking-wide">
+              Monitor and manage your storage infrastructure.
+            </h5>
+          </span>
+        </div>
         <span className="flex gap-2">
           <Select
             options={[

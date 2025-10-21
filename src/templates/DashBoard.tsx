@@ -223,7 +223,7 @@ const DashBoardTemplate = () => {
               </h2>
             </Box>
           </div>
-          <div className="w-full border border-zinc-800 rounded-xl bg-gdnt p-6 h-110.5">
+          <div className="w-full border border-zinc-800 rounded-xl bg-zinc-900/50 p-6 h-110.5">
             <Line data={chartData} options={chartOptions} />
           </div>
         </div>
