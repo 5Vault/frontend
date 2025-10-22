@@ -204,6 +204,7 @@ const StorageTemplate = () => {
         description="Monitor and manage your storage infrastructure."
         content={
           <span className="flex gap-2">
+            
             <Select
               options={[
                 {
