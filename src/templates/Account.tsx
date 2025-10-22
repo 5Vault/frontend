@@ -93,7 +93,7 @@ const Login = () => {
             setCredentials({ ...credentials, username: e.target.value })
           }
           placeholder="Username"
-          className="w-full rounded-lg p-2 border border-zinc-200/10 bg-transparent"
+          className="w-full rounded-lg p-2 border border-zinc-200/10 bg-transparent text-white"
         />
         <label className="text-sm text-zinc-400 mb-2">Password</label>
         <input
@@ -103,7 +103,7 @@ const Login = () => {
             setCredentials({ ...credentials, password: e.target.value })
           }
           placeholder="Password"
-          className="w-full rounded-lg p-2 border border-zinc-200/10 bg-transparent"
+          className="w-full rounded-lg p-2 border border-zinc-200/10 bg-transparent text-white"
         />
         <button
           type="button"

@@ -229,12 +229,11 @@ const DashBoardTemplate = () => {
         </div>
         <div className="w-full flex justify-center">
           <RecentItems             
-            label="Recent Files" 
-            width="w-176"          
+            label="Recent Files"                      
             onFileUploaded={handleFileUploaded}
           >
             {dashData?.recent_files.map((file) => (
-              <File key={file.id} file={file} setFile={setBlob} wFull/>
+              <File key={file.id} file={file} setFile={setBlob}/>
             ))}
           </RecentItems>
         </div>

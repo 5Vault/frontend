@@ -6,7 +6,7 @@ import Icons from "../utils/Icons";
 import { formatDate } from "../utils/dateFormat";
 import { useEffect, useState } from "react";
 
-const File = ({file, setFile}: {file: FileType,setFile: (file: FileType) => void}) => {
+const InlineFile = ({file, setFile}: {file: FileType,setFile: (file: FileType) => void}) => {
 
     const { key } = useAuthContext();
     const [imageUrl, setImageUrl] = useState<string>("");
@@ -48,11 +48,11 @@ const File = ({file, setFile}: {file: FileType,setFile: (file: FileType) => void
                 <img
                     src={imageUrl}
                     alt={file.file_id}
-                    className="h-22 w-22 rounded object-cover"
+                    className="h-12 w-12 rounded object-cover object-center"
                 />
             )}
-            <span className="flex flex-col gap-2 p-2 ">
-                <h2 className="text-xl font-semibold">{file.file_id}</h2>
+            <span className="flex gap-1 p-2 w-full ">
+                <h2 className="text-xl font-semibold w-full">{file.file_id}</h2>
                 <div className="flex w-full justify-between">
                     {file.file_type === "image/jpeg" ||
                     file.file_type === "image/png" ? (
@@ -90,4 +90,4 @@ const File = ({file, setFile}: {file: FileType,setFile: (file: FileType) => void
     );
 }
 
-export default File;
+export default InlineFile;

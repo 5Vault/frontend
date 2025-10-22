@@ -32,3 +32,12 @@ export type AuthContextType = {
   key: string | null;
   refreshAccessToken: () => Promise<string | null>;
 };
+
+export type SharedStorageContextType = {
+  total_files: number;
+  setTotalFiles: (total: number) => void;
+  used_storage: number;
+  setUsedStorage: (used: number) => void;
+  total_storage: number;
+  setTotalStorage: (total: number) => void;  
+};

@@ -17,7 +17,7 @@ const Box = ({
         <span>{label}</span>
         <div className="p-2 bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] rounded-2xl flex items-center justify-center">{icon}</div>
       </div>
-      <div className="h-20">{children}</div>
+      <div className="h-12.5">{children}</div>
       <div className="text-sm text-zinc-400">{footer}</div>
     </div>
   );

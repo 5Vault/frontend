@@ -7,13 +7,11 @@ import useAuthContext from "../hook/useAuthContext";
 import { FolderSync } from "lucide-react";
 
 const RecentItems = ({
-  label,  
-  width = "w-147",
+  label,    
   children,
   onFileUploaded,
 }: {
-  label: string;  
-  width?: string;
+  label: string;    
   children: ReactNode;
   onFileUploaded?: () => void;
 }) => {
@@ -93,18 +91,18 @@ const RecentItems = ({
 
   return (
     <div 
-      className={`flex flex-col items-center justify-between p-2 border rounded-xl transition-all duration-200 ${
+      className={`flex flex-col items-center justify-between p-4 border rounded-xl transition-all duration-200 gap-4 ${
         isDragOver 
           ? 'border-dashed border-2 border-[var(--primary-contrast-light)] bg-[var(--primary-contrast-opacity)]' 
           : 'border-zinc-100/15 bg-zinc-900/50'
-      } ${width}`}
+      } w-157.5`}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <header className="flex items-center gap-2 justify-start w-full px-6 py-4 text-zinc-400">
-        <div className="p-2 bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] rounded-full flex items-center justify-center">
+      <header className="flex items-center gap-2 justify-start w-full text-zinc-400">
+        <div className="p-2 bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] rounded-2xl flex items-center justify-center">
           <FolderSync size={24} className="text-zinc-200" />
         </div>
         <span className="flex flex-col justify-start items-start ">
@@ -126,7 +124,7 @@ const RecentItems = ({
           <div className="text-sm text-zinc-400">Aguarde o upload do arquivo</div>
         </div>
       ) : (
-        <div className="flex flex-col w-full gap-1 p-4 h-fit items-start justify-start overflow-auto">
+        <div className="flex flex-col w-full gap-1 h-fit items-start justify-start overflow-auto">
           {children}
         </div>
       )}

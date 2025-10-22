@@ -4,10 +4,10 @@ import { useEffect, useState, useCallback } from "react";
 import type { FileType } from "../@types/Storage";
 import useAuthContext from "../hook/useAuthContext";
 import Select from "react-select";
-import File from "../components/File";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
 import { Database } from "lucide-react";
+import InlineFile from "../components/InlineFile";
 
 const StorageTemplate = () => {
   const { key } = useAuthContext();  
@@ -187,7 +187,7 @@ const StorageTemplate = () => {
 
   return (
     <div
-      className={`relative flex flex-col items-center justify-start w-full h-full gap-8 transition-all duration-200 ${
+      className={`relative flex flex-col items-center justify-start w-full h-full gap-4 transition-all duration-200 ${
         isDragOver
           ? "bg-[var(--primary-contrast-opacity)] border-2 border-dashed border-[var(--primary-contrast-light)]"
           : ""
@@ -352,9 +352,9 @@ const StorageTemplate = () => {
         </div>
       )}
 
-      <div className="flex flex-col items-center justify-start w-full overflow-y-auto h-full">
+      <div className="flex flex-col items-center justify-start w-full overflow-y-auto h-full border border-zinc-800 p-4 rounded-xl bg-zinc-900/50 gap-4">
         
-        <div className="flex flex-col w-full items-center justify-start gap-2 p-2">
+        <div className="flex flex-col w-full items-center justify-start gap-1 p-2">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin text-4xl">⏳</div>
@@ -362,7 +362,7 @@ const StorageTemplate = () => {
             </div>
           ) : files.length > 0 ? (
             files.map((file) => (
-              <File file={file} key={file.file_id} setFile={setBlob}/>
+              <InlineFile file={file} key={file.file_id} setFile={setBlob}/>
             ))
           ) : (
             <div className="text-center py-8 text-zinc-400">
