@@ -23,6 +23,7 @@ import {
   Legend,
   Filler
 } from 'chart.js';
+import HeaderTemplate from "../components/Header";
 
 ChartJS.register(
   CategoryScale,
@@ -166,24 +167,19 @@ const DashBoardTemplate = () => {
 
   return (
     <div className="flex flex-col h-full items-center gap-4">
-      <header className="w-full flex justify-between items-center border border-zinc-800 p-4 rounded-xl bg-zinc-900/50">
-        <div className="flex gap-4 items-center justify-center">
-          <div className="p-3 bg-[var(--primary-contrast-light)] rounded-xl flex items-center justify-center">
-              <LayoutDashboard size={38}/>
-          </div>
-          <span className="flex flex-col gap-1">
-            <h2 className="text-3xl font-bold">
-              {dashboardContent.welcome[language]}, {user?.name}
-            </h2>
-            <h5 className="text-sm text-zinc-400 tracking-wide">
-              {dashboardContent.subtitle[language]}
-            </h5>
-          </span>
-        </div>
-        <span className="flex gap-2">
-          <DashButton icon={<Database size={16} />} label={dashboardContent.viewAll[language]} onClick={soon} />            
-        </span>
-      </header>
+      <HeaderTemplate
+        icon={<LayoutDashboard size={38} />}
+        title={`${dashboardContent.welcome[language]}, ${user?.name || "User"}`}
+        description={dashboardContent.subtitle[language]}
+        content={          
+          <DashButton 
+            icon={<Database 
+            size={16} />} 
+            label={dashboardContent.viewAll[language]} 
+            onClick={soon} />            
+        }
+      />
+      
       <span className="flex w-full gap-4 items-start justify-center">
         <div className="flex flex-col justify-center items-center gap-4 flex-1">
           <div className="w-full flex justify-center gap-4">
@@ -226,17 +222,16 @@ const DashBoardTemplate = () => {
           <div className="w-full border border-zinc-800 rounded-xl bg-zinc-900/50 p-6 h-110.5">
             <Line data={chartData} options={chartOptions} />
           </div>
-        </div>
-        <div className="w-full flex justify-center">
-          <RecentItems             
-            label="Recent Files"                      
-            onFileUploaded={handleFileUploaded}
-          >
-            {dashData?.recent_files.map((file) => (
-              <File key={file.id} file={file} setFile={setBlob}/>
-            ))}
-          </RecentItems>
-        </div>
+        </div>        
+        <RecentItems             
+          label="Recent Files"                      
+          onFileUploaded={handleFileUploaded}
+        >
+          {dashData?.recent_files.map((file) => (
+            <File key={file.id} file={file} setFile={setBlob}/>
+          ))}
+        </RecentItems>
+        
       </span>
     </div>
   );

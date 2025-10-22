@@ -1,3 +1,4 @@
+import HeaderTemplate from "../components/Header";
 import HomeTop from "../components/HomeTop";
 import useVisualContext from "../hook/useVisualContext";
 import Content from "../utils/Content";
@@ -7,7 +8,11 @@ const TiersTemplate = () => {
 
   return (
     <div className="flex flex-col items-center justify-start h-screen w-screen">
-      <HomeTop />
+      <HeaderTemplate
+        icon={<HomeTop />}
+        title="Tiers"
+        description="Choose the right plan for your needs"
+      />
       <div className="flex justify-center gap-4">
         {(Object.keys(Content.plans) as Array<keyof typeof Content.plans>).map(
           (key) => {

@@ -4,6 +4,7 @@ import useAuthContext from "../hook/useAuthContext";
 import Icons from "../utils/Icons";
 import { formatDate } from "../utils/dateFormat";
 import { useState } from "react";
+import HeaderTemplate from "../components/Header";
 
 const SettingsTemplate = () => {
   const { user, key } = useAuthContext();
@@ -42,18 +43,11 @@ const SettingsTemplate = () => {
 
   return (
     <div className="flex flex-col h-full items-start gap-4 overflow-y-auto">
-      <header className="w-full flex border border-zinc-800 p-4 rounded-xl bg-zinc-900/50 gap-4">
-        <span className="p-3 bg-[var(--primary-contrast-light)] rounded-xl flex items-center justify-center">
-          <Settings size={38} />
-        </span>
-        <span className="flex flex-col">
-          <h2 className="text-2xl font-bold">Configuration</h2>
-          <h5 className="text-sm text-zinc-400 tracking-wide">
-            Manage your profile, API keys, and storage preferences
-          </h5>
-        </span>
-      </header>
-
+      <HeaderTemplate
+        icon={<Settings size={38} />}
+        title="Configuration"
+        description="Manage your profile, API keys, and storage preferences"
+      />
       <div className="rounded-lg p-8 shadow-sm w-full border border-zinc-100/10 bg-zinc-900/50">
         <div className="flex items-center gap-3 mb-8">
           {Icons.settings}

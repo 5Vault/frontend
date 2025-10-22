@@ -95,7 +95,7 @@ const RecentItems = ({
         isDragOver 
           ? 'border-dashed border-2 border-[var(--primary-contrast-light)] bg-[var(--primary-contrast-opacity)]' 
           : 'border-zinc-100/15 bg-zinc-900/50'
-      } w-157.5`}
+      } w-full`}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}

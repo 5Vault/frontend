@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
 import { Database } from "lucide-react";
 import InlineFile from "../components/InlineFile";
+import HeaderTemplate from "../components/Header";
 
 const StorageTemplate = () => {
   const { key } = useAuthContext();  
@@ -197,136 +198,130 @@ const StorageTemplate = () => {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <header className="w-full flex justify-between items-center border border-zinc-800 p-4 rounded-xl bg-zinc-900/50">
-        <div className="flex gap-4">
-          <span className="p-3 bg-[var(--primary-contrast-light)] rounded-xl flex items-center justify-center">
-            <Database size={38} />
+      <HeaderTemplate 
+        icon={<Database size={38} />}
+        title="Store Management"
+        description="Monitor and manage your storage infrastructure."
+        content={
+          <span className="flex gap-2">
+            <Select
+              options={[
+                {
+                  value: 10,
+                  label: "10 itens",
+                },
+                {
+                  value: 30,
+                  label: "30 itens",
+                },
+                {
+                  value: 50,
+                  label: "50 itens",
+                },
+              ]}
+              className="w-34"
+              value={{ value: itemsPerPage, label: `${itemsPerPage} itens` }}
+              onChange={handleItemsPerPageChange}
+              isSearchable={false}
+              styles={{
+              control: (provided) => ({
+                ...provided,
+                backgroundColor: "#3f3f3f",
+                borderColor: "#4a5565",
+                color: "white",
+                minHeight: "40px",
+              }),
+              option: (provided, state) => ({
+                ...provided,
+                backgroundColor: state.isFocused ? "#4a5565" : "#3f3f3f",
+                color: "white",
+              }),
+              singleValue: (provided) => ({
+                ...provided,
+                color: "white",
+              }),
+              menu: (provided) => ({
+                ...provided,
+                backgroundColor: "#3f3f3f",
+              }),
+              menuPortal: (provided) => ({
+                ...provided,
+                zIndex: 10000,
+              }),
+              placeholder: (provided) => ({
+                ...provided,
+                color: "#adadad",
+              }),
+            }}
+            />
+            <Select
+              options={[
+                {
+                  value: "",
+                  label: "Todos os tipos",
+                },
+                {
+                  value: "image",
+                  label: "Imagens",
+                },
+                {
+                  value: "video",
+                  label: "Vídeos",
+                },
+                {
+                  value: "audio",
+                  label: "Áudios",
+                },
+                {
+                  value: "document",
+                  label: "Documentos",
+                },
+              ]}
+              className="w-44"
+              placeholder="Filtrar por tipo..."
+              isClearable
+              value={fileTypeFilter ? { value: fileTypeFilter, label: fileTypeFilter } : null}
+              onChange={handleFileTypeFilterChange}
+              styles={{
+              control: (provided) => ({
+                ...provided,
+                backgroundColor: "#3f3f3f",
+                borderColor: "#4a5565",
+                color: "white",
+                minHeight: "40px",
+              }),
+              option: (provided, state) => ({
+                ...provided,
+                backgroundColor: state.isFocused ? "#4a5565" : "#3f3f3f",
+                color: "white",
+              }),
+              singleValue: (provided) => ({
+                ...provided,
+                color: "white",
+              }),
+              menu: (provided) => ({
+                ...provided,
+                backgroundColor: "#3f3f3f",
+              }),
+              menuPortal: (provided) => ({
+                ...provided,
+                zIndex: 10000,
+              }),
+              placeholder: (provided) => ({
+                ...provided,
+                color: "#adadad",
+              }),
+            }}
+            />
+            <InputWithIcon 
+              icon={Icons.search} 
+              placeholder="Search Storages..." 
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+            />
           </span>
-          <span className="flex flex-col">
-            <h2 className="text-4xl font-bold">Store Management</h2>
-            <h5 className="text-sm text-zinc-400 tracking-wide">
-              Monitor and manage your storage infrastructure.
-            </h5>
-          </span>
-        </div>
-        <span className="flex gap-2">
-          <Select
-            options={[
-              {
-                value: 10,
-                label: "10 itens",
-              },
-              {
-                value: 30,
-                label: "30 itens",
-              },
-              {
-                value: 50,
-                label: "50 itens",
-              },
-            ]}
-            className="w-34"
-            value={{ value: itemsPerPage, label: `${itemsPerPage} itens` }}
-            onChange={handleItemsPerPageChange}
-            isSearchable={false}
-            styles={{
-            control: (provided) => ({
-              ...provided,
-              backgroundColor: "#3f3f3f",
-              borderColor: "#4a5565",
-              color: "white",
-              minHeight: "40px",
-            }),
-            option: (provided, state) => ({
-              ...provided,
-              backgroundColor: state.isFocused ? "#4a5565" : "#3f3f3f",
-              color: "white",
-            }),
-            singleValue: (provided) => ({
-              ...provided,
-              color: "white",
-            }),
-            menu: (provided) => ({
-              ...provided,
-              backgroundColor: "#3f3f3f",
-            }),
-            menuPortal: (provided) => ({
-              ...provided,
-              zIndex: 10000,
-            }),
-            placeholder: (provided) => ({
-              ...provided,
-              color: "#adadad",
-            }),
-          }}
-          />
-          <Select
-            options={[
-              {
-                value: "",
-                label: "Todos os tipos",
-              },
-              {
-                value: "image",
-                label: "Imagens",
-              },
-              {
-                value: "video",
-                label: "Vídeos",
-              },
-              {
-                value: "audio",
-                label: "Áudios",
-              },
-              {
-                value: "document",
-                label: "Documentos",
-              },
-            ]}
-            className="w-44"
-            placeholder="Filtrar por tipo..."
-            isClearable
-            value={fileTypeFilter ? { value: fileTypeFilter, label: fileTypeFilter } : null}
-            onChange={handleFileTypeFilterChange}
-            styles={{
-            control: (provided) => ({
-              ...provided,
-              backgroundColor: "#3f3f3f",
-              borderColor: "#4a5565",
-              color: "white",
-              minHeight: "40px",
-            }),
-            option: (provided, state) => ({
-              ...provided,
-              backgroundColor: state.isFocused ? "#4a5565" : "#3f3f3f",
-              color: "white",
-            }),
-            singleValue: (provided) => ({
-              ...provided,
-              color: "white",
-            }),
-            menu: (provided) => ({
-              ...provided,
-              backgroundColor: "#3f3f3f",
-            }),
-            menuPortal: (provided) => ({
-              ...provided,
-              zIndex: 10000,
-            }),
-            placeholder: (provided) => ({
-              ...provided,
-              color: "#adadad",
-            }),
-          }}
-          />
-          <InputWithIcon 
-            icon={Icons.search} 
-            placeholder="Search Storages..." 
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-          />
-        </span>
-      </header>
+        }
+      />      
 
       {/* Drag and Drop Overlay */}
       {isDragOver && (
