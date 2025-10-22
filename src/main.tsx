@@ -15,7 +15,26 @@ import TiersTemplate from "./templates/Tiers.tsx";
 import FileModalProvider from "./provider/FileModalProvider.tsx";
 import UserTierTemplate from "./templates/UserTier.tsx";
 import CheckOut from "./templates/CheckOut.tsx";
+import { Toaster } from "react-hot-toast";
 
+const toasterConfig = {
+  position: "top-right" as const,
+  containerStyle: {
+    zIndex: 9999,
+    right: "1%",
+    overflow: "hidden",
+  },
+  toastOptions: {
+    style: {
+      backgroundColor: "#1a1a1a",
+      color: "#fff",
+      borderRadius: "8px",
+      padding: "10px",
+    },
+    success: { duration: 4000 },
+    error: { duration: 4000 },
+  },
+};
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -38,6 +57,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/tiers" element={<TiersTemplate />} />
             </Routes>
           </BrowserRouter>
+          <Toaster {...toasterConfig} />
         </FileModalProvider>
       </VisualProvider>
     </AuthProvider>

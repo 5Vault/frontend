@@ -1,0 +1,12 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow private routes
+Disallow: /dashboard
+Disallow: /storage
+Disallow: /settings
+Disallow: /checkout
+
+# Sitemap location
+Sitemap: https://your-domain.com/sitemap.xml

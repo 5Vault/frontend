@@ -52,7 +52,7 @@ const InlineFile = ({file, setFile}: {file: FileType,setFile: (file: FileType) =
                 />
             )}
             <span className="flex gap-1 p-2 w-full ">
-                <h2 className="text-xl font-semibold w-full">{file.file_id}</h2>
+                <h2 className="text-lg font-semibold w-full">{file.file_id}</h2>
                 <div className="flex w-full justify-between">
                     {file.file_type === "image/jpeg" ||
                     file.file_type === "image/png" ? (
