@@ -62,3 +62,15 @@ select {
 .bg-gdnt {
   background: linear-gradient(45deg, #24242967 0%, #18181b2c 50%, #18181b67 100%);  
 }
+
+input[type="radio"] {
+  accent-color: var(--primary-contrast-light);
+  background-color: #18181b;
+  
+  width: 1.2em;
+  height: 1.2em;
+  border: 2px solid #52525b;
+  border-radius: 50%;
+  
+
+}

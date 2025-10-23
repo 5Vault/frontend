@@ -91,7 +91,7 @@ const RecentItems = ({
 
   return (
     <div 
-      className={`flex flex-col items-center justify-between p-4 border rounded-xl transition-all duration-200 gap-4 ${
+      className={`flex flex-col items-center justify-between border h-full rounded-xl transition-all duration-200 ${
         isDragOver 
           ? 'border-dashed border-2 border-[var(--primary-contrast-light)] bg-[var(--primary-contrast-opacity)]' 
           : 'border-zinc-100/15 bg-zinc-900/50'
@@ -101,12 +101,12 @@ const RecentItems = ({
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <header className="flex items-center gap-2 justify-start w-full text-zinc-400">
+      <header className="flex items-center gap-2 justify-start w-full text-zinc-400 p-4">
         <div className="p-2 bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] rounded-2xl flex items-center justify-center">
           <FolderSync size={24} className="text-zinc-200" />
         </div>
         <span className="flex flex-col justify-start items-start ">
-          <span className="font-semibold text-lg">{label}</span>
+          <span className="font-semibold text-lg text-white">{label}</span>
           <span className="font-semibold text-xs">Últimos Arquivos enviados para o seu storage</span>
         </span>        
       </header>
@@ -124,7 +124,7 @@ const RecentItems = ({
           <div className="text-sm text-zinc-400">Aguarde o upload do arquivo</div>
         </div>
       ) : (
-        <div className="flex flex-col w-full gap-1 h-fit items-start justify-start overflow-auto">
+        <div className="flex flex-col w-full gap-1 h-fit items-start justify-start overflow-auto p-3">
           {children}
         </div>
       )}

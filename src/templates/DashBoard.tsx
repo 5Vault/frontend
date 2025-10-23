@@ -97,14 +97,14 @@ const DashBoardTemplate = () => {
       {
         label: 'Arquivos Enviados',
         data: dashData?.weekly_usage?.map(item => item.file_amount) || [],
-        borderColor: 'var(--primary-contrast-light)',
-        backgroundColor: 'var(--primary-contrast-opacity)',
+        borderColor: '#e8073f',
+        backgroundColor: '#e8073f36',
         tension: 0.4,
         fill: true,
-        pointBackgroundColor: 'var(--primary-contrast-light)',
+        pointBackgroundColor: '#ec4899',
         pointBorderColor: '#fff',
         pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'var(--primary-contrast-light)',
+        pointHoverBorderColor: '#ec4899',
       },
     ],
   };
@@ -165,6 +165,44 @@ const DashBoardTemplate = () => {
     },
   };
 
+  const boxes = [{
+    label: "Total Storage",
+    footer: ` ${formatGB(dashData?.total_size)} GB used`,
+    icon: Icons.drive,
+    content: (
+      <div className="flex items-center flex-col justify-center h-[80%]">
+        <h2 className="text-2xl font-bold">
+          {formatGB(dashData?.used_size)} GB
+        </h2>
+        <div className="w-full h-2 bg-zinc-200 rounded-full">
+          <div
+            className="h-full bg-[var(--primary-contrast-light)] rounded-full"
+            style={{ width: `${getStoragePercent()}%` }}
+          />
+        </div>
+      </div>
+    ),
+  }, {
+    label: "Total Files",
+    footer: "Across all storages",
+    icon: Icons.fileStack,
+    content: (
+      <h2 className="text-4xl font-bold flex items-center h-full">
+        {dashData?.total_files}
+      </h2>
+    ),
+  }, {
+    label: "Performance",
+    footer: "All systems operational",
+    icon: Icons.zap,
+    content: (
+      <h2 className="text-3xl font-bold flex items-center h-full text-green-600">
+        OPTIMAL
+      </h2>
+    ),
+  },]
+
+
   return (
     <div className="flex flex-col h-full items-center gap-4">
       <HeaderTemplate
@@ -183,41 +221,16 @@ const DashBoardTemplate = () => {
       <span className="flex w-full gap-4 items-start justify-center">
         <div className="flex flex-col justify-center items-center gap-4 flex-1">
           <div className="w-full flex justify-center gap-4">
-            <Box
-              label="Total Storage"
-              footer={` ${formatGB(dashData?.total_size)} GB used`}
-              icon={Icons.drive}
-            >
-              <div className="flex items-center flex-col justify-center h-[80%]">
-                <h2 className="text-2xl font-bold">
-                  {formatGB(dashData?.used_size)} GB
-                </h2>
-                <div className="w-full h-2 bg-zinc-200 rounded-full">
-                  <div
-                    className="h-full bg-[var(--primary-contrast-light)] rounded-full"
-                    style={{ width: `${getStoragePercent()}%` }}
-                  />
-                </div>
-              </div>
-            </Box>
-            <Box
-              label="Total Files"
-              footer="Across all storages"
-              icon={Icons.fileStack}
-            >
-              <h2 className="text-4xl font-bold flex items-center h-full">
-                {dashData?.total_files}
-              </h2>
-            </Box>
-            <Box
-              label="Performance"
-              footer="All systems operational"
-              icon={Icons.zap}
-            >
-              <h2 className="text-3xl font-bold flex items-center h-full text-green-600">
-                OPTIMAL
-              </h2>
-            </Box>
+            {boxes.map((box, index) => (
+              <Box
+                key={index}
+                label={box.label}
+                footer={box.footer}
+                icon={box.icon}
+              >
+                {box.content}
+              </Box>
+            ))}            
           </div>
           <div className="w-full border border-zinc-800 rounded-xl bg-zinc-900/50 p-6 h-110.5">
             <Line data={chartData} options={chartOptions} />

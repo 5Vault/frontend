@@ -41,19 +41,19 @@ const File = ({file, setFile}: {file: FileType,setFile: (file: FileType) => void
     }, [file.file_id, key]); // Removed imageUrl from dependencies
 
     return (
-        <div className={` bg-[#00000036] hover:border-1 hover:border-zinc-100/10 rounded-lg p-2 flex items-center gap-4 justify-between w-full hover:scale-102 transition-transform duration-200 cursor-pointer`} onClick={() => setFileModal(file)}>
+        <div className={` bg-[#00000036] hover:border-1 hover:border-zinc-100/10 rounded-lg p-2 flex items-center gap-4 justify-between w-full hover:scale-101 transition-transform duration-200 cursor-pointer`} onClick={() => setFileModal(file)}>
             {loading ? (
-                <div className="h-22 w-22 rounded bg-zinc-800 animate-pulse" />
+                <div className="h-21 w-21 rounded bg-zinc-800 animate-pulse" />
             ) : (
                 <img
                     src={imageUrl}
                     alt={file.file_id}
-                    className="h-22 w-22 rounded object-cover"
+                    className="h-21 w-21 min-h-21 min-w-21 rounded object-cover"
                 />
             )}
-            <span className="flex flex-col gap-2 p-2 ">
-                <h2 className="text-xl font-semibold">{file.file_id}</h2>
-                <div className="flex w-full justify-between">
+            <span className="flex flex-col gap-2 p-2 w-full">
+                <h2 className="text-lg font-semibold">{file.file_id}</h2>
+                <div className="flex w-full justify-between text-xs">
                     {file.file_type === "image/jpeg" ||
                     file.file_type === "image/png" ? (
                         <p className="flex items-center gap-2">

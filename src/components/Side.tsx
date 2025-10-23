@@ -64,8 +64,8 @@ const Side = () => {
           ))}
         </span>
       </div>
-      <div className="flex w-full h-20 border-t border-zinc-700 items-center justify-start p-4 gap-4">
-        <span className="p-4 bg-blue-300/15 rounded-full w-13 h-13 flex items-center justify-center font-bold">
+      <div className="flex w-full h-16 border-t border-zinc-700 items-center justify-start p-4 gap-4">
+        <span className="p-4 bg-blue-300/15 rounded-full w-12 h-12 flex items-center justify-center font-bold">
           {user?.name?.charAt(0).toUpperCase()}
         </span>
         <div className="flex flex-col items-start justify-start">
@@ -76,7 +76,7 @@ const Side = () => {
         </div>
         <div className="flex items-center justify-center">
           <button
-            className="p-2 bg-[var(--primary-contrast-light)] rounded-md text-white"
+            className="p-1 bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] rounded-md text-white"
             onClick={logout}
           >
             Sair
