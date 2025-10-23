@@ -5,15 +5,29 @@ import useVisualContext from "../hook/useVisualContext";
 import homeContent from "../utils/contents/Home";
 import Icons from "../utils/Icons";
 import liberty from "../assets/liberty.png";
+import TBG from "../assets/tbg.png";
 import type { TierType } from "../@types/Tier";
 import DashButton from "../components/DashButton";
+import HomeSteps from "../components/HomeSteps";
+
+
+const serversPartners = [
+  {
+    name: "Liberty City",
+    logo: liberty,
+    width: 120,
+  },
+  {
+    name: "The Best Gaming",
+    logo: TBG,
+    width: 120,    
+  },
+]
 
 const Home = () => {
   const { language, tiers } = useVisualContext();
-  
-
   return (
-    <div className="flex flex-col items-center justify-start h-screen w-screen bg-gdnt">
+    <div className="flex flex-col items-center justify-start h-full w-screen bg-gdnt">
       <HomeTop />
       <div className="flex gap-12 items-center justify-evenly w-[80%] px-10 mt-44">
         <div className="text-center w-[50%]">
@@ -32,13 +46,11 @@ const Home = () => {
           </span>
         </div>
         <img src={Logo} alt="Logo" className="h-68" />
-      </div>
+      </div>     
 
-      <div className="w-fit px-2 mt-16 py-4">
+      <div className="w-fit px-2 mt-4 py-4">
         {/* Benefícios */}
-        <div className="mb-16">
-          <h2 className="text-xl font-bold mb-8">Benefits</h2>
-          <div className="flex justify-center gap-2">
+          <div className="flex justify-center gap-2 mb-16">
             {Object.keys(homeContent.benefits).map((key) => {
               const benefit = homeContent.benefits[key];
               if (
@@ -63,42 +75,22 @@ const Home = () => {
               return null;
             })}
           </div>
-        </div>
 
         {/* Servers */}
         <div className="mb-16">
           <h2 className="text-xl font-bold mb-8">Used By:</h2>
-          <div className="flex justify-start gap-12">
-            <img src={liberty} alt="Liberty" className="h-32" />
-            <img src={liberty} alt="Liberty" className="h-32" />
-            <img src={liberty} alt="Liberty" className="h-32" />
-            <img src={liberty} alt="Liberty" className="h-32" />
-            <img src={liberty} alt="Liberty" className="h-32" />
-            <img src={liberty} alt="Liberty" className="h-32" />
+          <div className="flex justify-start gap-2">
+            {serversPartners.map((server) => (
+              <div key={server.name} className="flex flex-col items-center gap-2 border border-zinc-100/10 px-4 py-2 rounded-lg bg-zinc-900/50 w-50 group hover:scale-102 hover:shadow-lg transition-transform">
+                <img src={server.logo} alt={server.name} width={server.width} />
+                <h2 className="text-zinc-400 font-bold text-lg group-hover:text-[var(--primary-contrast-light)]">{server.name}</h2>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Como Funciona */}
-        <div className="mb-16">
-          <h2 className="text-xl font-bold mb-8">How it works ?</h2>
-          <div className="flex justify-center gap-2">
-            <Card
-              icon={Icons.account}
-              title="Create your account"
-              description="1st Step"
-            />
-            <Card
-              icon={Icons.conigure}
-              title="Configure your server"
-              description="2nd Step"
-            />
-            <Card
-              icon={Icons.folder}
-              title="Store your files"
-              description="3rd Step"
-            />
-          </div>
-        </div>
+        <HomeSteps />
 
         {/* Planos */}
         <div>

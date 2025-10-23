@@ -51,6 +51,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/checkout" element={<CheckOut />} />
               </Route>
               <Route path="/" element={<Home />} />
+              <Route path="/home" element={<Home />} />
               <Route path="/account" element={<AccountTemplate />} />
               <Route path="/products" element={<ProductsTemplate />} />
               <Route path="/about-us" element={<AboutUsTemplate />} />
