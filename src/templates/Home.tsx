@@ -1,6 +1,6 @@
 import Logo from "../assets/logow.png";
 import Card from "../components/Card";
-import HomeTop from "../components/HomeTop";
+import Top from "../components/Home/Top";
 import useVisualContext from "../hook/useVisualContext";
 import homeContent from "../utils/contents/Home";
 import Icons from "../utils/Icons";
@@ -8,7 +8,7 @@ import liberty from "../assets/liberty.png";
 import TBG from "../assets/tbg.png";
 import type { TierType } from "../@types/Tier";
 import DashButton from "../components/DashButton";
-import HomeSteps from "../components/HomeSteps";
+import Steps from "../components/Home/Steps";
 
 
 const serversPartners = [
@@ -28,7 +28,7 @@ const Home = () => {
   const { language, tiers } = useVisualContext();
   return (
     <div className="flex flex-col items-center justify-start h-full w-screen bg-gdnt">
-      <HomeTop />
+      <Top />
       <div className="flex gap-12 items-center justify-evenly w-[80%] px-10 mt-44">
         <div className="text-center w-[50%]">
           <h1 className="text-2xl font-bold">
@@ -38,7 +38,7 @@ const Home = () => {
             {homeContent.two[language] || ""}
           </p>
           <span className="flex gap-2 mt-6">
-            <button className="bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]">
+            <button className="bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] rounded-lg">
               {homeContent.three[language] || ""}
             </button>
             <DashButton label={homeContent.four[language] || ""} onClick={() => {}} />
@@ -90,7 +90,7 @@ const Home = () => {
         </div>
 
         {/* Como Funciona */}
-        <HomeSteps />
+        <Steps />
 
         {/* Planos */}
         <div>

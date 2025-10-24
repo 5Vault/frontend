@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import useAuthContext from "../hook/useAuthContext";
 import toast from "react-hot-toast";
-import HomeTop from "../components/HomeTop";
+import HomeTop from "../components/Home/Top";
 import axios from "axios";
 
 const AccountTemplate = () => {

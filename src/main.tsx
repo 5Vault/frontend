@@ -7,11 +7,8 @@ import { Route, BrowserRouter, Routes } from "react-router";
 import VisualProvider from "./provider/VisualProvider.tsx";
 import Home from "./templates/Home.tsx";
 import AccountTemplate from "./templates/Account.tsx";
-import ProductsTemplate from "./templates/Products.tsx";
-import AboutUsTemplate from "./templates/AboutUs.tsx";
 import AuthProvider from "./provider/AuthProvider.tsx";
 import PrivateRoutes from "./routes/PrivateRoute.tsx";
-import TiersTemplate from "./templates/Tiers.tsx";
 import FileModalProvider from "./provider/FileModalProvider.tsx";
 import UserTierTemplate from "./templates/UserTier.tsx";
 import CheckOut from "./templates/CheckOut.tsx";
@@ -53,9 +50,6 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/" element={<Home />} />
               <Route path="/home" element={<Home />} />
               <Route path="/account" element={<AccountTemplate />} />
-              <Route path="/products" element={<ProductsTemplate />} />
-              <Route path="/about-us" element={<AboutUsTemplate />} />
-              <Route path="/tiers" element={<TiersTemplate />} />
             </Routes>
           </BrowserRouter>
           <Toaster {...toasterConfig} />
