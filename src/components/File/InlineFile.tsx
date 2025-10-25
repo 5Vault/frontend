@@ -1,9 +1,9 @@
-import { type FileType } from "../@types/Storage";
-import useAuthContext from "../hook/useAuthContext";
-import useFileModalContext from "../hook/useFileModalContext";
-import ToBlob from "../utils/blob";
-import Icons from "../utils/Icons";
-import { formatDate } from "../utils/dateFormat";
+import { type FileType } from "../../@types/Storage";
+import useAuthContext from "../../hook/useAuthContext";
+import useFileModalContext from "../../hook/useFileModalContext";
+import ToBlob from "../../utils/blob";
+import Icons from "../../utils/Icons";
+import { formatDate } from "../../utils/dateFormat";
 import { useEffect, useState } from "react";
 
 const InlineFile = ({file, setFile}: {file: FileType,setFile: (file: FileType) => void}) => {

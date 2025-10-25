@@ -1,5 +1,5 @@
 import Icons from "../utils/Icons";
-import InputWithIcon from "../components/InputWithIcon";
+import InputWithIcon from "../components/Input/InputWithIcon";
 import { useEffect, useState, useCallback } from "react";
 import type { FileType } from "../@types/Storage";
 import useAuthContext from "../hook/useAuthContext";
@@ -7,7 +7,7 @@ import Select from "react-select";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
 import { Database } from "lucide-react";
-import InlineFile from "../components/InlineFile";
+import InlineFile from "../components/File/InlineFile";
 import HeaderTemplate from "../components/Header";
 
 const StorageTemplate = () => {
@@ -273,6 +273,35 @@ const StorageTemplate = () => {
                   value: "audio",
                   label: "Áudios",
                 },
+                { 
+                  value: "document",
+                  label: "Documentos",
+                },
+              ]}
+              className="w-44"
+              placeholder="Filtrar por tipo..."
+              isClearable
+              value={fileTypeFilter ? { value: fileTypeFilter, label: fileTypeFilter } : null}
+              onChange={handleFileTypeFilterChange}
+            />
+            {/* <Select
+              options={[
+                {
+                  value: "",
+                  label: "Todos os tipos",
+                },
+                {
+                  value: "image",
+                  label: "Imagens",
+                },
+                {
+                  value: "video",
+                  label: "Vídeos",
+                },
+                {
+                  value: "audio",
+                  label: "Áudios",
+                },
                 {
                   value: "document",
                   label: "Documentos",
@@ -313,7 +342,7 @@ const StorageTemplate = () => {
                 color: "#adadad",
               }),
             }}
-            />
+            /> */}
             <InputWithIcon 
               icon={Icons.search} 
               placeholder="Search Storages..." 

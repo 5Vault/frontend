@@ -1,5 +1,5 @@
 import { Settings } from "lucide-react";
-import InputHidden from "../components/InputHidden";
+import InputHidden from "../components/Input/InputHidden";
 import useAuthContext from "../hook/useAuthContext";
 import Icons from "../utils/Icons";
 import { formatDate } from "../utils/dateFormat";

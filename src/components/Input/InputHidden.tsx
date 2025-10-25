@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Icons from "../utils/Icons";
+import Icons from "../../utils/Icons";
 
 const InputHidden = ({
   value,

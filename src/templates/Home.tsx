@@ -1,5 +1,5 @@
 import Logo from "../assets/logow.png";
-import Card from "../components/Card";
+import Card from "../components/Display/Card";
 import Top from "../components/Home/Top";
 import useVisualContext from "../hook/useVisualContext";
 import homeContent from "../utils/contents/Home";

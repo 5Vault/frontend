@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { DashBoardType, FileType } from "../@types/Storage";
-import Box from "../components/Box";
+import Box from "../components/Display/Box";
 import RecentItems from "../components/RecentItems";
 import useVisualContext from "../hook/useVisualContext";
 import dashboardContent from "../utils/contents/DashBoard";
@@ -8,7 +8,7 @@ import Icons from "../utils/Icons";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
 import useAuthContext from "../hook/useAuthContext";
-import File from "../components/File";
+import File from "../components/File/File";
 import { Database, LayoutDashboard } from "lucide-react";
 import DashButton from "../components/DashButton";
 import { Line } from 'react-chartjs-2';
