@@ -1,11 +1,108 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Database, FolderPlus, Trash2, ChevronRight, Upload, Plus, Loader2, AlertTriangle } from "lucide-react";
+import { Database, FolderPlus, Trash2, ChevronRight, Upload, Plus, Loader2, AlertTriangle, X, Copy, ExternalLink, FileAudio, FileVideo, File as FileIcon2 } from "lucide-react";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
 import HeaderTemplate from "../components/Header";
 import type { Bucket, Directory, MediaFile } from "../@types/Storage";
 
 type View = "buckets" | "dirs" | "files";
+
+// ── File type helpers ─────────────────────────────────────────────────────────
+
+const isImageFile  = (name: string) => /\.(png|jpe?g|webp|gif|svg|bmp|ico)$/i.test(name);
+const isAudioFile  = (name: string) => /\.(mp3|wav|ogg|flac|aac|m4a|opus)$/i.test(name);
+const isVideoFile  = (name: string) => /\.(mp4|webm|mkv|mov|avi|m4v)$/i.test(name);
+
+// ── File Preview Modal ────────────────────────────────────────────────────────
+
+const FilePreviewModal = ({ file, onClose }: { file: MediaFile; onClose: () => void }) => {
+  const filename = file.key.split("/").pop()!;
+
+  const copyURL = () => {
+    navigator.clipboard.writeText(file.public_url);
+    // toast is called outside; just a simple feedback here
+  };
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-800">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-white truncate">{filename}</p>
+            <p className="text-xs text-zinc-500">{fmtSize(file.size)} · {file.last_modified.slice(0, 10)}</p>
+          </div>
+          <div className="flex items-center gap-1 shrink-0 ml-3">
+            <a href={file.public_url} target="_blank" rel="noopener noreferrer"
+              className="p-1.5 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-zinc-800" title="Abrir em nova aba">
+              <ExternalLink size={15} />
+            </a>
+            <button onClick={() => { navigator.clipboard.writeText(file.public_url); }}
+              className="p-1.5 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-zinc-800" title="Copiar URL">
+              <Copy size={15} />
+            </button>
+            <button onClick={onClose}
+              className="p-1.5 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-zinc-800">
+              <X size={15} />
+            </button>
+          </div>
+        </div>
+
+        {/* Preview area */}
+        <div className="flex items-center justify-center bg-zinc-950 min-h-[300px] max-h-[520px]">
+          {isImageFile(filename) ? (
+            <img
+              src={file.public_url}
+              alt={filename}
+              className="max-w-full max-h-[520px] object-contain"
+              onError={e => { (e.target as HTMLImageElement).src = ""; (e.target as HTMLImageElement).alt = "Não foi possível carregar a imagem"; }}
+            />
+          ) : isAudioFile(filename) ? (
+            <div className="flex flex-col items-center gap-4 p-8">
+              <div className="w-20 h-20 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+                <FileAudio size={36} className="text-[var(--primary-contrast-light)]" />
+              </div>
+              <p className="text-sm text-zinc-400">{filename}</p>
+              <audio controls src={file.public_url} className="w-full max-w-sm" />
+            </div>
+          ) : isVideoFile(filename) ? (
+            <video controls src={file.public_url} className="max-w-full max-h-[520px]" />
+          ) : (
+            <div className="flex flex-col items-center gap-3 p-10 text-zinc-500">
+              <FileIcon2 size={48} className="opacity-40" />
+              <p className="text-sm">Pré-visualização não disponível para este tipo de arquivo.</p>
+              <a href={file.public_url} target="_blank" rel="noopener noreferrer"
+                className="text-xs text-[var(--primary-contrast-light)] hover:underline flex items-center gap-1">
+                <ExternalLink size={12} /> Abrir arquivo
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* URL bar */}
+        <div className="flex items-center gap-2 px-4 py-3 border-t border-zinc-800 bg-zinc-900/60">
+          <code className="text-xs text-zinc-400 flex-1 truncate font-mono">{file.public_url}</code>
+          <button onClick={() => navigator.clipboard.writeText(file.public_url)}
+            className="shrink-0 flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors">
+            <Copy size={11} /> Copiar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ── Modals ────────────────────────────────────────────────────────────────────
 
@@ -139,6 +236,9 @@ const StorageTemplate = () => {
   const axiosRef = useRef(axiosInstance);
   axiosRef.current = axiosInstance;
 
+  const ROOT_DIR: Directory = { dir_id: "root", bucket_id: "", name: "Raiz", created_at: "" };
+  const [previewFile, setPreviewFile] = useState<MediaFile | null>(null);
+
   const [view, setView] = useState<View>("buckets");
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [dirs, setDirs] = useState<Directory[]>([]);
@@ -155,6 +255,12 @@ const StorageTemplate = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragOverDirId, setDragOverDirId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // paginação
+  const PAGE_LIMIT = 20;
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalFiles, setTotalFiles] = useState(0);
 
   // modal state
   const [fileToDelete, setFileToDelete] = useState<MediaFile | null>(null);
@@ -187,17 +293,22 @@ const StorageTemplate = () => {
     }
   }, []);
 
-  const fetchFiles = useCallback(async (bucket: Bucket, dir: Directory) => {
+  const fetchFiles = useCallback(async (bucket: Bucket, dir: Directory, p = 1) => {
     setLoading(true);
     try {
-      const res = await axiosRef.current.get(`/bucket/${bucket.bucket_id}/dir/${dir.dir_id}/files`);
+      const res = await axiosRef.current.get(
+        `/bucket/${bucket.bucket_id}/dir/${dir.dir_id}/files?page=${p}&limit=${PAGE_LIMIT}`
+      );
       setFiles(res.data?.files ?? []);
+      setTotalPages(res.data?.total_pages ?? 1);
+      setTotalFiles(res.data?.total ?? 0);
+      setPage(p);
     } catch {
       toast.error("Erro ao carregar arquivos");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [PAGE_LIMIT]);
 
   useEffect(() => { fetchBuckets(); }, [fetchBuckets]);
 
@@ -275,7 +386,7 @@ const StorageTemplate = () => {
         `/bucket/${selectedBucket.bucket_id}/dir/${selectedDir.dir_id}/files/${filename}`
       );
       toast.success("Arquivo removido");
-      fetchFiles(selectedBucket, selectedDir);
+      fetchFiles(selectedBucket, selectedDir, page);
     } catch {
       toast.error("Erro ao remover arquivo");
     }
@@ -303,7 +414,7 @@ const StorageTemplate = () => {
     setUploading(false);
     if (ok > 0) {
       toast.success(`${ok} arquivo(s) enviado(s)`);
-      fetchFiles(bucket, dir);
+      fetchFiles(bucket, dir, 1); // volta pra página 1 após upload
     }
   };
 
@@ -336,10 +447,6 @@ const StorageTemplate = () => {
     fetchFiles(selectedBucket!, d);
   };
 
-  const goBack = () => {
-    if (view === "files") { setView("dirs"); setSelectedDir(null); setFiles([]); }
-    else if (view === "dirs") { setView("buckets"); setSelectedBucket(null); setDirs([]); }
-  };
 
   // ── Status badge ───────────────────────────────────────────────────────────
 
@@ -502,14 +609,10 @@ const StorageTemplate = () => {
             <div className="flex items-center justify-center py-12 text-zinc-500">
               <Loader2 size={24} className="animate-spin mr-2" /> Carregando...
             </div>
-          ) : dirs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-zinc-500 gap-2">
-              <FolderPlus size={40} className="opacity-30" />
-              <p>Nenhum diretório neste bucket</p>
-            </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {dirs.map(d => {
+              {/* Raiz sempre visível */}
+              {[ROOT_DIR, ...dirs].map(d => {
                 const isOver = dragOverDirId === d.dir_id;
                 return (
                   <div
@@ -524,16 +627,19 @@ const StorageTemplate = () => {
                     }`}
                   >
                     <button onClick={() => openDir(d)} className="flex items-center gap-3 flex-1 text-left">
-                      <span className="text-xl">{isOver ? "📂" : "📁"}</span>
+                      <span className="text-xl">{isOver ? "📂" : d.dir_id === "root" ? "🗂️" : "📁"}</span>
                       <p className="text-sm font-medium text-white">{d.name}</p>
+                      {d.dir_id === "root" && !isOver && <span className="text-xs text-zinc-600 ml-1">— arquivos sem diretório</span>}
                       {isOver && <span className="text-xs text-[var(--primary-contrast-light)] ml-2">Solte para enviar</span>}
                     </button>
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => setDirToDelete(d)}
-                        className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                    {d.dir_id !== "root" && (
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => setDirToDelete(d)}
+                          className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -544,26 +650,41 @@ const StorageTemplate = () => {
 
       {/* ── Files ── */}
       {view === "files" && (
-        <div
-          className={`flex flex-col gap-3 w-full h-full relative transition-all ${
-            isDragOver ? "outline outline-2 outline-dashed outline-[var(--primary-contrast)] rounded-xl" : ""
-          }`}
-          onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
-          onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragOver(false); }}
-          onDrop={async e => { e.preventDefault(); setIsDragOver(false); await uploadFiles(e.dataTransfer.files); }}
-        >
-          {isDragOver && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/80 z-10 rounded-xl">
-              <Upload size={48} className="text-[var(--primary-contrast)] mb-2" />
-              <p className="text-lg font-semibold text-white">Solte para enviar</p>
-            </div>
-          )}
+        <div className="flex flex-col gap-3 w-full h-full">
 
-          {/* Upload button */}
-          <label className="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-400 hover:text-white hover:border-zinc-500 transition-all w-fit cursor-pointer">
-            <Upload size={16} />
-            {uploading ? "Enviando..." : "Enviar arquivos"}
-            <input type="file" multiple accept="image/*,audio/*,video/*" className="hidden"
+          {/* Drop zone */}
+          <label
+            onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
+            onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragOver(false); }}
+            onDrop={async e => { e.preventDefault(); setIsDragOver(false); await uploadFiles(e.dataTransfer.files); }}
+            className={`flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
+              isDragOver
+                ? "border-[var(--primary-contrast-light)] bg-[var(--primary-contrast-opacity)] scale-[1.01]"
+                : uploading
+                ? "border-zinc-700 bg-zinc-900/30"
+                : "border-zinc-700 hover:border-zinc-500 hover:bg-zinc-900/50"
+            }`}
+          >
+            {uploading ? (
+              <>
+                <Loader2 size={28} className="text-[var(--primary-contrast-light)] animate-spin" />
+                <p className="text-sm text-zinc-400">Enviando...</p>
+              </>
+            ) : isDragOver ? (
+              <>
+                <Upload size={28} className="text-[var(--primary-contrast-light)]" />
+                <p className="text-sm font-semibold text-white">Solte para enviar</p>
+              </>
+            ) : (
+              <>
+                <Upload size={28} className="text-zinc-600" />
+                <p className="text-sm text-zinc-400">
+                  Arraste arquivos aqui ou <span className="text-[var(--primary-contrast-light)]">clique para selecionar</span>
+                </p>
+                <p className="text-xs text-zinc-600">Imagens, vídeos, áudios e mais</p>
+              </>
+            )}
+            <input type="file" multiple className="hidden"
               onChange={e => e.target.files && uploadFiles(e.target.files)} />
           </label>
 
@@ -572,28 +693,54 @@ const StorageTemplate = () => {
               <Loader2 size={24} className="animate-spin mr-2" /> Carregando...
             </div>
           ) : files.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-zinc-500 gap-2">
-              <Upload size={40} className="opacity-30" />
-              <p>Nenhum arquivo. Arraste ou clique em "Enviar arquivos".</p>
+            <div className="flex flex-col items-center justify-center py-10 text-zinc-600 gap-1">
+              <p className="text-sm">Nenhum arquivo neste diretório.</p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
               {files.map(f => {
                 const filename = f.key.split("/").pop()!;
+                const isImg = isImageFile(filename);
+                const isAud = isAudioFile(filename);
+                const isVid = isVideoFile(filename);
                 return (
                   <div key={f.key}
-                    className="flex items-center justify-between bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition-colors group">
+                    onClick={() => setPreviewFile(f)}
+                    className="flex items-center justify-between bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition-colors group cursor-pointer">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xl shrink-0">🖼️</span>
+                      {isImg ? (
+                        <img
+                          src={f.public_url}
+                          alt={filename}
+                          className="w-10 h-10 rounded-lg object-cover border border-zinc-700 shrink-0"
+                          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                      ) : isAud ? (
+                        <span className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
+                          <FileAudio size={18} className="text-zinc-400" />
+                        </span>
+                      ) : isVid ? (
+                        <span className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
+                          <FileVideo size={18} className="text-zinc-400" />
+                        </span>
+                      ) : (
+                        <span className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
+                          <FileIcon2 size={18} className="text-zinc-400" />
+                        </span>
+                      )}
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-white truncate">{filename}</p>
                         <p className="text-xs text-zinc-500">{fmtSize(f.size)} · {f.last_modified.slice(0, 10)}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => setFileToDelete(f)}
-                        className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors">
-                        <Trash2 size={16} />
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={e => { e.stopPropagation(); navigator.clipboard.writeText(f.public_url); toast.success("URL copiada!"); }}
+                        className="p-1.5 text-zinc-500 hover:text-white transition-colors" title="Copiar URL">
+                        <Copy size={15} />
+                      </button>
+                      <button onClick={e => { e.stopPropagation(); setFileToDelete(f); }}
+                        className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors" title="Excluir">
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   </div>
@@ -601,11 +748,63 @@ const StorageTemplate = () => {
               })}
             </div>
           )}
+
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-xs text-zinc-500">
+                {totalFiles} arquivo{totalFiles !== 1 ? "s" : ""} · página {page} de {totalPages}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => fetchFiles(selectedBucket!, selectedDir!, page - 1)}
+                  disabled={page <= 1}
+                  className="px-3 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  ← Anterior
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                  .reduce<(number | "…")[]>((acc, p, i, arr) => {
+                    if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("…");
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((p, i) =>
+                    p === "…" ? (
+                      <span key={`ellipsis-${i}`} className="px-1 text-xs text-zinc-600">…</span>
+                    ) : (
+                      <button
+                        key={p}
+                        onClick={() => fetchFiles(selectedBucket!, selectedDir!, p as number)}
+                        className={`w-7 h-7 rounded-lg text-xs font-medium transition-colors ${
+                          page === p
+                            ? "bg-[var(--primary-contrast-light)] text-white"
+                            : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+                <button
+                  onClick={() => fetchFiles(selectedBucket!, selectedDir!, page + 1)}
+                  disabled={page >= totalPages}
+                  className="px-3 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  Próxima →
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
 
     {/* ── Modals ── */}
+    {previewFile && (
+      <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />
+    )}
     {fileToDelete && (
       <ConfirmFileModal
         filename={fileToDelete.key.split("/").pop()!}

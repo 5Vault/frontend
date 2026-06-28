@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { ShieldCheck, X } from "lucide-react";
-import { sessionStore } from "../utils/sessionStore";
 import useAxios from "../utils/axiosConfig";
 import useAuthContext from "../hook/useAuthContext";
 

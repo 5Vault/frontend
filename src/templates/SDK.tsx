@@ -1,158 +1,278 @@
 import { useState } from "react";
-import { Check, Copy, Code2, Download, ExternalLink, ChevronRight, BookOpen } from "lucide-react";
+import { Check, Copy, Code2, ChevronRight, BookOpen, FileCode } from "lucide-react";
 import HeaderTemplate from "../components/Header";
 import useAuthContext from "../hook/useAuthContext";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+const BASE_URL = "https://api.5vault.com.br/api/v1";
 
 type Platform = "fivem" | "roblox";
 
-type CodeExample = {
-  title: string;
-  description: string;
+// ── Script files ──────────────────────────────────────────────────────────────
+
+type ScriptFile = {
+  name: string;
+  lang: string;
   code: string;
 };
 
-// ── Code snippets ─────────────────────────────────────────────────────────────
-
-const BASE_URL = "https://api.5vault.com.br/api/v1";
-
-const fivemExamples = (apiKey: string): CodeExample[] => [
+const fivemFiles = (apiKey: string, bucketId: string): ScriptFile[] => [
   {
-    title: "Configuração inicial",
-    description: "Adicione ao topo do seu script. Substitua a API key e o bucket desejado.",
-    code: `-- config.lua
-Config = {}
-Config.ApiKey    = "${apiKey}"
-Config.BucketId  = "seu_bucket_id"
-Config.BaseUrl   = "${BASE_URL}"`,
+    name: "fxmanifest.lua",
+    lang: "lua",
+    code: `fx_version 'cerulean'
+game 'gta5'
+
+name '5vault'
+description '5Vault SDK — armazenamento de arquivos para FiveM'
+version '1.0.0'
+author '5Vault'
+
+server_scripts {
+    'config.lua',
+    'server.lua',
+}`,
   },
   {
-    title: "Fazer upload de um arquivo",
-    description: "Envia um arquivo em base64 para o seu bucket.",
-    code: `-- Exemplo: upload de screenshot
-local function UploadFile(fileName, base64Data, callback)
+    name: "config.lua",
+    lang: "lua",
+    code: `Config = {}
+
+Config.ApiKey   = "${apiKey}"
+Config.BucketId = "${bucketId}"
+Config.DirId    = "seu_diretorio_id"   -- ID do diretório dentro do bucket
+Config.BaseUrl  = "${BASE_URL}"`,
+  },
+  {
+    name: "server.lua",
+    lang: "lua",
+    code: `-- 5Vault SDK — server.lua
+-- Todos os exports devem ser chamados server-side.
+-- Uso em outro resource: exports['5vault']:UploadFile(...)
+
+local _boundary = "----5VaultBoundary" .. tostring(math.random(100000, 999999))
+
+--- Constrói o body multipart/form-data a partir de um arquivo lido com LoadResourceFile.
+--- @param fileName  string  Nome do arquivo (com extensão)
+--- @param fileData  string  Conteúdo binário do arquivo
+--- @param mimeType  string  MIME type (ex: "image/png", "application/json")
+local function buildMultipart(fileName, fileData, mimeType)
+    local b = _boundary
+    return table.concat({
+        "--" .. b,
+        ('Content-Disposition: form-data; name="file"; filename="%s"'):format(fileName),
+        ("Content-Type: %s"):format(mimeType or "application/octet-stream"),
+        "",
+        fileData,
+        "--" .. b .. "--",
+        "",
+    }, "\\r\\n")
+end
+
+--- Envia um arquivo do disco (dentro do resource) para o bucket configurado.
+--- @param fileName  string    Nome do arquivo a enviar (deve estar na pasta do resource)
+--- @param mimeType  string    MIME type do arquivo
+--- @param callback  function  function(ok: boolean, url: string|nil)
+exports('UploadFile', function(fileName, mimeType, callback)
+    local data = LoadResourceFile(GetCurrentResourceName(), fileName)
+    if not data then
+        print("[5Vault] Arquivo não encontrado: " .. tostring(fileName))
+        return callback(false, nil)
+    end
+
+    local body = buildMultipart(fileName, data, mimeType)
+
     PerformHttpRequest(
-        Config.BaseUrl .. "/bucket/" .. Config.BucketId .. "/files",
-        function(status, body, headers)
+        ("%s/bucket/%s/dir/%s/files"):format(Config.BaseUrl, Config.BucketId, Config.DirId),
+        function(status, responseBody)
             if status == 200 or status == 201 then
-                local result = json.decode(body)
-                callback(true, result.url)
+                local result = json.decode(responseBody)
+                callback(true, result and result.url)
             else
-                print("[5Vault] Erro no upload: " .. tostring(status))
+                print(("[5Vault] Erro no upload (%d): %s"):format(status, tostring(responseBody)))
                 callback(false, nil)
             end
         end,
         "POST",
-        json.encode({
-            file_name = fileName,
-            data      = base64Data,
-        }),
+        body,
         {
-            ["Content-Type"] = "application/json",
+            ["Content-Type"] = "multipart/form-data; boundary=" .. _boundary,
             ["API-Key"]      = Config.ApiKey,
         }
     )
-end
+end)
 
--- Uso:
-UploadFile("screenshot.png", base64String, function(ok, url)
-    if ok then
-        print("[5Vault] Upload concluído: " .. url)
-    end
-end)`,
-  },
-  {
-    title: "Listar arquivos do bucket",
-    description: "Retorna todos os arquivos do bucket configurado.",
-    code: `local function ListFiles(callback)
+--- Envia dados brutos (string/binário) como arquivo para o bucket.
+--- Útil para salvar JSON, texto ou qualquer dado gerado em runtime.
+--- @param fileName  string    Nome do arquivo de destino
+--- @param rawData   string    Conteúdo do arquivo
+--- @param mimeType  string    MIME type
+--- @param callback  function  function(ok: boolean, url: string|nil)
+exports('UploadRaw', function(fileName, rawData, mimeType, callback)
+    local body = buildMultipart(fileName, rawData, mimeType)
+
     PerformHttpRequest(
-        Config.BaseUrl .. "/bucket/" .. Config.BucketId .. "/files",
-        function(status, body)
-            if status == 200 then
-                local files = json.decode(body)
-                callback(files)
+        ("%s/bucket/%s/dir/%s/files"):format(Config.BaseUrl, Config.BucketId, Config.DirId),
+        function(status, responseBody)
+            if status == 200 or status == 201 then
+                local result = json.decode(responseBody)
+                callback(true, result and result.url)
             else
+                print(("[5Vault] Erro no upload (%d): %s"):format(status, tostring(responseBody)))
+                callback(false, nil)
+            end
+        end,
+        "POST",
+        body,
+        {
+            ["Content-Type"] = "multipart/form-data; boundary=" .. _boundary,
+            ["API-Key"]      = Config.ApiKey,
+        }
+    )
+end)
+
+--- Lista todos os arquivos do diretório configurado.
+--- @param callback  function  function(files: table|nil)
+exports('ListFiles', function(callback)
+    PerformHttpRequest(
+        ("%s/bucket/%s/dir/%s/files"):format(Config.BaseUrl, Config.BucketId, Config.DirId),
+        function(status, responseBody)
+            if status == 200 then
+                callback(json.decode(responseBody))
+            else
+                print(("[5Vault] Erro ao listar arquivos (%d)"):format(status))
                 callback(nil)
             end
         end,
         "GET",
         "",
-        {
-            ["API-Key"] = Config.ApiKey,
-        }
+        { ["API-Key"] = Config.ApiKey }
     )
-end
+end)
 
--- Uso:
-ListFiles(function(files)
-    if not files then return end
-    for _, file in ipairs(files) do
-        print(file.name .. " — " .. file.url)
-    end
-end)`,
-  },
-  {
-    title: "Deletar um arquivo",
-    description: "Remove um arquivo do bucket pelo nome.",
-    code: `local function DeleteFile(fileName, callback)
+--- Deleta um arquivo do bucket pelo nome.
+--- @param fileName  string    Nome do arquivo
+--- @param callback  function  function(ok: boolean)
+exports('DeleteFile', function(fileName, callback)
     PerformHttpRequest(
-        Config.BaseUrl .. "/bucket/" .. Config.BucketId .. "/files/" .. fileName,
+        ("%s/bucket/%s/dir/%s/files/%s"):format(Config.BaseUrl, Config.BucketId, Config.DirId, fileName),
         function(status)
-            callback(status == 204)
+            if status == 204 then
+                callback(true)
+            else
+                print(("[5Vault] Erro ao deletar '%s' (%d)"):format(fileName, status))
+                callback(false)
+            end
         end,
         "DELETE",
         "",
-        {
-            ["API-Key"] = Config.ApiKey,
-        }
+        { ["API-Key"] = Config.ApiKey }
     )
-end
+end)
 
--- Uso:
-DeleteFile("screenshot.png", function(ok)
+print("[5Vault] SDK carregado.")`
+  },
+  {
+    name: "uso.lua",
+    lang: "lua",
+    code: `-- Exemplo de uso em outro resource (server-side)
+-- Certifique-se que '5vault' está listado em dependencies no seu fxmanifest.lua
+
+-- Salvar dados de um jogador como JSON
+RegisterNetEvent('meuResource:salvarJogador', function(data)
+    local src    = source
+    local conteudo = json.encode(data)
+
+    exports['5vault']:UploadRaw(
+        ("jogador_%d.json"):format(src),
+        conteudo,
+        "application/json",
+        function(ok, url)
+            if ok then
+                print(("[5Vault] Salvo: %s"):format(url))
+            end
+        end
+    )
+end)
+
+-- Upload de um arquivo local do resource
+exports['5vault']:UploadFile("banner.png", "image/png", function(ok, url)
     if ok then
-        print("[5Vault] Arquivo removido.")
+        print("[5Vault] Banner enviado: " .. url)
     end
+end)
+
+-- Listar arquivos
+exports['5vault']:ListFiles(function(files)
+    if not files then return end
+    for _, f in ipairs(files) do
+        print(f.name .. " — " .. f.url)
+    end
+end)
+
+-- Deletar arquivo
+exports['5vault']:DeleteFile("jogador_123.json", function(ok)
+    if ok then print("[5Vault] Arquivo removido.") end
 end)`,
   },
 ];
 
-const robloxExamples = (apiKey: string): CodeExample[] => [
+const robloxFiles = (apiKey: string, bucketId: string): ScriptFile[] => [
   {
-    title: "Configuração inicial",
-    description: "Crie um ModuleScript em ServerScriptService com as configurações.",
-    code: `-- FiveVaultConfig (ModuleScript)
+    name: "FiveVaultConfig.lua",
+    lang: "lua",
+    code: `-- ModuleScript em ServerScriptService
 local Config = {}
 
 Config.ApiKey   = "${apiKey}"
-Config.BucketId = "seu_bucket_id"
+Config.BucketId = "${bucketId}"
+Config.DirId    = "seu_diretorio_id"
 Config.BaseUrl  = "${BASE_URL}"
 
 return Config`,
   },
   {
-    title: "Fazer upload de um arquivo",
-    description: "Envia dados em base64 para o seu bucket. Requer HTTP Requests habilitado nas configurações do jogo.",
-    code: `-- FiveVaultService (ModuleScript)
+    name: "FiveVaultService.lua",
+    lang: "lua",
+    code: `-- ModuleScript em ServerScriptService
+-- Habilite HTTP Requests em: Game Settings → Security → Allow HTTP Requests
+
 local HttpService = game:GetService("HttpService")
 local Config = require(script.Parent.FiveVaultConfig)
 
 local FiveVault = {}
 
-function FiveVault.UploadFile(fileName: string, base64Data: string): (boolean, string?)
+local function filesUrl(fileName)
+    local base = ("%s/bucket/%s/dir/%s/files"):format(Config.BaseUrl, Config.BucketId, Config.DirId)
+    if fileName then return base .. "/" .. fileName end
+    return base
+end
+
+--- Envia dados brutos como arquivo para o bucket via form multipart.
+--- @param fileName  string   Nome do arquivo de destino (ex: "dados.json")
+--- @param rawData   string   Conteúdo do arquivo
+--- @param mimeType  string   MIME type (ex: "application/json", "image/png")
+--- @return boolean, string?
+function FiveVault.UploadRaw(fileName: string, rawData: string, mimeType: string): (boolean, string?)
+    local boundary = "----5VaultBoundary" .. tostring(math.random(100000, 999999))
+    local body = table.concat({
+        "--" .. boundary,
+        ('Content-Disposition: form-data; name="file"; filename="%s"'):format(fileName),
+        ("Content-Type: %s"):format(mimeType or "application/octet-stream"),
+        "",
+        rawData,
+        "--" .. boundary .. "--",
+        "",
+    }, "\\r\\n")
+
     local ok, result = pcall(function()
         return HttpService:RequestAsync({
-            Url    = Config.BaseUrl .. "/bucket/" .. Config.BucketId .. "/files",
+            Url    = filesUrl(),
             Method = "POST",
             Headers = {
-                ["Content-Type"] = "application/json",
+                ["Content-Type"] = "multipart/form-data; boundary=" .. boundary,
                 ["API-Key"]      = Config.ApiKey,
             },
-            Body = HttpService:JSONEncode({
-                file_name = fileName,
-                data      = base64Data,
-            }),
+            Body = body,
         })
     end)
 
@@ -165,61 +285,82 @@ function FiveVault.UploadFile(fileName: string, base64Data: string): (boolean, s
     end
 end
 
-return FiveVault
-
--- Uso (em um Script):
--- local FiveVault = require(...)
--- local ok, url = FiveVault.UploadFile("imagem.png", base64String)`,
-  },
-  {
-    title: "Listar arquivos do bucket",
-    description: "Retorna a lista de arquivos disponíveis no bucket.",
-    code: `function FiveVault.ListFiles(): {any}?
+--- Lista todos os arquivos do diretório configurado.
+--- @return table?
+function FiveVault.ListFiles(): {any}?
     local ok, result = pcall(function()
         return HttpService:RequestAsync({
-            Url    = Config.BaseUrl .. "/bucket/" .. Config.BucketId .. "/files",
-            Method = "GET",
-            Headers = {
-                ["API-Key"] = Config.ApiKey,
-            },
+            Url     = filesUrl(),
+            Method  = "GET",
+            Headers = { ["API-Key"] = Config.ApiKey },
         })
     end)
 
     if ok and result.Success then
         return HttpService:JSONDecode(result.Body)
     else
-        warn("[5Vault] Erro ao listar arquivos:", result)
+        warn("[5Vault] Erro ao listar:", result)
         return nil
     end
 end
 
--- Uso:
--- local files = FiveVault.ListFiles()
--- for _, file in ipairs(files or {}) do
---     print(file.name, file.url)
--- end`,
-  },
-  {
-    title: "Deletar um arquivo",
-    description: "Remove um arquivo do bucket pelo nome.",
-    code: `function FiveVault.DeleteFile(fileName: string): boolean
+--- Remove um arquivo pelo nome.
+--- @param fileName string
+--- @return boolean
+function FiveVault.DeleteFile(fileName: string): boolean
     local ok, result = pcall(function()
         return HttpService:RequestAsync({
-            Url    = Config.BaseUrl .. "/bucket/" .. Config.BucketId .. "/files/" .. fileName,
-            Method = "DELETE",
-            Headers = {
-                ["API-Key"] = Config.ApiKey,
-            },
+            Url     = filesUrl(fileName),
+            Method  = "DELETE",
+            Headers = { ["API-Key"] = Config.ApiKey },
         })
     end)
 
-    if ok and (result.StatusCode == 204) then
+    if ok and result.StatusCode == 204 then
         return true
     else
         warn("[5Vault] Erro ao deletar:", result)
         return false
     end
-end`,
+end
+
+return FiveVault`,
+  },
+  {
+    name: "uso.lua",
+    lang: "lua",
+    code: `-- Script (server) de exemplo
+local FiveVault = require(game.ServerScriptService.FiveVaultService)
+
+-- Salvar dados de um jogador como JSON
+game.Players.PlayerRemoving:Connect(function(player)
+    local dados = {
+        nome = player.Name,
+        userId = player.UserId,
+        saiu = os.time(),
+    }
+
+    local json = game:GetService("HttpService"):JSONEncode(dados)
+    local ok, url = FiveVault.UploadRaw(
+        ("jogador_%d.json"):format(player.UserId),
+        json,
+        "application/json"
+    )
+
+    if ok then
+        print("[5Vault] Salvo: " .. url)
+    end
+end)
+
+-- Listar arquivos
+local files = FiveVault.ListFiles()
+for _, f in ipairs(files or {}) do
+    print(f.name .. " — " .. f.url)
+end
+
+-- Deletar arquivo
+local removido = FiveVault.DeleteFile("jogador_123.json")
+if removido then print("[5Vault] Removido.") end`,
   },
 ];
 
@@ -227,13 +368,11 @@ end`,
 
 const CopyButton = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
-
   const copy = () => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
   return (
     <button
       onClick={copy}
@@ -245,28 +384,11 @@ const CopyButton = ({ text }: { text: string }) => {
   );
 };
 
-// ── Code block ────────────────────────────────────────────────────────────────
-
-const CodeBlock = ({ example }: { example: CodeExample }) => (
-  <div className="rounded-xl border border-zinc-800 overflow-hidden">
-    <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900 border-b border-zinc-800">
-      <div>
-        <span className="text-sm font-semibold text-white">{example.title}</span>
-        <p className="text-xs text-zinc-500 mt-0.5">{example.description}</p>
-      </div>
-      <CopyButton text={example.code} />
-    </div>
-    <pre className="bg-zinc-950 p-4 overflow-x-auto text-xs leading-relaxed text-zinc-300 font-mono">
-      <code>{example.code}</code>
-    </pre>
-  </div>
-);
-
-// ── Platform tab ──────────────────────────────────────────────────────────────
+// ── Main ─────────────────────────────────────────────────────────────────────
 
 const FiveMIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
-    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
   </svg>
 );
 
@@ -276,53 +398,66 @@ const RobloxIcon = () => (
   </svg>
 );
 
-// ── Main ─────────────────────────────────────────────────────────────────────
-
 const SDKTemplate = () => {
   const { user } = useAuthContext();
   const [platform, setPlatform] = useState<Platform>("fivem");
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [activeFile, setActiveFile] = useState(0);
 
-  const apiKey = user?.api_key ?? "SUA_API_KEY";
-  const examples = platform === "fivem" ? fivemExamples(apiKey) : robloxExamples(apiKey);
+  const apiKey   = user?.api_key ?? "SUA_API_KEY";
+  const bucketId = "SEU_BUCKET_ID";
+  const files    = platform === "fivem" ? fivemFiles(apiKey, bucketId) : robloxFiles(apiKey, bucketId);
+  const current  = files[activeFile];
 
-  const platforms: { id: Platform; label: string; icon: React.ReactNode; color: string; desc: string }[] = [
-    {
-      id: "fivem",
-      label: "FiveM",
-      icon: <FiveMIcon />,
-      color: "bg-orange-500/10 border-orange-500/30 text-orange-400",
-      desc: "Scripts Lua para servidores FiveM (GTA V roleplay)",
-    },
-    {
-      id: "roblox",
-      label: "Roblox",
-      icon: <RobloxIcon />,
-      color: "bg-red-500/10 border-red-500/30 text-red-400",
-      desc: "ModuleScripts Lua para jogos Roblox",
-    },
+  const handlePlatform = (p: Platform) => { setPlatform(p); setActiveFile(0); };
+
+  const fivemExports = [
+    { name: "UploadFile(fileName, mimeType, callback)",   desc: "Envia um arquivo local do resource via form multipart" },
+    { name: "UploadRaw(fileName, rawData, mimeType, cb)", desc: "Envia dados gerados em runtime (JSON, texto, binário)" },
+    { name: "ListFiles(callback)",                         desc: "Lista todos os arquivos do diretório configurado" },
+    { name: "DeleteFile(fileName, callback)",              desc: "Remove um arquivo pelo nome" },
   ];
+
+  const robloxMethods = [
+    { name: "FiveVault.UploadRaw(fileName, rawData, mimeType)", desc: "Envia dados via form multipart. Retorna (ok, url)" },
+    { name: "FiveVault.ListFiles()",                             desc: "Lista arquivos do diretório. Retorna table?" },
+    { name: "FiveVault.DeleteFile(fileName)",                    desc: "Remove um arquivo. Retorna boolean" },
+  ];
+
+  const infoFiveM = (
+    <>
+      Copie os 4 arquivos para uma pasta chamada{" "}
+      <code className="text-[var(--primary-contrast-light)] bg-zinc-800 px-1 rounded">5vault</code> dentro de{" "}
+      <code className="text-zinc-300 bg-zinc-800 px-1 rounded">resources/</code> e adicione{" "}
+      <code className="text-zinc-300 bg-zinc-800 px-1 rounded">ensure 5vault</code> no{" "}
+      <code className="text-zinc-300 bg-zinc-800 px-1 rounded">server.cfg</code>. Todos os exports são <strong className="text-white">server-side</strong>.
+    </>
+  );
+
+  const infoRoblox = (
+    <>
+      Crie os ModuleScripts em <code className="text-zinc-300 bg-zinc-800 px-1 rounded">ServerScriptService</code> e habilite{" "}
+      <strong className="text-white">Allow HTTP Requests</strong> em Game Settings → Security. Use apenas em <strong className="text-white">Scripts server-side</strong>.
+    </>
+  );
 
   return (
     <div className="flex flex-col w-full h-full gap-5 overflow-y-auto pr-1 pb-4">
       <HeaderTemplate
         icon={<Code2 size={22} />}
         title="SDKs"
-        description="Integre o 5Vault ao seu jogo com os scripts prontos"
+        description="Scripts prontos para integrar o 5Vault ao seu jogo"
       />
 
       {/* Platform selector */}
       <div className="grid grid-cols-2 gap-3">
-        {platforms.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => { setPlatform(p.id); setOpenIndex(0); }}
+        {([
+          { id: "fivem" as Platform,  label: "FiveM",  icon: <FiveMIcon />,  color: "bg-orange-500/10 border-orange-500/30 text-orange-400", desc: "Resource Lua com exports para servidores FiveM" },
+          { id: "roblox" as Platform, label: "Roblox", icon: <RobloxIcon />, color: "bg-red-500/10 border-red-500/30 text-red-400",           desc: "ModuleScripts Lua para jogos Roblox" },
+        ]).map(p => (
+          <button key={p.id} onClick={() => handlePlatform(p.id)}
             className={`flex items-center gap-3 p-4 rounded-xl border transition-all text-left ${
-              platform === p.id
-                ? p.color + " shadow-lg"
-                : "bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white"
-            }`}
-          >
+              platform === p.id ? p.color + " shadow-lg" : "bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white"
+            }`}>
             <span className={`p-2 rounded-lg border ${platform === p.id ? p.color : "bg-zinc-800 border-zinc-700 text-zinc-500"}`}>
               {p.icon}
             </span>
@@ -337,86 +472,58 @@ const SDKTemplate = () => {
       {/* Info banner */}
       <div className="flex items-start gap-3 p-4 rounded-xl bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]/20">
         <BookOpen size={16} className="text-[var(--primary-contrast-light)] shrink-0 mt-0.5" />
-        <div className="text-xs text-zinc-400 leading-relaxed">
-          <span className="text-white font-medium">Sua API Key está pré-preenchida nos exemplos.</span>
-          {" "}Mantenha-a segura — não inclua em código client-side.
-          {platform === "roblox" && (
-            <span> No Roblox, use apenas em <strong className="text-white">ServerScripts</strong> e habilite HTTP Requests em <em>Game Settings → Security</em>.</span>
-          )}
-          {platform === "fivem" && (
-            <span> No FiveM, os requests devem ser feitos do lado <strong className="text-white">server</strong>.</span>
-          )}
+        <p className="text-xs text-zinc-400 leading-relaxed">
+          <span className="text-white font-medium">Sua API Key está pré-preenchida.</span>{" "}
+          {platform === "fivem" ? infoFiveM : infoRoblox}
+        </p>
+      </div>
+
+      {/* File tabs + code */}
+      <div className="rounded-2xl border border-zinc-800 overflow-hidden">
+
+        {/* Tabs */}
+        <div className="flex border-b border-zinc-800 bg-zinc-900/80 overflow-x-auto">
+          {files.map((f, i) => (
+            <button
+              key={f.name}
+              onClick={() => setActiveFile(i)}
+              className={`flex items-center gap-2 px-4 py-3 text-xs font-mono whitespace-nowrap border-r border-zinc-800 transition-colors ${
+                activeFile === i
+                  ? "bg-zinc-950 text-white border-b-2 border-b-[var(--primary-contrast-light)]"
+                  : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
+              }`}
+            >
+              <FileCode size={12} />
+              {f.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Code */}
+        <div className="relative bg-zinc-950">
+          <div className="flex justify-end px-3 py-1.5 border-b border-zinc-800/60">
+            <CopyButton text={current.code} />
+          </div>
+          <pre className="px-5 py-5 overflow-x-auto text-xs leading-relaxed text-zinc-300 font-mono max-h-[520px] overflow-y-auto">
+            <code>{current.code}</code>
+          </pre>
         </div>
       </div>
 
-      {/* Setup steps */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+      {/* API reference */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
         <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-          <Download size={15} className="text-[var(--primary-contrast-light)]" />
-          Instalação rápida
+          <ChevronRight size={14} className="text-[var(--primary-contrast-light)]" />
+          {platform === "fivem" ? "Exports disponíveis" : "Métodos disponíveis"}
         </h3>
-        <ol className="flex flex-col gap-3">
-          {(platform === "fivem" ? [
-            { step: "1", text: "Crie um resource no seu servidor FiveM (pasta em resources/)" },
-            { step: "2", text: "Adicione os scripts abaixo aos arquivos do resource" },
-            { step: "3", text: "No fxmanifest.lua adicione os scripts à lista server_scripts" },
-            { step: "4", text: "Certifique-se que o resource está em ensure no server.cfg" },
-          ] : [
-            { step: "1", text: "Em Game Settings → Security, habilite Allow HTTP Requests" },
-            { step: "2", text: "Crie um ModuleScript chamado FiveVaultConfig em ServerScriptService" },
-            { step: "3", text: "Crie outro ModuleScript chamado FiveVaultService no mesmo lugar" },
-            { step: "4", text: "Copie os exemplos abaixo para cada ModuleScript na ordem" },
-          ]).map(({ step, text }) => (
-            <li key={step} className="flex items-start gap-3 text-xs text-zinc-400">
-              <span className="w-5 h-5 rounded-full bg-[var(--primary-contrast-light)]/20 border border-[var(--primary-contrast-light)]/30 text-[var(--primary-contrast-light)] text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                {step}
-              </span>
-              {text}
-            </li>
+        <div className="flex flex-col gap-2">
+          {(platform === "fivem" ? fivemExports : robloxMethods).map(e => (
+            <div key={e.name} className="flex items-start gap-3 text-xs">
+              <code className="text-[var(--primary-contrast-light)] bg-zinc-800 px-2 py-1 rounded font-mono shrink-0">{e.name}</code>
+              <span className="text-zinc-500 pt-1">{e.desc}</span>
+            </div>
           ))}
-        </ol>
-      </div>
-
-      {/* Code examples — accordion */}
-      <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-          <Code2 size={15} className="text-[var(--primary-contrast-light)]" />
-          Exemplos de código
-        </h3>
-
-        {examples.map((ex, i) => (
-          <div key={i} className="rounded-xl border border-zinc-800 overflow-hidden">
-            <button
-              onClick={() => setOpenIndex(openIndex === i ? null : i)}
-              className="w-full flex items-center justify-between px-4 py-3.5 bg-zinc-900/80 hover:bg-zinc-900 transition-colors text-left"
-            >
-              <div>
-                <span className="text-sm font-semibold text-white">{ex.title}</span>
-                <p className="text-xs text-zinc-500 mt-0.5">{ex.description}</p>
-              </div>
-              <ChevronRight
-                size={16}
-                className={`text-zinc-500 transition-transform shrink-0 ${openIndex === i ? "rotate-90" : ""}`}
-              />
-            </button>
-            {openIndex === i && (
-              <div className="border-t border-zinc-800">
-                <div className="flex justify-end px-3 py-1.5 bg-zinc-950 border-b border-zinc-800">
-                  <CopyButton text={ex.code} />
-                </div>
-                <pre className="bg-zinc-950 px-4 py-4 overflow-x-auto text-xs leading-relaxed text-zinc-300 font-mono">
-                  <code>{ex.code}</code>
-                </pre>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Footer links */}
-      <div className="flex items-center gap-3 text-xs text-zinc-600">
-        <ExternalLink size={12} />
-        <span>Dúvidas? Acesse a documentação completa ou entre em contato pelo suporte.</span>
+        </div>
       </div>
     </div>
   );

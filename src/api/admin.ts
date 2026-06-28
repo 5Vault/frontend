@@ -2,7 +2,7 @@ import { apiGet, apiPost, apiDelete } from "./client";
 import { sessionStore } from "../utils/sessionStore";
 
 function token() {
-  return sessionStore.get()?.token ?? null;
+  return sessionStore.getUserToken();
 }
 
 export type AdminUser = {

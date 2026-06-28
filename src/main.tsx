@@ -10,8 +10,6 @@ import FileModalProvider from "./provider/FileModalProvider.tsx";
 
 import Home from "./templates/Home.tsx";
 import AccountTemplate from "./templates/Account.tsx";
-import UserTierTemplate from "./templates/UserTier.tsx";
-import ApiKeysTemplate from "./templates/ApiKeys.tsx";
 import CheckOut from "./templates/CheckOut.tsx";
 import BucketStorageTemplate from "./templates/BucketStorage.tsx";
 import Admin from "./templates/Admin.tsx";

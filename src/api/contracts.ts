@@ -16,6 +16,9 @@ export const userSchema = z
     tier_updated_at: z.string().nullable().optional(),
     created_at: z.string(),
     updated_at: z.string().nullable().optional(),
+    extra_storage_enabled: z.boolean().optional().default(false),
+    two_fa_enabled: z.boolean().optional(),
+    avatar_url: z.string().nullable().optional(),
   })
   .passthrough();
 

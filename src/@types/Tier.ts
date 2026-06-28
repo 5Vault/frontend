@@ -6,10 +6,10 @@ export type TierType = {
     en: string;
     pt: string;
   };
-  included: [{
+  included: {
     en: string;
     pt: string;
-  }];
+  }[];
   
 };
 
