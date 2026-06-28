@@ -1,9 +1,24 @@
-import { useEffect, useState, useCallback, useRef } from "react";
-import { Database, FolderPlus, Trash2, ChevronRight, Upload, Plus, Loader2, AlertTriangle, X, Copy, ExternalLink, FileAudio, FileVideo, File as FileIcon2 } from "lucide-react";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {
+  AlertTriangle,
+  ChevronRight,
+  Copy,
+  Database,
+  ExternalLink,
+  File as FileIcon2,
+  FileAudio,
+  FileVideo,
+  FolderPlus,
+  Loader2,
+  Plus,
+  Trash2,
+  Upload,
+  X
+} from "lucide-react";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
 import HeaderTemplate from "../components/Header";
-import type { Bucket, Directory, MediaFile } from "../@types/Storage";
+import type {Bucket, Directory, MediaFile} from "../@types/Storage";
 
 type View = "buckets" | "dirs" | "files";
 
@@ -13,15 +28,17 @@ const isImageFile  = (name: string) => /\.(png|jpe?g|webp|gif|svg|bmp|ico)$/i.te
 const isAudioFile  = (name: string) => /\.(mp3|wav|ogg|flac|aac|m4a|opus)$/i.test(name);
 const isVideoFile  = (name: string) => /\.(mp4|webm|mkv|mov|avi|m4v)$/i.test(name);
 
+const fmtSize = (bytes: number) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+};
+
 // ── File Preview Modal ────────────────────────────────────────────────────────
 
 const FilePreviewModal = ({ file, onClose }: { file: MediaFile; onClose: () => void }) => {
   const filename = file.key.split("/").pop()!;
-
-  const copyURL = () => {
-    navigator.clipboard.writeText(file.public_url);
-    // toast is called outside; just a simple feedback here
-  };
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -378,15 +395,14 @@ const StorageTemplate = () => {
 
   const confirmDeleteFile = async () => {
     if (!selectedBucket || !selectedDir || !fileToDelete) return;
-    const f = fileToDelete;
-    const filename = f.key.split("/").pop()!;
+    const filename = fileToDelete.key.split("/").pop()!;
     setFileToDelete(null);
     try {
       await axiosRef.current.delete(
         `/bucket/${selectedBucket.bucket_id}/dir/${selectedDir.dir_id}/files/${filename}`
       );
       toast.success("Arquivo removido");
-      fetchFiles(selectedBucket, selectedDir, page);
+      fetchFiles(selectedBucket, selectedDir, page).then();
     } catch {
       toast.error("Erro ao remover arquivo");
     }
@@ -461,13 +477,6 @@ const StorageTemplate = () => {
         {s === "active" ? "Ativo" : s === "pending" ? "Provisionando..." : "Erro"}
       </span>
     );
-  };
-
-  const fmtSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
-    return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
