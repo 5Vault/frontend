@@ -1,57 +1,75 @@
-import Logo from "../../assets/logow.png";
+import { useNavigate } from "react-router-dom";
+import { LogIn, LayoutDashboard, LogOut } from "lucide-react";
 import useAuthContext from "../../hook/useAuthContext";
-import Icons from "../../utils/Icons";
-import DashButton from "../DashButton";
-
-// interface SelectOption {
-//   value: string;
-//   label: string;
-// }
 
 const Top = () => {
-
-  const { user } = useAuthContext();
+  const navigate = useNavigate();
+  const { user, logout } = useAuthContext();
 
   return (
-    <header className="w-full h-24 flex justify-between py-4 px-10">
-      <span className="flex items-center gap-2">
-        <img
-          src={Logo}
-          alt="Logo"
-          className="h-12 transition-transform duration-300 hover:scale-110 hover:rotate-3 cursor-pointer animate-pulse"
-        />
-        <span className="text-3xl font-bold">5Vault</span>
-      </span>
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md border-b border-white/5 bg-[#080809]/80">
+      <span className="font-black text-white text-lg tracking-tight cursor-pointer" onClick={() => navigate("/")}>5Vault</span>
 
-      <span className="flex items-center gap-2">
-        {!user ? (
+      <div className="hidden md:flex items-center gap-8">
+        <button
+          onClick={() => document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" })}
+          className="text-zinc-400 hover:text-white text-sm font-medium transition-colors"
+        >
+          Planos
+        </button>
+        <button
+          onClick={() => document.getElementById("como-funciona")?.scrollIntoView({ behavior: "smooth" })}
+          className="text-zinc-400 hover:text-white text-sm font-medium transition-colors"
+        >
+          Como funciona
+        </button>
+      </div>
+
+      <div className="flex items-center gap-3">
+        {user ? (
           <>
-            <DashButton
-              label="Login"
-              onClick={() => {
-                window.location.href = "/account/?mode=login";
-              }}
-            />
+            <div className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+              <div className="w-6 h-6 rounded-full bg-[#e8073f] flex items-center justify-center text-white text-xs font-black">
+                {user.name?.[0]?.toUpperCase() ?? user.username?.[0]?.toUpperCase()}
+              </div>
+              <span className="text-sm text-zinc-300 font-medium max-w-[120px] truncate">
+                {user.name || user.username}
+              </span>
+            </div>
             <button
-              className="text-zinc-200 py-2 px-4 rounded-lg bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] hover:bg-[var(--primary-contrast-light)] transition-colors"
-              onClick={() => {
-                window.location.href = "/account/?mode=register";
-              }}
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg bg-[#e8073f] hover:bg-[#c8063a] text-white transition-all hover:scale-105 shadow-md shadow-[#e8073f30]"
             >
-              Register
+              <LayoutDashboard size={14} />
+              Dashboard
+            </button>
+            <button
+              onClick={logout}
+              className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white px-3 py-2 rounded-lg hover:bg-white/5 transition-colors"
+              title="Sair"
+            >
+              <LogOut size={15} />
             </button>
           </>
         ) : (
-          <button
-            onClick={() => (window.location.href = "/dashboard")}
-            className="rounded-full h-fit w-fit bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] flex gap-2"
-          >
-            {Icons.dashboard}
-            Dashboard
-          </button>
+          <>
+            <button
+              onClick={() => navigate("/account?mode=login")}
+              className="flex items-center gap-1.5 text-zinc-400 hover:text-white text-sm font-medium transition-colors px-3 py-2"
+            >
+              <LogIn size={15} />
+              Login
+            </button>
+            <button
+              onClick={() => navigate("/account?mode=register")}
+              className="bg-[#e8073f] hover:bg-[#c8063a] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all hover:scale-105 shadow-md shadow-[#e8073f30]"
+            >
+              Criar conta
+            </button>
+          </>
         )}
-      </span>
-    </header>
+      </div>
+    </nav>
   );
 };
 

@@ -1,6 +1,9 @@
 import Side from "./components/Side";
 import DashBoardTemplate from "./templates/DashBoard";
 import SettingsTemplate from "./templates/Settings";
+import ApiKeysTemplate from "./templates/ApiKeys";
+import UserTierTemplate from "./templates/UserTier";
+import SDKTemplate from "./templates/SDK";
 import type { ReactElement } from "react";
 import StorageTemplate from "./templates/Storage";
 import useFileModalContext from "./hook/useFileModalContext";
@@ -9,7 +12,10 @@ import ItemView from "./components/ItemView";
 type SectionType =
   | "dashboard"
   | "storage"
-  | "settings" 
+  | "settings"
+  | "api-keys"
+  | "tier"
+  | "sdk"
 
 interface AppProps {
   section: SectionType;
@@ -20,6 +26,9 @@ const templates: Record<SectionType, ReactElement> = {
   dashboard: <DashBoardTemplate />,
   storage: <StorageTemplate />,
   settings: <SettingsTemplate />,
+  "api-keys": <ApiKeysTemplate />,
+  tier: <UserTierTemplate />,
+  sdk: <SDKTemplate />,
 };
 
 function App({ section }: AppProps) {

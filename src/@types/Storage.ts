@@ -21,3 +21,28 @@ export type DashBoardType = {
     file_amount: number;
   }[];
 };
+
+// ── Multi-bucket types ───────────────────────────────────────────────────────
+
+export type Bucket = {
+  bucket_id: string;
+  user_id: string;
+  name: string;
+  r2_name: string;
+  status: "pending" | "active" | "error";
+  created_at: string;
+};
+
+export type Directory = {
+  dir_id: string;
+  bucket_id: string;
+  name: string;
+  created_at: string;
+};
+
+export type MediaFile = {
+  key: string;
+  size: number;
+  last_modified: string;
+  public_url: string;
+};

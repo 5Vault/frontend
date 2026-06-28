@@ -1,408 +1,633 @@
-import Icons from "../utils/Icons";
-import InputWithIcon from "../components/InputWithIcon";
-import { useEffect, useState, useCallback } from "react";
-import type { FileType } from "../@types/Storage";
-import useAuthContext from "../hook/useAuthContext";
-import Select from "react-select";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { Database, FolderPlus, Trash2, ChevronRight, Upload, Plus, Loader2, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
-import { Database } from "lucide-react";
-import InlineFile from "../components/InlineFile";
 import HeaderTemplate from "../components/Header";
+import type { Bucket, Directory, MediaFile } from "../@types/Storage";
 
-const StorageTemplate = () => {
-  const { key } = useAuthContext();  
-  const [files, setFiles] = useState<FileType[]>([]);
-  const [totalFiles, setTotalFiles] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState<10 | 30 | 50>(10);
-  const [page, setPage] = useState(1);
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [fileTypeFilter, setFileTypeFilter] = useState<string>("");
-  const axiosInstance = useAxios();
+type View = "buckets" | "dirs" | "files";
 
-  const setBlob = (file: FileType) => {
-    setFiles((prevFiles) =>
-      prevFiles.map((f) => (f.file_id === file.file_id ? { ...f, blob: file.blob } : f))
-    );
-  };
+// ── Modals ────────────────────────────────────────────────────────────────────
 
-  const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // Only set isDragOver to false if we're leaving the component entirely
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setIsDragOver(false);
-    }
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
-  const fetchFiles = useCallback(async () => {
-    if (!key) return;
-    
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        items_per_page: itemsPerPage.toString(),
-      });
-      
-      if (searchQuery) params.append('search', searchQuery);
-      if (fileTypeFilter) params.append('type', fileTypeFilter);
-      
-      const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/file/?${params.toString()}`,
-        {
-          headers: {
-            "Api-Key": key,
-          },
-        }
-      );
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // Assuming the API returns { files: FileType[], total: number }
-      // Adjust based on your actual API response structure
-      if (Array.isArray(data)) {
-        setFiles(data);
-        setTotalFiles(data.length);
-      } else {
-        setFiles(data.files || []);
-        setTotalFiles(data.total || 0);
-      }
-    } catch (error) {
-      console.error("Error fetching files:", error);
-      toast.error("Erro ao carregar arquivos");
-      setFiles([]);
-      setTotalFiles(0);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [key, page, itemsPerPage, searchQuery, fileTypeFilter]);
-
-  const handleDrop = useCallback(
-    async (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragOver(false);
-
-      const droppedFiles = Array.from(e.dataTransfer.files);
-      if (droppedFiles.length === 0) return;
-
-      setIsUploading(true);
-      toast.loading("Fazendo upload do arquivo...");
-
-      try {
-        for (const file of droppedFiles) {
-          // Convert file to base64 for JSON transmission
-          const arrayBuffer = await file.arrayBuffer();
-          const base64String = btoa(
-            new Uint8Array(arrayBuffer).reduce(
-              (data, byte) => data + String.fromCharCode(byte),
-              ""
-            )
-          );
-
-          // Create JSON payload with the specified format
-          const payload = {
-            mime_type: file.type,
-            data: base64String,
-          };
-
-          await axiosInstance.post("/file/upload", payload, {
-            headers: {
-              "Content-Type": "application/json",
-              "Api-Key": key,
-            },
-          });
-        }
-
-        toast.dismiss();
-        toast.success(
-          `${droppedFiles.length} arquivo(s) enviado(s) com sucesso!`
-        );
-
-        // Refresh file list after upload
-        fetchFiles();
-      } catch (error) {
-        toast.dismiss();
-        toast.error("Erro ao fazer upload do arquivo");
-        console.error("Upload error:", error);
-      } finally {
-        setIsUploading(false);
-      }
-    },
-    [axiosInstance, key, fetchFiles]
-  );
-
-  const totalPages = Math.ceil(totalFiles / itemsPerPage);
-
-  const handlePreviousPage = useCallback(() => {
-    if (page > 1) {
-      setPage(page - 1);
-    }
-  }, [page]);
-
-  const handleNextPage = useCallback(() => {
-    if (page < totalPages) {
-      setPage(page + 1);
-    }
-  }, [page, totalPages]);
-
-  const handleItemsPerPageChange = useCallback((selectedOption: { value: number; label: string } | null) => {
-    if (selectedOption) {
-      setItemsPerPage(selectedOption.value as 10 | 30 | 50);
-      setPage(1); // Reset to first page when changing items per page
-    }
-  }, []);
-
-  const handleFileTypeFilterChange = useCallback((selectedOption: { value: string; label: string } | null) => {
-    setFileTypeFilter(selectedOption?.value || "");
-    setPage(1); // Reset to first page when changing filter
-  }, []);
-
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchQuery(value);
-    setPage(1); // Reset to first page when searching
-  }, []);
-
-  useEffect(() => {
-    fetchFiles();
-  }, [fetchFiles]);
-
-  return (
-    <div
-      className={`relative flex flex-col items-center justify-start w-full h-full gap-4 transition-all duration-200 ${
-        isDragOver
-          ? "bg-[var(--primary-contrast-opacity)] border-2 border-dashed border-[var(--primary-contrast-light)]"
-          : ""
-      }`}
-      onDragEnter={handleDragEnter}
-      onDragLeave={handleDragLeave}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-    >
-      <HeaderTemplate 
-        icon={<Database size={38} />}
-        title="Store Management"
-        description="Monitor and manage your storage infrastructure."
-        content={
-          <span className="flex gap-2">
-            
-            <Select
-              options={[
-                {
-                  value: 10,
-                  label: "10 itens",
-                },
-                {
-                  value: 30,
-                  label: "30 itens",
-                },
-                {
-                  value: 50,
-                  label: "50 itens",
-                },
-              ]}
-              className="w-34"
-              value={{ value: itemsPerPage, label: `${itemsPerPage} itens` }}
-              onChange={handleItemsPerPageChange}
-              isSearchable={false}
-              styles={{
-              control: (provided) => ({
-                ...provided,
-                backgroundColor: "#3f3f3f",
-                borderColor: "#4a5565",
-                color: "white",
-                minHeight: "40px",
-              }),
-              option: (provided, state) => ({
-                ...provided,
-                backgroundColor: state.isFocused ? "#4a5565" : "#3f3f3f",
-                color: "white",
-              }),
-              singleValue: (provided) => ({
-                ...provided,
-                color: "white",
-              }),
-              menu: (provided) => ({
-                ...provided,
-                backgroundColor: "#3f3f3f",
-              }),
-              menuPortal: (provided) => ({
-                ...provided,
-                zIndex: 10000,
-              }),
-              placeholder: (provided) => ({
-                ...provided,
-                color: "#adadad",
-              }),
-            }}
-            />
-            <Select
-              options={[
-                {
-                  value: "",
-                  label: "Todos os tipos",
-                },
-                {
-                  value: "image",
-                  label: "Imagens",
-                },
-                {
-                  value: "video",
-                  label: "Vídeos",
-                },
-                {
-                  value: "audio",
-                  label: "Áudios",
-                },
-                {
-                  value: "document",
-                  label: "Documentos",
-                },
-              ]}
-              className="w-44"
-              placeholder="Filtrar por tipo..."
-              isClearable
-              value={fileTypeFilter ? { value: fileTypeFilter, label: fileTypeFilter } : null}
-              onChange={handleFileTypeFilterChange}
-              styles={{
-              control: (provided) => ({
-                ...provided,
-                backgroundColor: "#3f3f3f",
-                borderColor: "#4a5565",
-                color: "white",
-                minHeight: "40px",
-              }),
-              option: (provided, state) => ({
-                ...provided,
-                backgroundColor: state.isFocused ? "#4a5565" : "#3f3f3f",
-                color: "white",
-              }),
-              singleValue: (provided) => ({
-                ...provided,
-                color: "white",
-              }),
-              menu: (provided) => ({
-                ...provided,
-                backgroundColor: "#3f3f3f",
-              }),
-              menuPortal: (provided) => ({
-                ...provided,
-                zIndex: 10000,
-              }),
-              placeholder: (provided) => ({
-                ...provided,
-                color: "#adadad",
-              }),
-            }}
-            />
-            <InputWithIcon 
-              icon={Icons.search} 
-              placeholder="Search Storages..." 
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-            />
-          </span>
-        }
-      />      
-
-      {/* Drag and Drop Overlay */}
-      {isDragOver && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--primary-contrast-opacity)] z-50">
-          <div className="text-6xl mb-4">📁</div>
-          <div className="text-3xl font-bold text-[var(--primary-contrast-light)]">
-            DROPE AQUI
-          </div>
-          <div className="text-lg text-zinc-300">
-            Solte os arquivos para fazer upload
-          </div>
-        </div>
-      )}
-
-      {/* Upload Loading Overlay */}
-      {isUploading && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 z-50">
-          <div className="animate-spin text-6xl mb-4">⏳</div>
-          <div className="text-3xl font-bold text-yellow-400">ENVIANDO...</div>
-          <div className="text-lg text-zinc-300">
-            Aguarde o upload dos arquivos
-          </div>
-        </div>
-      )}
-
-      <div className="flex flex-col items-center justify-start w-full overflow-y-auto h-full border border-zinc-800 p-4 rounded-xl bg-zinc-900/50 gap-4">
-        
-        <div className="flex flex-col w-full items-center justify-start gap-1 p-2">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin text-4xl">⏳</div>
-              <span className="ml-2">Carregando arquivos...</span>
-            </div>
-          ) : files.length > 0 ? (
-            files.map((file) => (
-              <InlineFile file={file} key={file.file_id} setFile={setBlob}/>
-            ))
-          ) : (
-            <div className="text-center py-8 text-zinc-400">
-              {searchQuery || fileTypeFilter ? (
-                <div>
-                  <p>Nenhum arquivo encontrado para os filtros aplicados</p>
-                  <button 
-                    onClick={() => {
-                      setSearchQuery("");
-                      setFileTypeFilter("");
-                    }}
-                    className="mt-2 text-blue-500 hover:underline"
-                  >
-                    Limpar filtros
-                  </button>
-                </div>
-              ) : (
-                "Nenhum arquivo encontrado"
-              )}
-            </div>
-          )}
-        </div>
-        
+const ConfirmFileModal = ({
+  filename,
+  onConfirm,
+  onCancel,
+}: {
+  filename: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl p-6 w-full max-w-sm flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <span className="p-2 rounded-full bg-red-500/10 text-red-400"><Trash2 size={20} /></span>
+        <h3 className="text-base font-semibold text-white">Excluir arquivo</h3>
       </div>
-      <div className="flex gap-4 items-center">
-        <button 
-          onClick={handlePreviousPage}
-          disabled={page === 1 || isLoading}
-          className="px-3 py-1 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
-        >
-          {Icons.arrow_left}
+      <p className="text-sm text-zinc-400">
+        Tem certeza que deseja excluir <span className="text-white font-medium">"{filename}"</span>? Esta ação não pode ser desfeita.
+      </p>
+      <div className="flex gap-2 justify-end mt-1">
+        <button onClick={onCancel}
+          className="px-4 py-2 rounded-lg text-sm bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors">
+          Cancelar
         </button>
-        <p className="text-sm">
-          Página {page} de {totalPages || 1} ({totalFiles} itens)
-        </p>
-        <button 
-          onClick={handleNextPage}
-          disabled={page >= totalPages || isLoading}
-          className="px-3 py-1 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
-        >
-          {Icons.arrow_right}
+        <button onClick={onConfirm}
+          className="px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-500 transition-colors font-medium">
+          Excluir
         </button>
       </div>
     </div>
+  </div>
+);
+
+const ConfirmBucketModal = ({
+  bucket,
+  onConfirm,
+  onCancel,
+}: {
+  bucket: Bucket;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) => {
+  const [typed, setTyped] = useState("");
+  const [checked, setChecked] = useState(false);
+  const valid = typed === bucket.name && checked;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl p-6 w-full max-w-md flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <span className="p-2 rounded-full bg-red-500/10 text-red-400"><AlertTriangle size={20} /></span>
+          <h3 className="text-base font-semibold text-white">Excluir bucket</h3>
+        </div>
+
+        <p className="text-sm text-zinc-400">
+          Esta ação é <span className="text-red-400 font-medium">irreversível</span>. O bucket e todos os seus arquivos serão permanentemente removidos da Cloudflare.
+        </p>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs text-zinc-500">
+            Digite <span className="text-white font-semibold">{bucket.name}</span> para confirmar
+          </label>
+          <input
+            autoFocus
+            value={typed}
+            onChange={e => setTyped(e.target.value)}
+            placeholder={bucket.name}
+            className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-red-500/60 transition-colors"
+          />
+        </div>
+
+        <label className="flex items-start gap-2.5 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={e => setChecked(e.target.checked)}
+            className="mt-0.5 accent-red-500 w-4 h-4 shrink-0"
+          />
+          <span className="text-xs text-zinc-400 leading-relaxed">
+            Entendo que <span className="text-white">todo o conteúdo dentro do bucket</span> — diretórios e arquivos — será excluído permanentemente junto com ele.
+          </span>
+        </label>
+
+        <div className="flex gap-2 justify-end mt-1">
+          <button onClick={onCancel}
+            className="px-4 py-2 rounded-lg text-sm bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors">
+            Cancelar
+          </button>
+          <button onClick={onConfirm} disabled={!valid}
+            className="px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-500 transition-colors font-medium disabled:opacity-40 disabled:cursor-not-allowed">
+            Excluir bucket
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ConfirmDirModal = ({
+  dirname,
+  onConfirm,
+  onCancel,
+}: {
+  dirname: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl p-6 w-full max-w-sm flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <span className="p-2 rounded-full bg-red-500/10 text-red-400"><Trash2 size={20} /></span>
+        <h3 className="text-base font-semibold text-white">Excluir diretório</h3>
+      </div>
+      <p className="text-sm text-zinc-400">
+        Tem certeza que deseja excluir o diretório <span className="text-white font-medium">"{dirname}"</span>? Esta ação não pode ser desfeita.
+      </p>
+      <div className="flex gap-2 justify-end mt-1">
+        <button onClick={onCancel} className="px-4 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">Cancelar</button>
+        <button onClick={onConfirm} className="px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-500 transition-colors font-medium">Excluir</button>
+      </div>
+    </div>
+  </div>
+);
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+const StorageTemplate = () => {
+  const axiosInstance = useAxios();
+  const axiosRef = useRef(axiosInstance);
+  axiosRef.current = axiosInstance;
+
+  const [view, setView] = useState<View>("buckets");
+  const [buckets, setBuckets] = useState<Bucket[]>([]);
+  const [dirs, setDirs] = useState<Directory[]>([]);
+  const [files, setFiles] = useState<MediaFile[]>([]);
+
+  const [selectedBucket, setSelectedBucket] = useState<Bucket | null>(null);
+  const [selectedDir, setSelectedDir] = useState<Directory | null>(null);
+
+  const [loading, setLoading] = useState(false);
+  const [newBucketName, setNewBucketName] = useState("");
+  const [newDirName, setNewDirName] = useState("");
+  const [showNewBucket, setShowNewBucket] = useState(false);
+  const [showNewDir, setShowNewDir] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [dragOverDirId, setDragOverDirId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  // modal state
+  const [fileToDelete, setFileToDelete] = useState<MediaFile | null>(null);
+  const [bucketToDelete, setBucketToDelete] = useState<Bucket | null>(null);
+  const [dirToDelete, setDirToDelete] = useState<Directory | null>(null);
+
+  // ── Fetch ──────────────────────────────────────────────────────────────────
+
+  const fetchBuckets = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await axiosRef.current.get("/bucket/");
+      setBuckets(res.data ?? []);
+    } catch {
+      toast.error("Erro ao carregar buckets");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDirs = useCallback(async (bucket: Bucket) => {
+    setLoading(true);
+    try {
+      const res = await axiosRef.current.get(`/bucket/${bucket.bucket_id}/dir`);
+      setDirs(res.data ?? []);
+    } catch {
+      toast.error("Erro ao carregar diretórios");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchFiles = useCallback(async (bucket: Bucket, dir: Directory) => {
+    setLoading(true);
+    try {
+      const res = await axiosRef.current.get(`/bucket/${bucket.bucket_id}/dir/${dir.dir_id}/files`);
+      setFiles(res.data?.files ?? []);
+    } catch {
+      toast.error("Erro ao carregar arquivos");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchBuckets(); }, [fetchBuckets]);
+
+  // Polling: enquanto houver bucket pendente, recarrega a cada 3s
+  useEffect(() => {
+    const hasPending = buckets.some((b) => b.status === "pending");
+    if (!hasPending) return;
+    const id = setTimeout(() => fetchBuckets(), 3000);
+    return () => clearTimeout(id);
+  }, [buckets, fetchBuckets]);
+
+  // ── Create ─────────────────────────────────────────────────────────────────
+
+  const createBucket = async () => {
+    if (!newBucketName.trim()) return;
+    try {
+      await axiosRef.current.post("/bucket/", { name: newBucketName.trim() });
+      setNewBucketName("");
+      setShowNewBucket(false);
+      toast.success("Bucket criado! Provisionando...");
+      fetchBuckets();
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(msg || "Erro ao criar bucket");
+    }
+  };
+
+  const createDir = async () => {
+    if (!newDirName.trim() || !selectedBucket) return;
+    try {
+      await axiosRef.current.post(`/bucket/${selectedBucket.bucket_id}/dir`, { name: newDirName.trim() });
+      setNewDirName("");
+      setShowNewDir(false);
+      toast.success("Diretório criado");
+      fetchDirs(selectedBucket);
+    } catch {
+      toast.error("Erro ao criar diretório");
+    }
+  };
+
+  // ── Delete ─────────────────────────────────────────────────────────────────
+
+  const confirmDeleteBucket = async () => {
+    if (!bucketToDelete) return;
+    const b = bucketToDelete;
+    setBucketToDelete(null);
+    try {
+      await axiosRef.current.delete(`/bucket/${b.bucket_id}`);
+      toast.success("Bucket removido");
+      fetchBuckets();
+    } catch {
+      toast.error("Erro ao remover bucket");
+    }
+  };
+
+  const deleteDir = async (d: Directory) => {
+    if (!selectedBucket) return;
+    try {
+      await axiosRef.current.delete(`/bucket/${selectedBucket.bucket_id}/dir/${d.dir_id}`);
+      setDirToDelete(null);
+      toast.success("Diretório removido");
+      fetchDirs(selectedBucket);
+    } catch {
+      toast.error("Erro ao remover diretório");
+    }
+  };
+
+  const confirmDeleteFile = async () => {
+    if (!selectedBucket || !selectedDir || !fileToDelete) return;
+    const f = fileToDelete;
+    const filename = f.key.split("/").pop()!;
+    setFileToDelete(null);
+    try {
+      await axiosRef.current.delete(
+        `/bucket/${selectedBucket.bucket_id}/dir/${selectedDir.dir_id}/files/${filename}`
+      );
+      toast.success("Arquivo removido");
+      fetchFiles(selectedBucket, selectedDir);
+    } catch {
+      toast.error("Erro ao remover arquivo");
+    }
+  };
+
+  // ── Upload ─────────────────────────────────────────────────────────────────
+
+  const uploadFilesToDir = async (fileList: FileList, bucket: Bucket, dir: Directory) => {
+    setUploading(true);
+    let ok = 0;
+    for (const file of Array.from(fileList)) {
+      const form = new FormData();
+      form.append("file", file);
+      try {
+        await axiosRef.current.post(
+          `/bucket/${bucket.bucket_id}/dir/${dir.dir_id}/files`,
+          form,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+        ok++;
+      } catch {
+        toast.error(`Erro ao enviar "${file.name}"`);
+      }
+    }
+    setUploading(false);
+    if (ok > 0) {
+      toast.success(`${ok} arquivo(s) enviado(s)`);
+      fetchFiles(bucket, dir);
+    }
+  };
+
+  const uploadFiles = async (fileList: FileList) => {
+    if (!selectedBucket || !selectedDir) return;
+    await uploadFilesToDir(fileList, selectedBucket, selectedDir);
+  };
+
+  const handleDirDrop = async (e: React.DragEvent, dir: Directory) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverDirId(null);
+    if (!selectedBucket) return;
+    openDir(dir);
+    await uploadFilesToDir(e.dataTransfer.files, selectedBucket, dir);
+  };
+
+  // ── Navigation ─────────────────────────────────────────────────────────────
+
+  const openBucket = (b: Bucket) => {
+    if (b.status !== "active") { toast.error("Bucket ainda não está ativo"); return; }
+    setSelectedBucket(b);
+    setView("dirs");
+    fetchDirs(b);
+  };
+
+  const openDir = (d: Directory) => {
+    setSelectedDir(d);
+    setView("files");
+    fetchFiles(selectedBucket!, d);
+  };
+
+  const goBack = () => {
+    if (view === "files") { setView("dirs"); setSelectedDir(null); setFiles([]); }
+    else if (view === "dirs") { setView("buckets"); setSelectedBucket(null); setDirs([]); }
+  };
+
+  // ── Status badge ───────────────────────────────────────────────────────────
+
+  const statusBadge = (s: Bucket["status"]) => {
+    const map = {
+      active: "bg-green-500/20 text-green-400 border-green-500/30",
+      pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+      error: "bg-red-500/20 text-red-400 border-red-500/30",
+    };
+    return (
+      <span className={`text-xs px-2 py-0.5 rounded-full border ${map[s]}`}>
+        {s === "active" ? "Ativo" : s === "pending" ? "Provisionando..." : "Erro"}
+      </span>
+    );
+  };
+
+  const fmtSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+    return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+  };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
+  const breadcrumb = view === "buckets" ? undefined : (
+    <>
+      <button onClick={() => { setView("buckets"); setSelectedBucket(null); setSelectedDir(null); }}
+        className="hover:text-white transition-colors">Buckets</button>
+      {selectedBucket && (
+        <>
+          <ChevronRight size={12} />
+          {selectedDir ? (
+            <button onClick={() => { setView("dirs"); setSelectedDir(null); setFiles([]); }}
+              className="hover:text-white transition-colors">{selectedBucket.name}</button>
+          ) : (
+            <span className="text-white">{selectedBucket.name}</span>
+          )}
+        </>
+      )}
+      {selectedDir && (
+        <>
+          <ChevronRight size={12} />
+          <span className="text-white">{selectedDir.name}</span>
+        </>
+      )}
+    </>
+  );
+
+  return (
+    <>
+    <div className="flex flex-col w-full h-full gap-4">
+      <HeaderTemplate
+        icon={<Database size={28} />}
+        title="Storage"
+        description="Gerencie seus buckets, diretórios e arquivos de mídia."
+        breadcrumb={breadcrumb}
+      />
+
+      {/* ── Buckets ── */}
+      {view === "buckets" && (
+        <div className="flex flex-col gap-3 w-full">
+          {/* New bucket form */}
+          {showNewBucket ? (
+            <div className="flex gap-2">
+              <input
+                autoFocus
+                value={newBucketName}
+                onChange={e => setNewBucketName(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && createBucket()}
+                placeholder="Nome do bucket..."
+                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
+              />
+              <button onClick={createBucket}
+                className="px-4 py-2 bg-[var(--primary-contrast)] text-white rounded-lg text-sm hover:opacity-90 transition-opacity">
+                Criar
+              </button>
+              <button onClick={() => { setShowNewBucket(false); setNewBucketName(""); }}
+                className="px-4 py-2 bg-zinc-700 text-white rounded-lg text-sm hover:bg-zinc-600 transition-colors">
+                Cancelar
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => setShowNewBucket(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-400 hover:text-white hover:border-zinc-500 transition-all w-fit">
+              <Plus size={16} /> Novo Bucket
+            </button>
+          )}
+
+          {loading ? (
+            <div className="flex items-center justify-center py-12 text-zinc-500">
+              <Loader2 size={24} className="animate-spin mr-2" /> Carregando...
+            </div>
+          ) : buckets.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-zinc-500 gap-2">
+              <Database size={40} className="opacity-30" />
+              <p>Nenhum bucket criado ainda</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {buckets.map(b => (
+                <div key={b.bucket_id}
+                  className="flex items-center justify-between bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition-colors group">
+                  <button onClick={() => openBucket(b)}
+                    className="flex items-center gap-3 flex-1 text-left">
+                    <Database size={20} className="text-zinc-400" />
+                    <div>
+                      <p className="text-sm font-medium text-white">{b.name}</p>
+                      <p className="text-xs text-zinc-500">{b.r2_name}</p>
+                    </div>
+                    <div className="ml-3">{statusBadge(b.status)}</div>
+                  </button>
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => setBucketToDelete(b)}
+                      className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Directories ── */}
+      {view === "dirs" && (
+        <div
+          className="flex flex-col gap-3 w-full h-full"
+          onDragOver={e => e.preventDefault()}
+          onDrop={e => { e.preventDefault(); toast("Solte o arquivo em cima de um diretório", { icon: "📁" }); }}
+        >
+          {showNewDir ? (
+            <div className="flex gap-2">
+              <input
+                autoFocus
+                value={newDirName}
+                onChange={e => setNewDirName(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && createDir()}
+                placeholder="Nome do diretório..."
+                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
+              />
+              <button onClick={createDir}
+                className="px-4 py-2 bg-[var(--primary-contrast)] text-white rounded-lg text-sm hover:opacity-90 transition-opacity">
+                Criar
+              </button>
+              <button onClick={() => { setShowNewDir(false); setNewDirName(""); }}
+                className="px-4 py-2 bg-zinc-700 text-white rounded-lg text-sm hover:bg-zinc-600 transition-colors">
+                Cancelar
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => setShowNewDir(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-400 hover:text-white hover:border-zinc-500 transition-all w-fit">
+              <FolderPlus size={16} /> Novo Diretório
+            </button>
+          )}
+
+          {loading ? (
+            <div className="flex items-center justify-center py-12 text-zinc-500">
+              <Loader2 size={24} className="animate-spin mr-2" /> Carregando...
+            </div>
+          ) : dirs.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-zinc-500 gap-2">
+              <FolderPlus size={40} className="opacity-30" />
+              <p>Nenhum diretório neste bucket</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {dirs.map(d => {
+                const isOver = dragOverDirId === d.dir_id;
+                return (
+                  <div
+                    key={d.dir_id}
+                    onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragOverDirId(d.dir_id); }}
+                    onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverDirId(null); }}
+                    onDrop={e => handleDirDrop(e, d)}
+                    className={`flex items-center justify-between rounded-xl px-4 py-3 transition-all group border ${
+                      isOver
+                        ? "bg-[var(--primary-contrast-opacity)] border-[var(--primary-contrast-light)] scale-[1.01]"
+                        : "bg-zinc-900/60 border-zinc-800 hover:border-zinc-700"
+                    }`}
+                  >
+                    <button onClick={() => openDir(d)} className="flex items-center gap-3 flex-1 text-left">
+                      <span className="text-xl">{isOver ? "📂" : "📁"}</span>
+                      <p className="text-sm font-medium text-white">{d.name}</p>
+                      {isOver && <span className="text-xs text-[var(--primary-contrast-light)] ml-2">Solte para enviar</span>}
+                    </button>
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => setDirToDelete(d)}
+                        className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Files ── */}
+      {view === "files" && (
+        <div
+          className={`flex flex-col gap-3 w-full h-full relative transition-all ${
+            isDragOver ? "outline outline-2 outline-dashed outline-[var(--primary-contrast)] rounded-xl" : ""
+          }`}
+          onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
+          onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragOver(false); }}
+          onDrop={async e => { e.preventDefault(); setIsDragOver(false); await uploadFiles(e.dataTransfer.files); }}
+        >
+          {isDragOver && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/80 z-10 rounded-xl">
+              <Upload size={48} className="text-[var(--primary-contrast)] mb-2" />
+              <p className="text-lg font-semibold text-white">Solte para enviar</p>
+            </div>
+          )}
+
+          {/* Upload button */}
+          <label className="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-400 hover:text-white hover:border-zinc-500 transition-all w-fit cursor-pointer">
+            <Upload size={16} />
+            {uploading ? "Enviando..." : "Enviar arquivos"}
+            <input type="file" multiple accept="image/*,audio/*,video/*" className="hidden"
+              onChange={e => e.target.files && uploadFiles(e.target.files)} />
+          </label>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-12 text-zinc-500">
+              <Loader2 size={24} className="animate-spin mr-2" /> Carregando...
+            </div>
+          ) : files.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-zinc-500 gap-2">
+              <Upload size={40} className="opacity-30" />
+              <p>Nenhum arquivo. Arraste ou clique em "Enviar arquivos".</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {files.map(f => {
+                const filename = f.key.split("/").pop()!;
+                return (
+                  <div key={f.key}
+                    className="flex items-center justify-between bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition-colors group">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="text-xl shrink-0">🖼️</span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{filename}</p>
+                        <p className="text-xs text-zinc-500">{fmtSize(f.size)} · {f.last_modified.slice(0, 10)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => setFileToDelete(f)}
+                        className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+
+    {/* ── Modals ── */}
+    {fileToDelete && (
+      <ConfirmFileModal
+        filename={fileToDelete.key.split("/").pop()!}
+        onConfirm={confirmDeleteFile}
+        onCancel={() => setFileToDelete(null)}
+      />
+    )}
+    {bucketToDelete && (
+      <ConfirmBucketModal
+        bucket={bucketToDelete}
+        onConfirm={confirmDeleteBucket}
+        onCancel={() => setBucketToDelete(null)}
+      />
+    )}
+    {dirToDelete && (
+      <ConfirmDirModal
+        dirname={dirToDelete.name}
+        onConfirm={() => deleteDir(dirToDelete)}
+        onCancel={() => setDirToDelete(null)}
+      />
+    )}
+    </>
   );
 };
 

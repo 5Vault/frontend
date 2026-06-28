@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useMemo } from "react";
-// import { jwtDecode } from "jwt-decode";
 import useAuthContext from "../hook/useAuthContext";
+import { sessionStore } from "./sessionStore";
 
 const useAxios = () => {
   const { refreshAccessToken } = useAuthContext();
@@ -13,31 +13,17 @@ const useAxios = () => {
 
     instance.interceptors.request.use(
       async (config) => {
-        const token = localStorage.getItem("token");
+        const token = sessionStore.getUserToken();
         if (token) {
-          // const decodedToken = jwtDecode(token);
-          // const currentTime = Date.now() / 1000;
-          // Fix: Check if exp exists before comparing
-          // if (decodedToken.exp && decodedToken.exp < currentTime) {
-          //   token = await refreshAccessToken();
-          // }
-          if (token) {
-            config.headers["Authorization"] = `Bearer ${token}`;
-          }
+          config.headers["Authorization"] = `Bearer ${token}`;
         }
-        config.headers["Content-Type"] = "application/json, charset=utf-8";
-        config.headers["Allow-Control-Allow-Origin"] = "*";
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
 
     instance.interceptors.response.use(
-      (response) => {
-        return response;
-      },
+      (response) => response,
       async (error) => {
         const originalRequest = error.config;
         if (error.response?.status === 401 && !originalRequest._retry) {

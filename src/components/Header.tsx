@@ -1,27 +1,36 @@
 import type { ReactElement } from "react";
 
 type HeaderTemplateProps = {
-    icon: ReactElement;
-    title: string;
-    description: string;
-    content?: ReactElement;
+  icon: ReactElement;
+  title: string;
+  description: string;
+  content?: ReactElement;
+  breadcrumb?: ReactElement;
 };
 
-const HeaderTemplate = ({ icon, title, description, content }: HeaderTemplateProps) => {
+const HeaderTemplate = ({ icon, title, description, content, breadcrumb }: HeaderTemplateProps) => {
   return (
-    <header className="w-full flex justify-between items-center border border-zinc-800 p-4 rounded-xl bg-zinc-900/50">
-      <div className="flex gap-4 items-center justify-center">
-        <div className="p-3 bg-[var(--primary-contrast-light)] rounded-xl flex items-center justify-center">
-          {icon}
+    <header className="w-full border border-zinc-800 rounded-xl bg-zinc-900/50 flex flex-col">
+      <div className="flex items-center justify-between px-5 py-4">
+        <div className="flex gap-3 items-center">
+          <span className="text-[var(--primary-contrast-light)] flex items-center [&>svg]:w-7 [&>svg]:h-7">
+            {icon}
+          </span>
+          <div>
+            <h2 className="text-lg font-semibold text-white leading-tight">{title}</h2>
+            <p className="text-xs text-zinc-500 mt-0.5">{description}</p>
+          </div>
         </div>
-        <span className="flex flex-col gap-1">
-          <h2 className="text-3xl font-bold">{title}</h2>
-          <h5 className="text-sm text-zinc-400 tracking-wide">{description}</h5>
-        </span>
+        {content && <div className="flex items-center gap-2">{content}</div>}
       </div>
-      {content && content}
+
+      {breadcrumb && (
+        <div className="border-t border-zinc-800 px-5 pt-1 pb-1.5 flex items-center gap-1.5 text-sm text-zinc-500">
+          {breadcrumb}
+        </div>
+      )}
     </header>
-  )
-}
+  );
+};
 
 export default HeaderTemplate;

@@ -1,12 +1,25 @@
-import { useContext } from "react";
-import AuthContext from "../context/AuthContext";
+/**
+ * Compatibility shim — re-exports useUserContext with the shape that existing
+ * components expect. New code should import useUserContext directly.
+ */
+import useUserContext from "../hooks/useUserContext";
 
 const useAuthContext = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuthContext must be used within an AuthProvider");
-  }
-  return context;
+  const { user, setUser, token, setToken, logout, loading } = useUserContext();
+
+  return {
+    user,
+    setUser,
+    token,
+    setToken,
+    logout,
+    loading,
+    // API key is returned by GET /user/ and stored in user.api_key
+    key: user?.api_key ?? null,
+    // Legacy stubs — no longer used internally
+    fetchUserData: async (_token: string) => user,
+    refreshAccessToken: async () => token,
+  };
 };
 
 export default useAuthContext;

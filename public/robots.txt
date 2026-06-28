@@ -1,12 +1,13 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
+Allow: /account
 
-# Disallow private routes
+# Bloquear rotas privadas
 Disallow: /dashboard
 Disallow: /storage
 Disallow: /settings
 Disallow: /checkout
+Disallow: /bucket
+Disallow: /api/
 
-# Sitemap location
-Sitemap: https://your-domain.com/sitemap.xml
+Sitemap: https://5vault.app/sitemap.xml

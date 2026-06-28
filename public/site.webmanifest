@@ -1,0 +1,23 @@
+{
+  "name": "5Vault — Storage para FiveM",
+  "short_name": "5Vault",
+  "description": "Armazenamento em nuvem rápido e seguro feito para servidores FiveM.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0d0e",
+  "theme_color": "#e8073f",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

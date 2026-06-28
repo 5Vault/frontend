@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router";
 import type { DashBoardType, FileType } from "../@types/Storage";
 import Box from "../components/Box";
 import RecentItems from "../components/RecentItems";
-import useVisualContext from "../hook/useVisualContext";
-import dashboardContent from "../utils/contents/DashBoard";
 import Icons from "../utils/Icons";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
@@ -11,7 +10,8 @@ import useAuthContext from "../hook/useAuthContext";
 import File from "../components/File";
 import { Database, LayoutDashboard } from "lucide-react";
 import DashButton from "../components/DashButton";
-import { Line } from 'react-chartjs-2';
+import { Line } from "react-chartjs-2";
+import { saveCardFromIntent } from "../api/payment";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -21,230 +21,191 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler
-} from 'chart.js';
+  Filler,
+} from "chart.js";
 import HeaderTemplate from "../components/Header";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 const DashBoardTemplate = () => {
-  const { language } = useVisualContext();
   const { user } = useAuthContext();
   const [dashData, setDashData] = useState<DashBoardType | null>(null);
-
   const axiosInstance = useAxios();
-
-  const soon = () => {
-    toast.error("Em breve!");
-  };
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axiosInstance.get("/file/stats");
-        setDashData(response.data);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      }
-    };
-
-    fetchData();
+    axiosInstance.get("/file/stats").then((r) => setDashData(r.data)).catch(() => {});
   }, []);
 
-  const handleFileUploaded = async () => {
-    try {
-      const response = await axiosInstance.get("/file/stats");
-      setDashData(response.data);
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
+  // Handle Stripe redirect after successful payment
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    const shouldSave = searchParams.get("save_card") === "true";
+    const piID = searchParams.get("payment_intent");
+
+    if (payment === "success") {
+      toast.success("Pagamento realizado com sucesso!");
+      if (shouldSave && piID) {
+        saveCardFromIntent(piID)
+          .then(() => toast.success("Cartão salvo para transações futuras."))
+          .catch(() => toast.error("Não foi possível salvar o cartão."));
+      }
+      // Clean URL params
+      setSearchParams({}, { replace: true });
     }
+  }, []);
+
+  const handleFileUploaded = () => {
+    axiosInstance.get("/file/stats").then((r) => setDashData(r.data)).catch(() => {});
   };
 
   const getStoragePercent = () => {
-    if (!dashData || !dashData.total_size || !dashData.used_size) return 0;
-    if (dashData.total_size === 0) return 0;
-    return Math.min(
-      100,
-      Math.round((dashData.used_size / dashData.total_size) * 100)
-    );
+    if (!dashData?.total_size || dashData.total_size === 0) return 0;
+    return Math.min(100, Math.round((dashData.used_size / dashData.total_size) * 100));
   };
 
   const formatGB = (bytes?: number) =>
     bytes ? (bytes / (1024 * 1024 * 1024)).toFixed(2) : "0.00";
 
   const setBlob = (file: FileType) => {
-    setDashData((prevData) => {
-      if (!prevData) return prevData;
-      const updatedRecentFiles = prevData.recent_files.map((f) =>
-        f.file_id === file.file_id ? { ...f, blob: file.blob } : f
-      );
-      return { ...prevData, recent_files: updatedRecentFiles };
+    setDashData((prev) => {
+      if (!prev) return prev;
+      return { ...prev, recent_files: prev.recent_files.map((f) => f.file_id === file.file_id ? { ...f, blob: file.blob } : f) };
     });
   };
 
   const chartData = {
-    labels: dashData?.weekly_usage?.map(item => item.day) || [],
-    datasets: [
-      {
-        label: 'Arquivos Enviados',
-        data: dashData?.weekly_usage?.map(item => item.file_amount) || [],
-        borderColor: '#e8073f',
-        backgroundColor: '#e8073f36',
-        tension: 0.4,
-        fill: true,
-        pointBackgroundColor: '#ec4899',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: '#ec4899',
-      },
-    ],
+    labels: dashData?.weekly_usage?.map((i) => i.day) || [],
+    datasets: [{
+      label: "Arquivos Enviados",
+      data: dashData?.weekly_usage?.map((i) => i.file_amount) || [],
+      borderColor: "#e8073f",
+      backgroundColor: "#e8073f20",
+      tension: 0.4,
+      fill: true,
+      pointBackgroundColor: "#e8073f",
+      pointBorderColor: "#18181b",
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    }],
   };
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       title: {
         display: true,
-        text: 'Uploads da Semana',
-        color: '#e4e4e7',
-        font: {
-          size: 16,
-          weight: 'bold' as const,
-        },
-        padding: {
-          bottom: 20
-        }
+        text: "Uploads da Semana",
+        color: "#e4e4e7",
+        font: { size: 14, weight: "bold" as const },
+        padding: { bottom: 16 },
+        align: "start" as const,
+      },
+      tooltip: {
+        backgroundColor: "#18181b",
+        borderColor: "#27272a",
+        borderWidth: 1,
+        titleColor: "#fff",
+        bodyColor: "#a1a1aa",
+        padding: 10,
       },
     },
     scales: {
       y: {
         beginAtZero: true,
-        ticks: {
-          color: '#a1a1aa',
-          stepSize: 1,
-          font: {
-            size: 12
-          }
-        },
-        grid: {
-          color: '#3f3f46',
-          drawBorder: false,
-        },
-        border: {
-          display: false
-        }
+        ticks: { color: "#71717a", stepSize: 1, font: { size: 11 } },
+        grid: { color: "#27272a" },
+        border: { display: false },
       },
       x: {
-        ticks: {
-          color: '#a1a1aa',
-          font: {
-            size: 12
-          }
-        },
-        grid: {
-          color: '#3f3f46',
-          drawBorder: false,
-        },
-        border: {
-          display: false
-        }
+        ticks: { color: "#71717a", font: { size: 11 } },
+        grid: { color: "#27272a" },
+        border: { display: false },
       },
     },
   };
 
-  const boxes = [{
-    label: "Total Storage",
-    footer: ` ${formatGB(dashData?.total_size)} GB used`,
-    icon: Icons.drive,
-    content: (
-      <div className="flex items-center flex-col justify-center h-[80%]">
-        <h2 className="text-2xl font-bold">
-          {formatGB(dashData?.used_size)} GB
-        </h2>
-        <div className="w-full h-2 bg-zinc-200 rounded-full">
-          <div
-            className="h-full bg-[var(--primary-contrast-light)] rounded-full"
-            style={{ width: `${getStoragePercent()}%` }}
-          />
+  const storagePercent = getStoragePercent();
+  const boxes = [
+    {
+      label: "Armazenamento",
+      footer: `${formatGB(dashData?.total_size)} GB disponíveis`,
+      icon: Icons.drive,
+      content: (
+        <div className="flex flex-col gap-2 justify-center h-[80%]">
+          <h2 className="text-2xl font-bold">{formatGB(dashData?.used_size)} GB</h2>
+          <div className="w-full h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${storagePercent}%`,
+                backgroundColor: storagePercent > 80 ? "#ef4444" : "#e8073f",
+              }}
+            />
+          </div>
+          <span className="text-xs text-zinc-500">{storagePercent}% utilizado</span>
         </div>
-      </div>
-    ),
-  }, {
-    label: "Total Files",
-    footer: "Across all storages",
-    icon: Icons.fileStack,
-    content: (
-      <h2 className="text-4xl font-bold flex items-center h-full">
-        {dashData?.total_files}
-      </h2>
-    ),
-  }, {
-    label: "Performance",
-    footer: "All systems operational",
-    icon: Icons.zap,
-    content: (
-      <h2 className="text-3xl font-bold flex items-center h-full text-green-600">
-        OPTIMAL
-      </h2>
-    ),
-  },]
-
+      ),
+    },
+    {
+      label: "Total de Arquivos",
+      footer: "Em todos os storages",
+      icon: Icons.fileStack,
+      content: (
+        <h2 className="text-4xl font-bold flex items-center h-full">
+          {dashData?.total_files ?? 0}
+        </h2>
+      ),
+    },
+    {
+      label: "Performance",
+      footer: "Todos os sistemas operacionais",
+      icon: Icons.zap,
+      content: (
+        <h2 className="text-2xl font-bold flex items-center h-full text-emerald-400">
+          ÓTIMO
+        </h2>
+      ),
+    },
+  ];
 
   return (
     <div className="flex flex-col h-full items-center gap-4">
       <HeaderTemplate
         icon={<LayoutDashboard size={38} />}
-        title={`${dashboardContent.welcome[language]}, ${user?.name || "User"}`}
-        description={dashboardContent.subtitle[language]}
-        content={          
-          <DashButton 
-            icon={<Database 
-            size={16} />} 
-            label={dashboardContent.viewAll[language]} 
-            onClick={soon} />            
+        title={`Olá, ${user?.name || "Usuário"} 👋`}
+        description="Gerencie seu armazenamento em nuvem com facilidade"
+        content={
+          <DashButton
+            icon={<Database size={16} />}
+            label="Ver todos os storages"
+            onClick={() => toast.error("Em breve!")}
+          />
         }
       />
-      
+
       <span className="flex w-full gap-4 items-start justify-center">
         <div className="flex flex-col justify-center items-center gap-4 flex-1">
           <div className="w-full flex justify-center gap-4">
-            {boxes.map((box, index) => (
-              <Box
-                key={index}
-                label={box.label}
-                footer={box.footer}
-                icon={box.icon}
-              >
+            {boxes.map((box, i) => (
+              <Box key={i} label={box.label} footer={box.footer} icon={box.icon}>
                 {box.content}
               </Box>
-            ))}            
+            ))}
           </div>
           <div className="w-full border border-zinc-800 rounded-xl bg-zinc-900/50 p-6 h-110.5">
             <Line data={chartData} options={chartOptions} />
           </div>
-        </div>        
-        <RecentItems             
-          label="Recent Files"                      
-          onFileUploaded={handleFileUploaded}
-        >
-          {dashData?.recent_files.map((file) => (
-            <File key={file.id} file={file} setFile={setBlob}/>
+        </div>
+
+        <RecentItems label="Arquivos Recentes" onFileUploaded={handleFileUploaded}>
+          {(dashData?.recent_files ?? []).map((file) => (
+            <File key={file.id} file={file} setFile={setBlob} />
           ))}
         </RecentItems>
-        
       </span>
     </div>
   );

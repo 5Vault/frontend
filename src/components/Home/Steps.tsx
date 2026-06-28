@@ -1,96 +1,97 @@
 import { useState } from "react";
-import { CircleUser, CloudUpload, FileSliders } from "lucide-react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import style from "react-syntax-highlighter/dist/esm/styles/prism/material-dark";
-
-
-const getData = `
-curl --request GET
-  --url /api/v1/file/<FILE_ID>    
-`;
-
-const postData = `
-curl --request POST \
-  --url /api/v1/file/upload \
-  --header 'Api-Key: <API_KEY>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-	"mime_type": "image/jpeg",
-	"data": <BLOB_DATA>
-}'
-`
-
-
-
 
 const steps = [
-    {
-        title: "Create an Account",
-        description: <div>Sign up on our platform for free, and get access to our file hosting services. No Credit Card Required!</div>,
-        icon: <CircleUser size={26} />,
-    },
-    {
-        title: "Configure Your Server",
-        description: <div className="flex flex-col items-center justify-center w-full">
-            Use our SDKs to easily set up or create it by yourself using our RESTAPI. You can use it in any game or project you want!
-        <div className="w-full flex gap-2">
-        <SyntaxHighlighter language="curl" style={style} showLineNumbers>
-          {getData}
-        </SyntaxHighlighter>
-        <SyntaxHighlighter language="curl" style={style} showLineNumbers>
-          {postData}
-        </SyntaxHighlighter>
-      </div>
-        </div>,
-        icon: <FileSliders size={26} />,
-    },
-    {
-        title: "Upload Your Files",
-        description: <div>Easily upload and manage your files in a secure environment. To get started, simply upload your files by dragging them through our intuitive interface.</div>,
-        icon: <CloudUpload size={26} />
-    }
-]
-
+  {
+    number: "01",
+    title: "Crie sua conta",
+    description: "Registre-se gratuitamente e acesse o painel em segundos.",
+    code: `// Acesse 5vault.app e clique em "Criar conta"
+// Nenhum cartão de crédito necessário no plano gratuito`,
+  },
+  {
+    number: "02",
+    title: "Configure seu storage",
+    description: "Escolha entre domínio próprio ou subdomínio 5Vault.",
+    code: `// Painel → Storage → Novo Storage
+domain_type: "shared"  // ou "own"
+custom_domain: "assets.meuservidor.com"`,
+  },
+  {
+    number: "03",
+    title: "Gere sua API Key",
+    description: "Crie uma chave de API para autenticar seus uploads.",
+    code: `// Painel → API Keys → Gerar chave
+API_KEY="fv_live_xxxxxxxxxxxxxxxx"`,
+  },
+  {
+    number: "04",
+    title: "Faça upload dos assets",
+    description: "Envie texturas, modelos e sons diretamente pelo painel ou API.",
+    code: `curl -X POST https://api.5vault.app/v1/files \\
+  -H "Api-Key: fv_live_xxx" \\
+  -F "file=@texture.ytd"`,
+  },
+];
 
 const Steps = () => {
-    const [step, setStep] = useState<0 | 1 | 2 >(0);
+  const [active, setActive] = useState(0);
 
-    return (
-        <div className="mb-16">
-            <h2 className="text-xl font-bold mb-8">How it works ?</h2>
-            <div className="flex flex-col justify-center items-center">
-                <span className="flex justify-center">                    
-                    {Array.from(steps).map((_, index) => (
-                        <button 
-                            key={index}
-                            className={`w-99 h-20 relative overflow-hidden
-                                ${step !== index && "bg-zinc-900/50"}
-                                border-1 border-zinc-100/10 
-                                hover:bg-[var(--primary-contrast-light)] transition-colors
-                                first:rounded-tl-lg first:border-r-0 last:rounded-tr-lg last:border-l-0 border-b-0
-                                `}
-                            onClick={() => setStep((index) as 0 | 1 | 2)}
-                        > 
-                            <span className="absolute inset-0 flex items-center justify-start p-4 gap-2">
-                                <div className="p-2 flex items-center justify-center">
-                                    {steps[index].icon}
-                                </div>
-                                <div className="flex flex-col justify-start items-start">
-                                    <span className="font-bold">Step {index + 1}</span>
-                                    <span className="text-sm text-zinc-400">{steps[index].title}</span>
-                                </div>
-                            </span>
-                        
-                        </button>
-                    ))}
-                </span>
-                <div className="flex flex-col items-center justify-center p-4 border border-zinc-100/10 shadow-md rounded-lg bg-zinc-900/50 w-full h-72 border-t-none rounded-t-none">                    
-                    <h3 className="font-bold text-lg mb-2">{steps[step].title}</h3>
-                    <p className="text-zinc-400 text-center max-w-md">{steps[step].description}</p>
-                </div>
-            </div>
-        </div>  
-    )
+  return (
+    <div>
+      <h2 className="text-3xl font-bold mb-2">Como funciona</h2>
+      <p className="text-zinc-500 text-sm mb-8">Configure seu storage em menos de 5 minutos.</p>
+
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 bg-zinc-900 rounded-xl p-1 w-fit">
+        {steps.map((s, i) => (
+          <button
+            key={i}
+            onClick={() => setActive(i)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              active === i
+                ? "bg-zinc-800 text-white"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            <span
+              className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${
+                active === i
+                  ? "bg-[var(--primary-contrast-light)] text-white"
+                  : "bg-zinc-700 text-zinc-400"
+              }`}
+            >
+              {s.number}
+            </span>
+            <span className="hidden sm:inline">{s.title}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div className="rounded-2xl border border-zinc-800 overflow-hidden">
+        <div className="px-6 py-5 border-b border-zinc-800">
+          <h3 className="font-semibold text-white">{steps[active].title}</h3>
+          <p className="text-zinc-500 text-sm mt-1">{steps[active].description}</p>
+        </div>
+        <pre className="bg-[#0d0d0e] px-6 py-5 text-sm text-zinc-300 font-mono overflow-x-auto">
+          {steps[active].code}
+        </pre>
+      </div>
+
+      {/* Progress dots */}
+      <div className="flex gap-2 mt-4 justify-center">
+        {steps.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setActive(i)}
+            className={`w-1.5 h-1.5 rounded-full transition-all ${
+              active === i ? "bg-[var(--primary-contrast-light)] w-4" : "bg-zinc-700"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default Steps;
