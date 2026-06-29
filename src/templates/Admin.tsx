@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Users, Database, Activity, TrendingUp, Search, ChevronLeft,
   ChevronRight, Trash2, Shield, ShieldOff, Crown, RefreshCw,
   ArrowLeft, AlertTriangle, X, ServerCrash, BarChart3,
-  UserCheck, Clock,
+  UserCheck, Clock, Eye, MessageSquare, CreditCard, FileText,
+  HardDrive, Send, CheckCircle, Loader2, Wifi,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
@@ -12,6 +13,8 @@ import {
   type AdminUser, type AdminStats,
 } from "../api/admin";
 import useUserContext from "../hooks/useUserContext";
+import useAxios from "../utils/axiosConfig";
+import { useTicketWS } from "../hooks/useTicketWS";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -186,11 +189,443 @@ function UserActions({
   );
 }
 
+// ─── Types for new sections ───────────────────────────────────────────────────
+
+type Payment = {
+  payment_id: string;
+  user_id: string;
+  stripe_id: string;
+  tier_id: string;
+  amount_cents: number;
+  currency: string;
+  status: string;
+  created_at: string;
+};
+
+type ActionLog = {
+  log_id: string;
+  user_id: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  ip: string;
+  created_at: string;
+};
+
+type AdminBucket = {
+  bucket_id: string;
+  name: string;
+  r2_name: string;
+  public_domain: string;
+  custom_domain: string;
+  status: string;
+  created_at: string;
+};
+
+type TicketStatus = "open" | "in_progress" | "closed";
+
+type AdminTicket = {
+  ticket_id: string;
+  user_id: string;
+  subject: string;
+  category: string;
+  status: TicketStatus;
+  created_at: string;
+  updated_at: string;
+};
+
+type TicketMessage = {
+  message_id: string;
+  ticket_id: string;
+  sender_id: string;
+  role: "user" | "admin";
+  content: string;
+  created_at: string;
+};
+
+const ticketStatusConfig: Record<TicketStatus, { label: string; color: string }> = {
+  open: { label: "Aberto", color: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20" },
+  in_progress: { label: "Em andamento", color: "text-blue-400 bg-blue-400/10 border-blue-400/20" },
+  closed: { label: "Encerrado", color: "text-zinc-400 bg-zinc-400/10 border-zinc-400/20" },
+};
+
+function TicketBadge({ status }: { status: TicketStatus }) {
+  const cfg = ticketStatusConfig[status];
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-xs font-medium ${cfg.color}`}>
+      {cfg.label}
+    </span>
+  );
+}
+
+// ─── User Detail Panel ────────────────────────────────────────────────────────
+
+function UserDetailPanel({ user, onClose }: { user: AdminUser; onClose: () => void }) {
+  const axiosInstance = useAxios();
+  const [tab, setTab] = useState<"payments" | "logs" | "buckets">("payments");
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [logs, setLogs] = useState<ActionLog[]>([]);
+  const [buckets, setBuckets] = useState<AdminBucket[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchTab = useCallback(async (t: "payments" | "logs" | "buckets") => {
+    setLoading(true);
+    try {
+      if (t === "payments") {
+        const r = await axiosInstance.get<{ payments: Payment[] }>(`/admin/users/${user.user_id}/payments`);
+        setPayments(r.data.payments ?? []);
+      } else if (t === "logs") {
+        const r = await axiosInstance.get<{ logs: ActionLog[] }>(`/admin/users/${user.user_id}/logs`);
+        setLogs(r.data.logs ?? []);
+      } else {
+        const r = await axiosInstance.get<{ buckets: AdminBucket[] }>(`/admin/users/${user.user_id}/buckets`);
+        setBuckets(r.data.buckets ?? []);
+      }
+    } catch {
+      toast.error("Erro ao carregar dados.");
+    } finally {
+      setLoading(false);
+    }
+  }, [user.user_id]);
+
+  useEffect(() => { fetchTab(tab); }, [tab]);
+
+  const tabs = [
+    { key: "payments" as const, label: "Pagamentos", icon: <CreditCard size={13} /> },
+    { key: "logs" as const, label: "Action Logs", icon: <FileText size={13} /> },
+    { key: "buckets" as const, label: "Buckets", icon: <HardDrive size={13} /> },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-end bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="h-full w-full max-w-2xl bg-zinc-950 border-l border-zinc-800 flex flex-col shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900/60">
+          <div>
+            <p className="text-sm font-semibold text-white">{user.username}</p>
+            <p className="text-xs text-zinc-500">{user.email}</p>
+          </div>
+          <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors" style={{ background: "none", border: "none" }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b border-zinc-800 px-6">
+          {tabs.map(t => (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className={`flex items-center gap-1.5 px-3 py-3 text-xs font-semibold border-b-2 transition-colors ${tab === t.key ? "border-[var(--primary-contrast)] text-white" : "border-transparent text-zinc-500 hover:text-zinc-300"}`}
+              style={{ background: "none" }}>
+              {t.icon} {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-16 text-zinc-600">
+              <Loader2 size={20} className="animate-spin" />
+            </div>
+          ) : tab === "payments" ? (
+            payments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-2 text-zinc-600">
+                <CreditCard size={28} className="opacity-30" />
+                <p className="text-sm">Nenhum pagamento registrado</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {payments.map(p => (
+                  <div key={p.payment_id} className="rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3 flex items-center gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-white capitalize">{p.tier_id}</p>
+                      <p className="text-xs text-zinc-500 font-mono truncate">{p.stripe_id}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-green-400">
+                        {(p.amount_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: p.currency.toUpperCase() })}
+                      </p>
+                      <p className="text-xs text-zinc-600">{new Date(p.created_at).toLocaleDateString("pt-BR")}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : tab === "logs" ? (
+            logs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-2 text-zinc-600">
+                <FileText size={28} className="opacity-30" />
+                <p className="text-sm">Nenhum log encontrado</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                {logs.map(l => (
+                  <div key={l.log_id} className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 px-4 py-2.5 flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-zinc-300 font-mono">{l.action}</p>
+                      {l.entity_type && <p className="text-xs text-zinc-600">{l.entity_type} {l.entity_id}</p>}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-xs text-zinc-600">{l.ip || "—"}</p>
+                      <p className="text-xs text-zinc-700">{new Date(l.created_at).toLocaleString("pt-BR")}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : (
+            buckets.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-2 text-zinc-600">
+                <HardDrive size={28} className="opacity-30" />
+                <p className="text-sm">Nenhum bucket encontrado</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {buckets.map(b => (
+                  <div key={b.bucket_id} className="rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <p className="text-sm font-semibold text-white truncate">{b.name}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${b.status === "active" ? "text-green-400 bg-green-400/10 border-green-400/20" : "text-zinc-500 bg-zinc-800 border-zinc-700"}`}>
+                        {b.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-500 font-mono truncate">{b.custom_domain || b.public_domain || b.r2_name}</p>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Admin Tickets Section ────────────────────────────────────────────────────
+
+function TicketsSection() {
+  const axiosInstance = useAxios();
+  const [tickets, setTickets] = useState<AdminTicket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<"" | TicketStatus>("");
+  const [selected, setSelected] = useState<AdminTicket | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<TicketStatus>("open");
+  const [messages, setMessages] = useState<TicketMessage[]>([]);
+  const [msgLoading, setMsgLoading] = useState(false);
+  const [reply, setReply] = useState("");
+  const [closing, setClosing] = useState(false);
+  const seenIds = useRef<Set<string>>(new Set());
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const sending = false;
+
+  const fetchTickets = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await axiosInstance.get<{ tickets: AdminTicket[] }>("/admin/tickets", { params: { status: statusFilter || undefined } });
+      setTickets(r.data.tickets ?? []);
+    } catch {
+      toast.error("Erro ao carregar tickets.");
+    } finally {
+      setLoading(false);
+    }
+  }, [statusFilter]);
+
+  useEffect(() => { fetchTickets(); }, [fetchTickets]);
+
+  const openTicket = async (t: AdminTicket) => {
+    seenIds.current = new Set();
+    setSelected(t);
+    setSelectedStatus(t.status);
+    setMessages([]);
+    setMsgLoading(true);
+    try {
+      const r = await axiosInstance.get<{ ticket: AdminTicket; messages: TicketMessage[] }>(`/admin/tickets/${t.ticket_id}`);
+      const msgs = r.data.messages ?? [];
+      msgs.forEach(m => seenIds.current.add(m.message_id));
+      setMessages(msgs);
+      setSelectedStatus(r.data.ticket?.status ?? t.status);
+    } catch {
+      toast.error("Erro ao carregar mensagens.");
+    } finally {
+      setMsgLoading(false);
+    }
+  };
+
+  // WebSocket for real-time on the selected ticket.
+  const { incoming, send: wsSend } = useTicketWS({
+    ticketId: selected?.ticket_id ?? "",
+    enabled: !!selected && selectedStatus !== "closed",
+  });
+
+  useEffect(() => {
+    if (!incoming) return;
+    if (seenIds.current.has(incoming.message_id)) return;
+    seenIds.current.add(incoming.message_id);
+    setMessages(prev => [...prev, incoming as TicketMessage]);
+    if (incoming.role === "user" && selectedStatus === "open") setSelectedStatus("in_progress");
+  }, [incoming]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const sendReply = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reply.trim() || !selected) return;
+    const sent = wsSend(reply.trim());
+    if (sent) {
+      setReply("");
+      if (selectedStatus === "open") {
+        setSelectedStatus("in_progress");
+        setTickets(prev => prev.map(t => t.ticket_id === selected.ticket_id ? { ...t, status: "in_progress" } : t));
+      }
+    } else {
+      toast.error("Conexão perdida. Tente novamente.");
+    }
+  };
+
+  const closeTicket = async () => {
+    if (!selected) return;
+    setClosing(true);
+    try {
+      await axiosInstance.patch(`/admin/tickets/${selected.ticket_id}/close`);
+      toast.success("Ticket encerrado.");
+      setSelectedStatus("closed");
+      setTickets(prev => prev.map(t => t.ticket_id === selected.ticket_id ? { ...t, status: "closed" } : t));
+    } catch {
+      toast.error("Erro ao encerrar ticket.");
+    } finally {
+      setClosing(false);
+    }
+  };
+
+  if (selected) {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <button onClick={() => { setSelected(null); setMessages([]); }} className="text-zinc-400 hover:text-white transition-colors text-sm flex items-center gap-1" style={{ background: "none", border: "none" }}>
+            ← Voltar
+          </button>
+          <div className="h-4 w-px bg-zinc-700" />
+          <TicketBadge status={selectedStatus} />
+          {selectedStatus !== "closed" && (
+            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-semibold">
+              <Wifi size={10} className="animate-pulse" /> Ao vivo
+            </span>
+          )}
+          <p className="text-sm font-semibold text-white flex-1 truncate">{selected.subject}</p>
+          {selectedStatus !== "closed" && (
+            <button onClick={closeTicket} disabled={closing}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-700 text-xs text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors disabled:opacity-40"
+              style={{ background: "transparent" }}>
+              {closing ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+              Encerrar
+            </button>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 flex flex-col overflow-hidden">
+          {msgLoading ? (
+            <div className="flex items-center justify-center py-12 text-zinc-600"><Loader2 size={20} className="animate-spin" /></div>
+          ) : (
+            <div className="flex flex-col divide-y divide-zinc-800/50 max-h-[480px] overflow-y-auto">
+              {messages.map(msg => (
+                <div key={msg.message_id} className={`p-4 flex flex-col gap-1 ${msg.role === "admin" ? "bg-zinc-800/30" : ""}`}>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-semibold ${msg.role === "admin" ? "text-[var(--primary-contrast-light)]" : "text-zinc-300"}`}>
+                      {msg.role === "admin" ? "Suporte (você)" : "Usuário"}
+                    </span>
+                    <span className="text-xs text-zinc-600">{new Date(msg.created_at).toLocaleString("pt-BR")}</span>
+                  </div>
+                  <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                </div>
+              ))}
+              <div ref={bottomRef} />
+            </div>
+          )}
+
+          {selectedStatus !== "closed" && (
+            <form onSubmit={sendReply} className="border-t border-zinc-800 p-4 flex gap-3 items-end">
+              <textarea
+                value={reply}
+                onChange={e => setReply(e.target.value)}
+                placeholder="Responder como suporte..."
+                rows={2}
+                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(e as unknown as React.FormEvent); } }}
+              />
+              <button type="submit" disabled={!reply.trim()}
+                className="p-2.5 rounded-xl bg-[var(--primary-contrast)] text-white hover:opacity-90 transition-opacity disabled:opacity-40"
+                style={{ border: "none" }}>
+                {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <MessageSquare size={15} className="text-zinc-500" />
+          <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">
+            Tickets {tickets.length > 0 && <span className="text-zinc-600">({tickets.length})</span>}
+          </h2>
+        </div>
+        <div className="flex gap-2 items-center">
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as "" | TicketStatus)}
+            className="text-xs bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-xl px-3 py-2 cursor-pointer hover:border-zinc-600 transition-colors">
+            <option value="">Todos</option>
+            <option value="open">Abertos</option>
+            <option value="in_progress">Em andamento</option>
+            <option value="closed">Encerrados</option>
+          </select>
+          <button onClick={fetchTickets} className="p-2 rounded-lg border border-zinc-800 text-zinc-500 hover:text-white transition-colors" style={{ background: "transparent" }}>
+            <RefreshCw size={13} />
+          </button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-16 rounded-xl border border-zinc-800 bg-zinc-900/40 animate-pulse" />)}
+        </div>
+      ) : tickets.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-zinc-600">
+          <MessageSquare size={32} className="opacity-30" />
+          <p className="text-sm">Nenhum ticket encontrado</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {tickets.map(t => (
+            <button key={t.ticket_id} onClick={() => openTicket(t)}
+              className="bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-4 flex items-center gap-4 hover:border-zinc-700 transition-colors text-left w-full"
+              style={{ background: undefined }}>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white truncate">{t.subject}</p>
+                <p className="text-xs text-zinc-500 mt-0.5 font-mono">{t.user_id} · {new Date(t.created_at).toLocaleDateString("pt-BR")}</p>
+              </div>
+              <TicketBadge status={t.status} />
+              <ChevronRight size={16} className="text-zinc-600 shrink-0" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 const Admin = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
+
+  const [activeTab, setActiveTab] = useState<"users" | "tickets">("users");
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -273,17 +708,36 @@ const Admin = () => {
               <span className="font-bold text-sm">Admin Panel</span>
             </div>
           </div>
-          <button
-            onClick={() => { fetchStats(); fetchUsers(); }}
-            className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-white transition-colors"
-            style={{ background: "none", border: "none", padding: 0 }}
-          >
-            <RefreshCw size={13} /> Atualizar
-          </button>
+          <div className="flex items-center gap-4">
+            {/* Tabs */}
+            <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-xl p-1">
+              <button onClick={() => setActiveTab("users")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTab === "users" ? "bg-zinc-800 text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+                style={{ border: "none" }}>
+                <Users size={12} /> Usuários
+              </button>
+              <button onClick={() => setActiveTab("tickets")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTab === "tickets" ? "bg-zinc-800 text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+                style={{ border: "none" }}>
+                <MessageSquare size={12} /> Tickets
+              </button>
+            </div>
+            <button
+              onClick={() => { fetchStats(); fetchUsers(); }}
+              className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-white transition-colors"
+              style={{ background: "none", border: "none", padding: 0 }}
+            >
+              <RefreshCw size={13} /> Atualizar
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-5 py-8 flex flex-col gap-8">
+
+        {activeTab === "tickets" && <TicketsSection />}
+
+        {activeTab === "users" && <>
 
         {/* ── Stats ── */}
         <section>
@@ -359,9 +813,9 @@ const Admin = () => {
           {/* Table */}
           <div className="rounded-2xl border border-zinc-800 overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-[1fr_1fr_80px_72px_80px_160px] gap-4 px-5 py-3 border-b border-zinc-800 bg-zinc-900/80">
-              {["Usuário", "Email", "Tier", "Role", "Provider", "Ações"].map((h) => (
-                <span key={h} className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest last:text-right">{h}</span>
+            <div className="grid grid-cols-[1fr_1fr_80px_72px_80px_36px_160px] gap-4 px-5 py-3 border-b border-zinc-800 bg-zinc-900/80">
+              {["Usuário", "Email", "Tier", "Role", "Provider", "", "Ações"].map((h, idx) => (
+                <span key={idx} className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest last:text-right">{h}</span>
               ))}
             </div>
 
@@ -382,7 +836,7 @@ const Admin = () => {
                 {users.map((u, i) => (
                   <div
                     key={u.user_id}
-                    className={`grid grid-cols-[1fr_1fr_80px_72px_80px_160px] gap-4 px-5 py-3.5 items-center border-b border-zinc-800/40 hover:bg-zinc-900/40 transition-colors ${i === users.length - 1 ? "border-b-0" : ""}`}
+                    className={`grid grid-cols-[1fr_1fr_80px_72px_80px_36px_160px] gap-4 px-5 py-3.5 items-center border-b border-zinc-800/40 hover:bg-zinc-900/40 transition-colors ${i === users.length - 1 ? "border-b-0" : ""}`}
                   >
                     {/* User info */}
                     <div className="min-w-0">
@@ -408,6 +862,16 @@ const Admin = () => {
                         {u.auth_provider}
                       </span>
                     </div>
+
+                    {/* Detail */}
+                    <button
+                      title="Ver detalhes"
+                      onClick={() => setSelectedUser(u)}
+                      className="p-1.5 rounded-lg border border-zinc-800 text-zinc-600 hover:text-sky-400 hover:border-sky-500/30 transition-colors"
+                      style={{ background: "transparent" }}
+                    >
+                      <Eye size={14} />
+                    </button>
 
                     {/* Actions */}
                     <UserActions user={u} onRefresh={fetchUsers} />
@@ -458,6 +922,8 @@ const Admin = () => {
           )}
         </section>
 
+        </> /* end activeTab === "users" */}
+
         {/* ── Footer ── */}
         <footer className="pt-4 border-t border-zinc-900 flex items-center justify-between text-[11px] text-zinc-700">
           <span>5Vault Admin Panel</span>
@@ -466,6 +932,9 @@ const Admin = () => {
           </span>
         </footer>
       </div>
+
+      {/* User detail panel */}
+      {selectedUser && <UserDetailPanel user={selectedUser} onClose={() => setSelectedUser(null)} />}
     </div>
   );
 };
