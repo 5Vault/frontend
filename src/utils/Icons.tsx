@@ -16,6 +16,7 @@ import {
   Folder,
   HardDrive,
   Headphones,
+  MessageSquare,
   House,
   Image,
   Key,
@@ -69,7 +70,7 @@ const Icons = {
   flag: <Flag size={20} />,
   arrow_left: <ArrowLeft size={20} />,
   arrow_right: <ArrowRight size={20} />,
-  
+  support: <MessageSquare size={20} />,
 };
 
 export default Icons;

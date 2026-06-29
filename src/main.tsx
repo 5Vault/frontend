@@ -13,6 +13,8 @@ import AccountTemplate from "./templates/Account.tsx";
 import CheckOut from "./templates/CheckOut.tsx";
 import BucketStorageTemplate from "./templates/BucketStorage.tsx";
 import Admin from "./templates/Admin.tsx";
+import ForgotPasswordTemplate from "./templates/ForgotPassword.tsx";
+import ResetPasswordTemplate from "./templates/ResetPassword.tsx";
 
 import RouteGate from "./routes/RouteGate.tsx";
 import SessionListener from "./components/SessionListener.tsx";
@@ -68,6 +70,8 @@ createRoot(document.getElementById("root")!).render(
                 {/* Landing page — always public */}
                 <Route path="/" element={<Home />} />
                 <Route path="/home" element={<Home />} />
+                <Route path="/forgot-password" element={<ForgotPasswordTemplate />} />
+                <Route path="/reset-password/:token" element={<ResetPasswordTemplate />} />
 
                 {/* Private routes — redirect to /account?mode=login if not authenticated */}
                 <Route element={<RouteGate requireUser />}>
@@ -80,6 +84,7 @@ createRoot(document.getElementById("root")!).render(
                   <Route path="/bucket" element={<BucketStorageTemplate />} />
                   <Route path="/checkout" element={<CheckOut />} />
                   <Route path="/admin" element={<Admin />} />
+                  <Route path="/suporte" element={<App section="suporte" />} />
                 </Route>
               </Routes>
 

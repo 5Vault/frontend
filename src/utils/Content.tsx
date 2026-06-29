@@ -99,6 +99,17 @@ const Content: ContentType = {
       },
       icon: Icons.settings,
     },
+    suporte: {
+      labels: {
+        pt: "Suporte",
+        en: "Support",
+      },
+      sublabels: {
+        pt: "Abra um ticket de suporte",
+        en: "Open a support ticket",
+      },
+      icon: Icons.support,
+    },
   },
   plans: {
     free: {
@@ -112,7 +123,7 @@ const Content: ContentType = {
     },
     starter: {
       labels: { pt: "Iniciante", en: "Starter" },
-      cost: { pt: "R$9,90/mês", en: "R$9.90/month" },
+      cost: { pt: "R$19,90/mês", en: "R$19.90/month" },
       description: { pt: "Ideal para comunidades pequenas. Mais storage que a concorrência pela metade do preço.", en: "Ideal for small communities." },
       included: {
         pt: ["60GB de Armazenamento", "3 Chaves de API", "Requisições Ilimitadas", "Subdomínio compartilhado", "Suporte por e-mail"],
@@ -121,20 +132,20 @@ const Content: ContentType = {
     },
     pro: {
       labels: { pt: "Profissional", en: "Professional" },
-      cost: { pt: "R$19,90/mês", en: "R$19.90/month" },
-      description: { pt: "Para comunidades em crescimento. Domínio próprio e backup automático.", en: "For growing communities." },
+      cost: { pt: "R$34,90/mês", en: "R$34.90/month" },
+      description: { pt: "Para comunidades em crescimento. Configuração de outros domínios e backup automático.", en: "For growing communities." },
       included: {
-        pt: ["200GB de Armazenamento", "10 Chaves de API com permissões", "Requisições Ilimitadas", "Domínio próprio", "Backup automático diário", "Suporte prioritário 24/7"],
-        en: ["200GB Storage", "10 API Keys with permissions", "Unlimited Requests", "Custom domain", "Daily automatic backup", "Priority 24/7 support"],
+        pt: ["200GB de Armazenamento", "10 Chaves de API com permissões", "Requisições Ilimitadas", "Configuração de outros domínios", "Backup automático diário", "Suporte prioritário 24/7"],
+        en: ["200GB Storage", "10 API Keys with permissions", "Unlimited Requests", "Configuration of other domains", "Daily automatic backup", "Priority 24/7 support"],
       },
     },
     enterprise: {
       labels: { pt: "Empresarial", en: "Enterprise" },
-      cost: { pt: "R$39,90/mês", en: "R$39.90/month" },
+      cost: { pt: "R$49,90/mês", en: "R$49.90/month" },
       description: { pt: "Para grandes operações. 1TB de storage e SLA garantido.", en: "For large operations. Guaranteed SLA." },
       included: {
-        pt: ["1TB de Armazenamento", "Chaves de API ilimitadas", "Requisições Ilimitadas", "Domínio próprio", "Backup automático diário", "Até 5 Storages", "SLA 99,9% de uptime", "Suporte dedicado"],
-        en: ["1TB Storage", "Unlimited API Keys", "Unlimited Requests", "Custom domain", "Daily backup", "Up to 5 Storages", "99.9% uptime SLA", "Dedicated support"],
+        pt: ["1TB de Armazenamento", "Chaves de API ilimitadas", "Requisições Ilimitadas", "Configuração de outros domínios", "Backup automático diário", "Até 5 Storages", "SLA 99,9% de uptime", "Suporte dedicado"],
+        en: ["1TB Storage", "Unlimited API Keys", "Unlimited Requests", "Configuration of other domains", "Daily backup", "Up to 5 Storages", "99.9% uptime SLA", "Dedicated support"],
       },
     },
   },

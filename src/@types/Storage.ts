@@ -30,6 +30,9 @@ export type Bucket = {
   name: string;
   r2_name: string;
   status: "pending" | "active" | "error";
+  custom_domain: string;
+  public_domain: string;
+  public_access_enabled: boolean;
   created_at: string;
 };
 

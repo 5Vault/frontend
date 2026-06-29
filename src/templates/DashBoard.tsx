@@ -30,11 +30,13 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 const DashBoardTemplate = () => {
   const { user } = useAuthContext();
   const [dashData, setDashData] = useState<DashBoardType | null>(null);
+  const [bucketTotalFiles, setBucketTotalFiles] = useState<number>(0);
   const axiosInstance = useAxios();
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     axiosInstance.get("/file/stats").then((r) => setDashData(r.data)).catch(() => {});
+    axiosInstance.get("/bucket/stats").then((r) => setBucketTotalFiles(r.data?.total_files ?? 0)).catch(() => {});
   }, []);
 
   // Handle Stripe redirect after successful payment
@@ -156,7 +158,7 @@ const DashBoardTemplate = () => {
       icon: Icons.fileStack,
       content: (
         <h2 className="text-4xl font-bold flex items-center h-full">
-          {dashData?.total_files ?? 0}
+          {bucketTotalFiles}
         </h2>
       ),
     },

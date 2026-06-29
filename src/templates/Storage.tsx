@@ -1,4 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from "react";
+import useAuthContext from "../hook/useAuthContext";
 import {
   AlertTriangle,
   ChevronRight,
@@ -9,8 +10,10 @@ import {
   FileAudio,
   FileVideo,
   FolderPlus,
+  Globe,
   Loader2,
   Plus,
+  Settings,
   Trash2,
   Upload,
   X
@@ -35,10 +38,65 @@ const fmtSize = (bytes: number) => {
   return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
 };
 
+// ── File row with image fallback ─────────────────────────────────────────────
+
+type FileRowProps = {
+  f: MediaFile; filename: string;
+  isImg: boolean; isAud: boolean; isVid: boolean;
+  onPreview: () => void; onCopy: () => void; onDelete: () => void;
+};
+
+const FileRow = ({ f, filename, isImg, isAud, isVid, onPreview, onCopy, onDelete }: FileRowProps) => {
+  const [thumbErr, setThumbErr] = useState(false);
+  const [thumbLoaded, setThumbLoaded] = useState(false);
+  return (
+    <div onClick={onPreview}
+      className="flex items-center justify-between bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition-colors group cursor-pointer">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        {isImg && !thumbErr ? (
+          <img src={f.public_url} alt={filename}
+            className="w-10 h-10 rounded-lg object-cover border border-zinc-700 shrink-0 transition-opacity duration-300"
+            style={{ opacity: thumbLoaded ? 1 : 0 }}
+            onLoad={() => setThumbLoaded(true)}
+            onError={() => setThumbErr(true)} />
+        ) : isAud ? (
+          <span className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
+            <FileAudio size={18} className="text-zinc-400" />
+          </span>
+        ) : isVid ? (
+          <span className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
+            <FileVideo size={18} className="text-zinc-400" />
+          </span>
+        ) : (
+          <span className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
+            <FileIcon2 size={18} className="text-zinc-400" />
+          </span>
+        )}
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-white truncate">{filename}</p>
+          <p className="text-xs text-zinc-500">{fmtSize(f.size)} · {f.last_modified.slice(0, 10)}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button onClick={e => { e.stopPropagation(); onCopy(); }}
+          className="p-1.5 text-zinc-500 hover:text-white transition-colors" title="Copiar URL">
+          <Copy size={15} />
+        </button>
+        <button onClick={e => { e.stopPropagation(); onDelete(); }}
+          className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors" title="Excluir">
+          <Trash2 size={15} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // ── File Preview Modal ────────────────────────────────────────────────────────
 
 const FilePreviewModal = ({ file, onClose }: { file: MediaFile; onClose: () => void }) => {
   const filename = file.key.split("/").pop()!;
+  const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -66,7 +124,7 @@ const FilePreviewModal = ({ file, onClose }: { file: MediaFile; onClose: () => v
               className="p-1.5 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-zinc-800" title="Abrir em nova aba">
               <ExternalLink size={15} />
             </a>
-            <button onClick={() => { navigator.clipboard.writeText(file.public_url); }}
+            <button onClick={() => { navigator.clipboard.writeText(file.public_url); toast.success("URL copiada!"); }}
               className="p-1.5 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-zinc-800" title="Copiar URL">
               <Copy size={15} />
             </button>
@@ -80,12 +138,26 @@ const FilePreviewModal = ({ file, onClose }: { file: MediaFile; onClose: () => v
         {/* Preview area */}
         <div className="flex items-center justify-center bg-zinc-950 min-h-[300px] max-h-[520px]">
           {isImageFile(filename) ? (
-            <img
-              src={file.public_url}
-              alt={filename}
-              className="max-w-full max-h-[520px] object-contain"
-              onError={e => { (e.target as HTMLImageElement).src = ""; (e.target as HTMLImageElement).alt = "Não foi possível carregar a imagem"; }}
-            />
+            imgError ? (
+              <div className="flex flex-col items-center gap-3 p-10 text-zinc-500">
+                <FileIcon2 size={48} className="opacity-40" />
+                <p className="text-sm text-center">Não foi possível carregar a imagem.</p>
+                <p className="text-xs text-zinc-600 font-mono break-all max-w-xs text-center">{file.public_url}</p>
+                <a href={file.public_url} target="_blank" rel="noopener noreferrer"
+                  className="text-xs text-[var(--primary-contrast-light)] hover:underline flex items-center gap-1">
+                  <ExternalLink size={12} /> Tentar abrir diretamente
+                </a>
+              </div>
+            ) : (
+              <img
+                src={file.public_url}
+                alt={filename}
+                className="max-w-full max-h-[520px] object-contain transition-opacity duration-500"
+                style={{ opacity: imgLoaded ? 1 : 0 }}
+                onLoad={() => setImgLoaded(true)}
+                onError={() => { setImgError(true); toast.error("Não foi possível carregar a imagem. Verifique se o bucket tem acesso público ativado."); }}
+              />
+            )
           ) : isAudioFile(filename) ? (
             <div className="flex flex-col items-center gap-4 p-8">
               <div className="w-20 h-20 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
@@ -246,6 +318,124 @@ const ConfirmDirModal = ({
   </div>
 );
 
+// ── Domain Settings Modal ─────────────────────────────────────────────────────
+
+const STORAGE_DOMAIN = "5vault.app";
+const canCustomize = (tier: string | null) => tier === "pro" || tier === "enterprise";
+
+const BucketSettingsModal = ({
+  bucket,
+  onClose,
+  onSaved,
+}: {
+  bucket: Bucket;
+  onClose: () => void;
+  onSaved: (updates: Partial<Bucket>) => void;
+}) => {
+  const axiosInstance = useAxios();
+  const { user } = useAuthContext();
+  const isPro = canCustomize(user?.tier ?? null);
+
+  // O prefixo atual sem o sufixo ".5vault.app"
+  const currentPrefix = bucket.custom_domain?.endsWith("." + STORAGE_DOMAIN)
+    ? bucket.custom_domain.slice(0, -(STORAGE_DOMAIN.length + 1))
+    : "";
+
+  const [prefix, setPrefix] = useState(currentPrefix);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    const newDomain = prefix.trim() ? `${prefix.trim()}.${STORAGE_DOMAIN}` : "";
+    setSaving(true);
+    try {
+      await axiosInstance.patch(`/bucket/${bucket.bucket_id}/domain`, { domain: newDomain });
+      toast.success(newDomain ? "Subdomínio atualizado!" : "Subdomínio removido.");
+      onSaved({ custom_domain: newDomain });
+      onClose();
+    } catch (e: unknown) {
+      const msg = (e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Erro ao salvar.";
+      toast.error(msg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const currentDomain = bucket.custom_domain || bucket.public_domain || "—";
+  const isDefaultDomain = bucket.custom_domain?.endsWith("." + STORAGE_DOMAIN) && !isPro;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 w-full max-w-md flex flex-col gap-5" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="p-2 rounded-full bg-zinc-800 text-zinc-300"><Settings size={18} /></span>
+            <div>
+              <h3 className="text-base font-semibold text-white">Configurações do Bucket</h3>
+              <p className="text-xs text-zinc-500">{bucket.name}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors"><X size={18} /></button>
+        </div>
+
+        {/* Domínio atual */}
+        <div className="flex flex-col gap-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-zinc-300">
+            <Globe size={14} /> Domínio público
+          </label>
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-zinc-800 rounded-xl border border-zinc-700">
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${bucket.custom_domain || bucket.public_domain ? "bg-green-400" : "bg-zinc-600"}`} />
+            <span className={`text-xs font-mono break-all ${bucket.custom_domain || bucket.public_domain ? "text-green-400" : "text-zinc-500"}`}>
+              {currentDomain}
+            </span>
+          </div>
+        </div>
+
+        {/* Subdomínio personalizado (apenas pro/enterprise) */}
+        {isPro ? (
+          <div className="flex flex-col gap-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-zinc-300">
+              <Globe size={14} /> Subdomínio personalizado
+            </label>
+            <div className="flex items-center bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden focus-within:border-zinc-500 transition-colors">
+              <input
+                type="text"
+                placeholder="minha-org"
+                value={prefix}
+                onChange={e => setPrefix(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                onKeyDown={e => e.key === "Enter" && save()}
+                className="flex-1 bg-transparent px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none"
+              />
+              <span className="pr-4 text-sm text-zinc-500 select-none">.{STORAGE_DOMAIN}</span>
+            </div>
+            <p className="text-xs text-zinc-500">
+              Seu bucket ficará acessível em <code className="text-zinc-300">{prefix || "prefixo"}.{STORAGE_DOMAIN}</code>
+            </p>
+          </div>
+        ) : (
+          !isDefaultDomain && (
+            <div className="flex items-start gap-3 px-4 py-3 bg-zinc-800/60 border border-zinc-700 rounded-xl">
+              <span className="text-xs text-zinc-400 leading-relaxed">
+                Subdomínios personalizados (<code className="text-zinc-300">orgname.{STORAGE_DOMAIN}</code>) estão disponíveis nos planos <span className="text-white font-medium">Pro</span> e <span className="text-white font-medium">Enterprise</span>.
+              </span>
+            </div>
+          )
+        )}
+
+        <div className="flex gap-2 justify-end">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">Fechar</button>
+          {isPro && (
+            <button onClick={save} disabled={saving}
+              className="px-5 py-2 rounded-lg text-sm bg-[var(--primary-contrast)] text-white hover:opacity-90 transition-opacity font-medium disabled:opacity-40 flex items-center gap-2">
+              {saving && <Loader2 size={14} className="animate-spin" />}
+              Salvar
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const StorageTemplate = () => {
@@ -255,11 +445,13 @@ const StorageTemplate = () => {
 
   const ROOT_DIR: Directory = { dir_id: "root", bucket_id: "", name: "Raiz", created_at: "" };
   const [previewFile, setPreviewFile] = useState<MediaFile | null>(null);
+  const [settingsBucket, setSettingsBucket] = useState<Bucket | null>(null);
 
   const [view, setView] = useState<View>("buckets");
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [dirs, setDirs] = useState<Directory[]>([]);
   const [files, setFiles] = useState<MediaFile[]>([]);
+  const [search, setSearch] = useState("");
 
   const [selectedBucket, setSelectedBucket] = useState<Bucket | null>(null);
   const [selectedDir, setSelectedDir] = useState<Directory | null>(null);
@@ -564,13 +756,26 @@ const StorageTemplate = () => {
                     <Database size={20} className="text-zinc-400" />
                     <div>
                       <p className="text-sm font-medium text-white">{b.name}</p>
-                      <p className="text-xs text-zinc-500">{b.r2_name}</p>
+                      <p className="text-xs text-zinc-500">
+                        {b.custom_domain ? (
+                          <span className="flex items-center gap-1">
+                            <Globe size={10} className="text-emerald-400" />
+                            <span className="text-emerald-400">{b.custom_domain}</span>
+                            <span className="text-zinc-600 mx-1">·</span>
+                            {b.r2_name}
+                          </span>
+                        ) : b.r2_name}
+                      </p>
                     </div>
                     <div className="ml-3">{statusBadge(b.status)}</div>
                   </button>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => setBucketToDelete(b)}
-                      className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors">
+                    <button onClick={e => { e.stopPropagation(); setSettingsBucket(b); }}
+                      className="p-1.5 text-zinc-500 hover:text-zinc-200 transition-colors" title="Configurações">
+                      <Settings size={16} />
+                    </button>
+                    <button onClick={e => { e.stopPropagation(); setBucketToDelete(b); }}
+                      className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors" title="Excluir">
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -697,6 +902,25 @@ const StorageTemplate = () => {
               onChange={e => e.target.files && uploadFiles(e.target.files)} />
           </label>
 
+          {/* Search */}
+          {!loading && files.length > 0 && (
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Filtrar por nome..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors"
+              />
+              {search && (
+                <button onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          )}
+
           {loading ? (
             <div className="flex items-center justify-center py-12 text-zinc-500">
               <Loader2 size={24} className="animate-spin mr-2" /> Carregando...
@@ -707,54 +931,26 @@ const StorageTemplate = () => {
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {files.map(f => {
-                const filename = f.key.split("/").pop()!;
-                const isImg = isImageFile(filename);
-                const isAud = isAudioFile(filename);
-                const isVid = isVideoFile(filename);
-                return (
-                  <div key={f.key}
-                    onClick={() => setPreviewFile(f)}
-                    className="flex items-center justify-between bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition-colors group cursor-pointer">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      {isImg ? (
-                        <img
-                          src={f.public_url}
-                          alt={filename}
-                          className="w-10 h-10 rounded-lg object-cover border border-zinc-700 shrink-0"
-                          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-                        />
-                      ) : isAud ? (
-                        <span className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
-                          <FileAudio size={18} className="text-zinc-400" />
-                        </span>
-                      ) : isVid ? (
-                        <span className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
-                          <FileVideo size={18} className="text-zinc-400" />
-                        </span>
-                      ) : (
-                        <span className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
-                          <FileIcon2 size={18} className="text-zinc-400" />
-                        </span>
-                      )}
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{filename}</p>
-                        <p className="text-xs text-zinc-500">{fmtSize(f.size)} · {f.last_modified.slice(0, 10)}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={e => { e.stopPropagation(); navigator.clipboard.writeText(f.public_url); toast.success("URL copiada!"); }}
-                        className="p-1.5 text-zinc-500 hover:text-white transition-colors" title="Copiar URL">
-                        <Copy size={15} />
-                      </button>
-                      <button onClick={e => { e.stopPropagation(); setFileToDelete(f); }}
-                        className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors" title="Excluir">
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+              {files
+                .filter(f => !search || f.key.split("/").pop()!.toLowerCase().includes(search.toLowerCase()))
+                .map(f => {
+                  const filename = f.key.split("/").pop()!;
+                  const isImg = isImageFile(filename);
+                  const isAud = isAudioFile(filename);
+                  const isVid = isVideoFile(filename);
+                  return (
+                    <FileRow key={f.key} f={f} filename={filename} isImg={isImg} isAud={isAud} isVid={isVid}
+                      onPreview={() => setPreviewFile(f)}
+                      onCopy={() => { navigator.clipboard.writeText(f.public_url); toast.success("URL copiada!"); }}
+                      onDelete={() => setFileToDelete(f)}
+                    />
+                  );
+                })}
+              {search && files.filter(f => f.key.split("/").pop()!.toLowerCase().includes(search.toLowerCase())).length === 0 && (
+                <div className="flex flex-col items-center justify-center py-8 text-zinc-600 gap-1">
+                  <p className="text-sm">Nenhum arquivo com esse nome.</p>
+                </div>
+              )}
             </div>
           )}
 
@@ -811,6 +1007,13 @@ const StorageTemplate = () => {
     </div>
 
     {/* ── Modals ── */}
+    {settingsBucket && (
+      <BucketSettingsModal
+        bucket={settingsBucket}
+        onClose={() => setSettingsBucket(null)}
+        onSaved={updates => setBuckets(prev => prev.map(b => b.bucket_id === settingsBucket!.bucket_id ? { ...b, ...updates } : b))}
+      />
+    )}
     {previewFile && (
       <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />
     )}

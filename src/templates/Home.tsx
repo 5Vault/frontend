@@ -52,14 +52,14 @@ const benefits = [
   },
   {
     icon: <Globe size={20} />,
-    title: "Domínio Personalizado",
-    description: "Use seu próprio domínio ou um subdomínio compartilhado da 5Vault.",
+    title: "Configuração de Outros Domínios",
+    description: "Configure para outros domínios ou use um subdomínio compartilhado da 5Vault.",
   },
 ];
 
 const steps = [
   { icon: <Upload size={22} />, step: "01", title: "Crie sua conta", desc: "Registre-se grátis em segundos. Sem cartão de crédito." },
-  { icon: <Server size={22} />, step: "02", title: "Configure o storage", desc: "Escolha domínio próprio ou subdomínio 5Vault com 1 clique." },
+  { icon: <Server size={22} />, step: "02", title: "Configure o storage", desc: "Configure para outros domínios ou use subdomínio 5Vault com 1 clique." },
   { icon: <Key size={22} />, step: "03", title: "Gere sua API Key", desc: "Crie chaves de leitura ou escrita para cada servidor FiveM." },
   { icon: <Zap size={22} />, step: "04", title: "Faça upload", desc: "Envie texturas, modelos e assets direto pelo painel ou API." },
 ];
@@ -97,7 +97,7 @@ const Home = () => {
 
           <p className="animate-fade-in-up delay-300 text-zinc-400 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
             Hospede texturas, modelos e assets do seu servidor FiveM com alta disponibilidade,
-            latência mínima e domínio próprio.
+            latência mínima e configuração de outros domínios.
           </p>
 
           <div className="animate-fade-in-up delay-400 flex flex-wrap gap-3 justify-center mb-16">

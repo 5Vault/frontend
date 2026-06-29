@@ -51,7 +51,7 @@ const rows: CompareRow[] = [
   { category: "API",         icon: <Key size={13} />,        label: "Chaves de API",             free: "1",          starter: "3",          pro: "10",            enterprise: "Ilimitadas"  },
   // Infraestrutura
   { category: "Infraestrutura", icon: <Globe size={13} />,  label: "Subdomínio compartilhado",  free: true,         starter: true,         pro: true,            enterprise: true          },
-  {                          icon: <Globe size={13} />,      label: "Domínio próprio",           free: false,        starter: false,        pro: true,            enterprise: true          },
+  {                          icon: <Globe size={13} />,      label: "Configuração de outros domínios", free: false,        starter: false,        pro: true,            enterprise: true          },
   {                          icon: <RefreshCw size={13} />,  label: "Backup automático diário",  free: false,        starter: false,        pro: true,            enterprise: true          },
   {                          icon: <ShieldCheck size={13} />,label: "SLA de uptime",             free: null,         starter: null,         pro: null,            enterprise: "99,9%"       },
 ];

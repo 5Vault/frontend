@@ -1,7 +1,122 @@
-import { useState } from "react";
-import { Check, Copy, Code2, ChevronRight, BookOpen, FileCode } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, Copy, Code2, ChevronRight, BookOpen, FileCode, Download, Loader2 } from "lucide-react";
 import HeaderTemplate from "../components/Header";
 import useAuthContext from "../hook/useAuthContext";
+import useAxios from "../utils/axiosConfig";
+import toast from "react-hot-toast";
+import Selector from "../components/Selector";
+import SelectorItem from "../components/SelectorItem";
+
+const createZip = (files: { name: string; content: string }[]): Blob => {
+  const crcTable: number[] = [];
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) {
+      c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    }
+    crcTable[n] = c;
+  }
+
+  const getCrc32 = (data: Uint8Array): number => {
+    let crc = -1;
+    for (let i = 0; i < data.length; i++) {
+      crc = (crc >>> 8) ^ crcTable[(crc ^ data[i]) & 0xFF];
+    }
+    return (crc ^ -1) >>> 0;
+  };
+
+  const textEncoder = new TextEncoder();
+  const fileDataList = files.map(f => {
+    const nameBytes = textEncoder.encode(f.name);
+    const contentBytes = textEncoder.encode(f.content);
+    const crc = getCrc32(contentBytes);
+    return {
+      name: f.name,
+      nameBytes,
+      contentBytes,
+      crc,
+      size: contentBytes.length,
+    };
+  });
+
+  const buffers: Uint8Array[] = [];
+  const localOffsets: number[] = [];
+  let currentOffset = 0;
+
+  for (const file of fileDataList) {
+    localOffsets.push(currentOffset);
+    const header = new ArrayBuffer(30 + file.nameBytes.length);
+    const view = new DataView(header);
+    view.setUint32(0, 0x04034b50, true);
+    view.setUint16(4, 10, true);
+    view.setUint16(6, 0, true);
+    view.setUint16(8, 0, true);
+    view.setUint16(10, 0, true);
+    view.setUint16(12, 0, true);
+    view.setUint32(14, file.crc, true);
+    view.setUint32(18, file.size, true);
+    view.setUint32(22, file.size, true);
+    view.setUint16(26, file.nameBytes.length, true);
+    view.setUint16(28, 0, true);
+    
+    new Uint8Array(header, 30).set(file.nameBytes);
+
+    const headerArray = new Uint8Array(header);
+    buffers.push(headerArray);
+    buffers.push(file.contentBytes);
+
+    currentOffset += headerArray.length + file.size;
+  }
+
+  const centralDirStartOffset = currentOffset;
+  let centralDirSize = 0;
+
+  for (let i = 0; i < fileDataList.length; i++) {
+    const file = fileDataList[i];
+    const offset = localOffsets[i];
+    const cdHeader = new ArrayBuffer(46 + file.nameBytes.length);
+    const view = new DataView(cdHeader);
+    view.setUint32(0, 0x02014b50, true);
+    view.setUint16(4, 10, true);
+    view.setUint16(6, 10, true);
+    view.setUint16(8, 0, true);
+    view.setUint16(10, 0, true);
+    view.setUint16(12, 0, true);
+    view.setUint16(14, 0, true);
+    view.setUint32(16, file.crc, true);
+    view.setUint32(20, file.size, true);
+    view.setUint32(24, file.size, true);
+    view.setUint16(28, file.nameBytes.length, true);
+    view.setUint16(30, 0, true);
+    view.setUint16(32, 0, true);
+    view.setUint16(34, 0, true);
+    view.setUint16(36, 0, true);
+    view.setUint32(38, 0, true);
+    view.setUint32(42, offset, true);
+
+    new Uint8Array(cdHeader, 46).set(file.nameBytes);
+
+    const cdHeaderArray = new Uint8Array(cdHeader);
+    buffers.push(cdHeaderArray);
+    centralDirSize += cdHeaderArray.length;
+    currentOffset += cdHeaderArray.length;
+  }
+
+  const eocd = new ArrayBuffer(22);
+  const view = new DataView(eocd);
+  view.setUint32(0, 0x06054b50, true);
+  view.setUint16(4, 0, true);
+  view.setUint16(6, 0, true);
+  view.setUint16(8, fileDataList.length, true);
+  view.setUint16(10, fileDataList.length, true);
+  view.setUint32(12, centralDirSize, true);
+  view.setUint32(16, centralDirStartOffset, true);
+  view.setUint16(20, 0, true);
+
+  buffers.push(new Uint8Array(eocd));
+
+  return new Blob(buffers, { type: "application/zip" });
+};
 
 const BASE_URL = "https://api.5vault.com.br/api/v1";
 
@@ -39,7 +154,6 @@ server_scripts {
 
 Config.ApiKey   = "${apiKey}"
 Config.BucketId = "${bucketId}"
-Config.DirId    = "seu_diretorio_id"   -- ID do diretório dentro do bucket
 Config.BaseUrl  = "${BASE_URL}"`,
   },
   {
@@ -69,7 +183,7 @@ local function buildMultipart(fileName, fileData, mimeType)
 end
 
 --- Envia um arquivo do disco (dentro do resource) para o bucket configurado.
---- @param fileName  string    Nome do arquivo a enviar (deve estar na pasta do resource)
+--- @param fileName  string    Nome do arquivo a enviar (deve estar na pasta do resource, ex: "imagens/foto.png")
 --- @param mimeType  string    MIME type do arquivo
 --- @param callback  function  function(ok: boolean, url: string|nil)
 exports('UploadFile', function(fileName, mimeType, callback)
@@ -82,7 +196,7 @@ exports('UploadFile', function(fileName, mimeType, callback)
     local body = buildMultipart(fileName, data, mimeType)
 
     PerformHttpRequest(
-        ("%s/bucket/%s/dir/%s/files"):format(Config.BaseUrl, Config.BucketId, Config.DirId),
+        ("%s/bucket/%s/upload?force_create=true"):format(Config.BaseUrl, Config.BucketId),
         function(status, responseBody)
             if status == 200 or status == 201 then
                 local result = json.decode(responseBody)
@@ -103,7 +217,7 @@ end)
 
 --- Envia dados brutos (string/binário) como arquivo para o bucket.
 --- Útil para salvar JSON, texto ou qualquer dado gerado em runtime.
---- @param fileName  string    Nome do arquivo de destino
+--- @param fileName  string    Nome do arquivo de destino (ex: "logs/registro.txt")
 --- @param rawData   string    Conteúdo do arquivo
 --- @param mimeType  string    MIME type
 --- @param callback  function  function(ok: boolean, url: string|nil)
@@ -111,7 +225,7 @@ exports('UploadRaw', function(fileName, rawData, mimeType, callback)
     local body = buildMultipart(fileName, rawData, mimeType)
 
     PerformHttpRequest(
-        ("%s/bucket/%s/dir/%s/files"):format(Config.BaseUrl, Config.BucketId, Config.DirId),
+        ("%s/bucket/%s/upload?force_create=true"):format(Config.BaseUrl, Config.BucketId),
         function(status, responseBody)
             if status == 200 or status == 201 then
                 local result = json.decode(responseBody)
@@ -130,11 +244,17 @@ exports('UploadRaw', function(fileName, rawData, mimeType, callback)
     )
 end)
 
---- Lista todos os arquivos do diretório configurado.
+--- Lista arquivos de um diretório específico do bucket.
+--- @param dirName   string    Nome do diretório (opcional)
 --- @param callback  function  function(files: table|nil)
-exports('ListFiles', function(callback)
+exports('ListFiles', function(dirName, callback)
+    if type(dirName) == "function" then
+        callback = dirName
+        dirName = ""
+    end
+
     PerformHttpRequest(
-        ("%s/bucket/%s/dir/%s/files"):format(Config.BaseUrl, Config.BucketId, Config.DirId),
+        ("%s/bucket/%s/files?dir=%s"):format(Config.BaseUrl, Config.BucketId, dirName or ""),
         function(status, responseBody)
             if status == 200 then
                 callback(json.decode(responseBody))
@@ -149,14 +269,14 @@ exports('ListFiles', function(callback)
     )
 end)
 
---- Deleta um arquivo do bucket pelo nome.
---- @param fileName  string    Nome do arquivo
+--- Deleta um arquivo do bucket pelo nome (ex: "imagens/foto.png").
+--- @param fileName  string    Nome do arquivo completo
 --- @param callback  function  function(ok: boolean)
 exports('DeleteFile', function(fileName, callback)
     PerformHttpRequest(
-        ("%s/bucket/%s/dir/%s/files/%s"):format(Config.BaseUrl, Config.BucketId, Config.DirId, fileName),
+        ("%s/bucket/%s/files?filename=%s"):format(Config.BaseUrl, Config.BucketId, fileName),
         function(status)
-            if status == 204 then
+            if status == 204 or status == 200 then
                 callback(true)
             else
                 print(("[5Vault] Erro ao deletar '%s' (%d)"):format(fileName, status))
@@ -177,13 +297,13 @@ print("[5Vault] SDK carregado.")`
     code: `-- Exemplo de uso em outro resource (server-side)
 -- Certifique-se que '5vault' está listado em dependencies no seu fxmanifest.lua
 
--- Salvar dados de um jogador como JSON
+-- Salvar dados de um jogador como JSON dentro da pasta "jogadores"
 RegisterNetEvent('meuResource:salvarJogador', function(data)
     local src    = source
     local conteudo = json.encode(data)
 
     exports['5vault']:UploadRaw(
-        ("jogador_%d.json"):format(src),
+        ("jogadores/jogador_%d.json"):format(src),
         conteudo,
         "application/json",
         function(ok, url)
@@ -194,23 +314,23 @@ RegisterNetEvent('meuResource:salvarJogador', function(data)
     )
 end)
 
--- Upload de um arquivo local do resource
-exports['5vault']:UploadFile("banner.png", "image/png", function(ok, url)
+-- Upload de um arquivo local para a pasta "banners"
+exports['5vault']:UploadFile("banners/banner.png", "image/png", function(ok, url)
     if ok then
         print("[5Vault] Banner enviado: " .. url)
     end
 end)
 
--- Listar arquivos
-exports['5vault']:ListFiles(function(files)
-    if not files then return end
-    for _, f in ipairs(files) do
-        print(f.name .. " — " .. f.url)
+-- Listar arquivos da pasta "jogadores"
+exports['5vault']:ListFiles("jogadores", function(res)
+    if not res or not res.files then return end
+    for _, f in ipairs(res.files) do
+        print(f.key .. " — " .. f.public_url)
     end
 end)
 
 -- Deletar arquivo
-exports['5vault']:DeleteFile("jogador_123.json", function(ok)
+exports['5vault']:DeleteFile("jogadores/jogador_123.json", function(ok)
     if ok then print("[5Vault] Arquivo removido.") end
 end)`,
   },
@@ -225,7 +345,6 @@ local Config = {}
 
 Config.ApiKey   = "${apiKey}"
 Config.BucketId = "${bucketId}"
-Config.DirId    = "seu_diretorio_id"
 Config.BaseUrl  = "${BASE_URL}"
 
 return Config`,
@@ -242,13 +361,18 @@ local Config = require(script.Parent.FiveVaultConfig)
 local FiveVault = {}
 
 local function filesUrl(fileName)
-    local base = ("%s/bucket/%s/dir/%s/files"):format(Config.BaseUrl, Config.BucketId, Config.DirId)
-    if fileName then return base .. "/" .. fileName end
-    return base
+    if fileName then 
+        return ("%s/bucket/%s/files?filename=%s"):format(Config.BaseUrl, Config.BucketId, fileName)
+    end
+    return ("%s/bucket/%s/files"):format(Config.BaseUrl, Config.BucketId)
+end
+
+local function uploadUrl()
+    return ("%s/bucket/%s/upload?force_create=true"):format(Config.BaseUrl, Config.BucketId)
 end
 
 --- Envia dados brutos como arquivo para o bucket via form multipart.
---- @param fileName  string   Nome do arquivo de destino (ex: "dados.json")
+--- @param fileName  string   Nome do arquivo de destino (ex: "dados.json" ou "dir/dados.json")
 --- @param rawData   string   Conteúdo do arquivo
 --- @param mimeType  string   MIME type (ex: "application/json", "image/png")
 --- @return boolean, string?
@@ -266,7 +390,7 @@ function FiveVault.UploadRaw(fileName: string, rawData: string, mimeType: string
 
     local ok, result = pcall(function()
         return HttpService:RequestAsync({
-            Url    = filesUrl(),
+            Url    = uploadUrl(),
             Method = "POST",
             Headers = {
                 ["Content-Type"] = "multipart/form-data; boundary=" .. boundary,
@@ -285,12 +409,17 @@ function FiveVault.UploadRaw(fileName: string, rawData: string, mimeType: string
     end
 end
 
---- Lista todos os arquivos do diretório configurado.
+--- Lista todos os arquivos de um diretório específico.
+--- @param dirName string? (opcional)
 --- @return table?
-function FiveVault.ListFiles(): {any}?
+function FiveVault.ListFiles(dirName: string?): {any}?
+    local url = filesUrl()
+    if dirName and dirName ~= "" then
+        url = url .. "?dir=" .. dirName
+    end
     local ok, result = pcall(function()
         return HttpService:RequestAsync({
-            Url     = filesUrl(),
+            Url     = url,
             Method  = "GET",
             Headers = { ["API-Key"] = Config.ApiKey },
         })
@@ -304,7 +433,7 @@ function FiveVault.ListFiles(): {any}?
     end
 end
 
---- Remove um arquivo pelo nome.
+--- Remove um arquivo pelo nome (incluindo o caminho, ex: "dir/arquivo.jpg").
 --- @param fileName string
 --- @return boolean
 function FiveVault.DeleteFile(fileName: string): boolean
@@ -332,7 +461,7 @@ return FiveVault`,
     code: `-- Script (server) de exemplo
 local FiveVault = require(game.ServerScriptService.FiveVaultService)
 
--- Salvar dados de um jogador como JSON
+-- Salvar dados de um jogador como JSON na pasta "jogadores"
 game.Players.PlayerRemoving:Connect(function(player)
     local dados = {
         nome = player.Name,
@@ -342,7 +471,7 @@ game.Players.PlayerRemoving:Connect(function(player)
 
     local json = game:GetService("HttpService"):JSONEncode(dados)
     local ok, url = FiveVault.UploadRaw(
-        ("jogador_%d.json"):format(player.UserId),
+        ("jogadores/jogador_%d.json"):format(player.UserId),
         json,
         "application/json"
     )
@@ -352,14 +481,16 @@ game.Players.PlayerRemoving:Connect(function(player)
     end
 end)
 
--- Listar arquivos
-local files = FiveVault.ListFiles()
-for _, f in ipairs(files or {}) do
-    print(f.name .. " — " .. f.url)
+-- Listar arquivos da pasta "jogadores"
+local res = FiveVault.ListFiles("jogadores")
+if res and res.files then
+    for _, f in ipairs(res.files) do
+        print(f.key .. " — " .. f.public_url)
+    end
 end
 
 -- Deletar arquivo
-local removido = FiveVault.DeleteFile("jogador_123.json")
+local removido = FiveVault.DeleteFile("jogadores/jogador_123.json")
 if removido then print("[5Vault] Removido.") end`,
   },
 ];
@@ -400,15 +531,74 @@ const RobloxIcon = () => (
 
 const SDKTemplate = () => {
   const { user } = useAuthContext();
+  const axiosInstance = useAxios();
   const [platform, setPlatform] = useState<Platform>("fivem");
   const [activeFile, setActiveFile] = useState(0);
 
-  const apiKey   = user?.api_key ?? "SUA_API_KEY";
-  const bucketId = "SEU_BUCKET_ID";
-  const files    = platform === "fivem" ? fivemFiles(apiKey, bucketId) : robloxFiles(apiKey, bucketId);
+  const [keys, setKeys] = useState<any[]>([]);
+  const [selectedKey, setSelectedKey] = useState<string>("");
+  const [buckets, setBuckets] = useState<any[]>([]);
+  const [selectedBucket, setSelectedBucket] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [keysRes, bucketsRes] = await Promise.all([
+          axiosInstance.get("/key/"),
+          axiosInstance.get("/bucket/"),
+        ]);
+        const fetchedKeys = keysRes.data ?? [];
+        if (user?.api_key && !fetchedKeys.some((k: any) => k.key === user.api_key)) {
+          fetchedKeys.unshift({
+            id: 0,
+            label: "Chave Padrão (Default)",
+            key: user.api_key,
+          });
+        }
+        setKeys(fetchedKeys);
+        if (fetchedKeys.length > 0) {
+          setSelectedKey(fetchedKeys[0].key);
+        }
+        const fetchedBuckets = bucketsRes.data ?? [];
+        setBuckets(fetchedBuckets);
+        if (fetchedBuckets.length > 0) {
+          setSelectedBucket(fetchedBuckets[0].bucket_id);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar dados do SDK:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [axiosInstance, user]);
+
+  const activeKey = selectedKey || user?.api_key || "SUA_API_KEY";
+  const activeBucket = selectedBucket || "SEU_BUCKET_ID";
+  const files    = platform === "fivem" ? fivemFiles(activeKey, activeBucket) : robloxFiles(activeKey, activeBucket);
   const current  = files[activeFile];
 
   const handlePlatform = (p: Platform) => { setPlatform(p); setActiveFile(0); };
+
+  const handleDownloadSDK = () => {
+    const zipBlob = createZip(
+      files.map(f => ({
+        name: platform === "fivem" ? `5vault/${f.name}` : `FiveVault/${f.name}`,
+        content: f.code,
+      }))
+    );
+
+    const url = URL.createObjectURL(zipBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = platform === "fivem" ? "5vault-sdk-fivem.zip" : "5vault-sdk-roblox.zip";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("SDK baixado com sucesso!");
+  };
 
   const fivemExports = [
     { name: "UploadFile(fileName, mimeType, callback)",   desc: "Envia um arquivo local do resource via form multipart" },
@@ -469,6 +659,79 @@ const SDKTemplate = () => {
         ))}
       </div>
 
+      {/* SDK Configuration & Download */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-sm font-semibold text-white">Baixar SDK Pré-configurado</h3>
+          <p className="text-xs text-zinc-500">
+            Selecione as credenciais desejadas para baixar o resource com a chave e o bucket correspondente já configurados.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          {/* Key Selection */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-zinc-400">Chave de API</label>
+            {loading ? (
+              <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-xs text-zinc-500">
+                <Loader2 size={12} className="animate-spin" /> Carregando chaves...
+              </div>
+            ) : keys.length === 0 ? (
+              <div className="px-3 py-2 bg-zinc-800/50 border border-zinc-800 rounded-lg text-xs text-zinc-500">
+                Nenhuma chave criada. Usando chave padrão.
+              </div>
+            ) : (
+              <Selector
+                value={selectedKey}
+                onChange={(val) => setSelectedKey(val as string)}
+                placeholder="Selecione uma chave"
+              >
+                {keys.map((k) => (
+                  <SelectorItem key={k.id} value={k.key}>
+                    {k.label || `Chave #${k.id}`} ({k.key.slice(0, 8)}...{k.key.slice(-4)})
+                  </SelectorItem>
+                ))}
+              </Selector>
+            )}
+          </div>
+
+          {/* Bucket Selection */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-zinc-400">Bucket de Destino</label>
+            {loading ? (
+              <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-xs text-zinc-500">
+                <Loader2 size={12} className="animate-spin" /> Carregando buckets...
+              </div>
+            ) : buckets.length === 0 ? (
+              <div className="px-3 py-2 bg-zinc-800/50 border border-zinc-800 rounded-lg text-xs text-zinc-500">
+                Nenhum bucket encontrado.
+              </div>
+            ) : (
+              <Selector
+                value={selectedBucket}
+                onChange={(val) => setSelectedBucket(val as string)}
+                placeholder="Selecione um bucket"
+              >
+                {buckets.map((b) => (
+                  <SelectorItem key={b.bucket_id} value={b.bucket_id}>
+                    {b.name}
+                  </SelectorItem>
+                ))}
+              </Selector>
+            )}
+          </div>
+
+          {/* Download Button */}
+          <button
+            onClick={handleDownloadSDK}
+            className="flex items-center justify-center gap-2 bg-[#e8073f] hover:bg-[#c8063a] text-white font-semibold text-xs px-4 py-2.5 rounded-lg transition-all duration-200 shadow-lg shadow-[#e8073f20] hover:shadow-[#e8073f30] cursor-pointer"
+          >
+            <Download size={14} />
+            Baixar SDK (.zip)
+          </button>
+        </div>
+      </div>
+
       {/* Info banner */}
       <div className="flex items-start gap-3 p-4 rounded-xl bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]/20">
         <BookOpen size={16} className="text-[var(--primary-contrast-light)] shrink-0 mt-0.5" />
@@ -478,51 +741,53 @@ const SDKTemplate = () => {
         </p>
       </div>
 
-      {/* File tabs + code */}
-      <div className="rounded-2xl border border-zinc-800 overflow-hidden">
-
-        {/* Tabs */}
-        <div className="flex border-b border-zinc-800 bg-zinc-900/80 overflow-x-auto">
-          {files.map((f, i) => (
-            <button
-              key={f.name}
-              onClick={() => setActiveFile(i)}
-              className={`flex items-center gap-2 px-4 py-3 text-xs font-mono whitespace-nowrap border-r border-zinc-800 transition-colors ${
-                activeFile === i
-                  ? "bg-zinc-950 text-white border-b-2 border-b-[var(--primary-contrast-light)]"
-                  : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
-              }`}
-            >
-              <FileCode size={12} />
-              {f.name}
-            </button>
-          ))}
-        </div>
-
-        {/* Code */}
-        <div className="relative bg-zinc-950">
-          <div className="flex justify-end px-3 py-1.5 border-b border-zinc-800/60">
-            <CopyButton text={current.code} />
+      {/* Grid para Código + Referência de API */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+        {/* File tabs + code */}
+        <div className="rounded-2xl border border-zinc-800 overflow-hidden lg:col-span-2">
+          {/* Tabs */}
+          <div className="flex border-b border-zinc-800 bg-zinc-900/80 overflow-x-auto">
+            {files.map((f, i) => (
+              <button
+                key={f.name}
+                onClick={() => setActiveFile(i)}
+                className={`flex items-center gap-2 px-4 py-3 text-xs font-mono whitespace-nowrap border-r border-zinc-800 transition-colors ${
+                  activeFile === i
+                    ? "bg-zinc-950 text-white border-b-2 border-b-[var(--primary-contrast-light)]"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
+                }`}
+              >
+                <FileCode size={12} />
+                {f.name}
+              </button>
+            ))}
           </div>
-          <pre className="px-5 py-5 overflow-x-auto text-xs leading-relaxed text-zinc-300 font-mono max-h-[520px] overflow-y-auto">
-            <code>{current.code}</code>
-          </pre>
-        </div>
-      </div>
 
-      {/* API reference */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
-        <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-          <ChevronRight size={14} className="text-[var(--primary-contrast-light)]" />
-          {platform === "fivem" ? "Exports disponíveis" : "Métodos disponíveis"}
-        </h3>
-        <div className="flex flex-col gap-2">
-          {(platform === "fivem" ? fivemExports : robloxMethods).map(e => (
-            <div key={e.name} className="flex items-start gap-3 text-xs">
-              <code className="text-[var(--primary-contrast-light)] bg-zinc-800 px-2 py-1 rounded font-mono shrink-0">{e.name}</code>
-              <span className="text-zinc-500 pt-1">{e.desc}</span>
+          {/* Code */}
+          <div className="relative bg-zinc-950">
+            <div className="flex justify-end px-3 py-1.5 border-b border-zinc-800/60">
+              <CopyButton text={current.code} />
             </div>
-          ))}
+            <pre className="px-5 py-5 overflow-x-auto text-xs leading-relaxed text-zinc-300 font-mono">
+              <code>{current.code}</code>
+            </pre>
+          </div>
+        </div>
+
+        {/* API reference */}
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5 lg:col-span-1">
+          <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+            <ChevronRight size={14} className="text-[var(--primary-contrast-light)]" />
+            {platform === "fivem" ? "Exports disponíveis" : "Métodos disponíveis"}
+          </h3>
+          <div className="flex flex-col gap-2">
+            {(platform === "fivem" ? fivemExports : robloxMethods).map(e => (
+              <div key={e.name} className="flex flex-col gap-1 text-xs pb-2 border-b border-zinc-800 last:border-0 last:pb-0">
+                <code className="text-[var(--primary-contrast-light)] bg-zinc-800 px-2 py-1 rounded font-mono break-all">{e.name}</code>
+                <span className="text-zinc-500 pl-1">{e.desc}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

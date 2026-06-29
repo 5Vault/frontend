@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { CheckCircle, Globe, Server, Search, ArrowRight, Loader2, ExternalLink } from "lucide-react";
+import useAuthContext from "../hook/useAuthContext";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 const SHARED_PRICE_BRL = 15;
@@ -25,6 +26,7 @@ interface StorageResult {
 }
 
 const StorageSetupTemplate = ({ onComplete }: { onComplete: () => void }) => {
+  const { user } = useAuthContext();
   const [step, setStep] = useState<Step>("domain-choice");
   const [customDomain, setCustomDomain] = useState("");
   const [domainToCheck, setDomainToCheck] = useState("");
@@ -88,15 +90,28 @@ const StorageSetupTemplate = ({ onComplete }: { onComplete: () => void }) => {
         {/* Step: domain-choice */}
         {step === "domain-choice" && (
           <div className="space-y-4">
-            <p className="text-zinc-300 text-sm font-medium mb-2">Você possui um domínio próprio?</p>
+            <p className="text-zinc-300 text-sm font-medium mb-2">Você quer configurar outro domínio?</p>
 
             <button
-              onClick={() => setStep("own-domain")}
+              onClick={() => {
+                if (!user?.tier || user.tier === "free" || user.tier === "starter") {
+                  toast.error("Seu plano não permite configuração de outros domínios. Faça upgrade para o plano Profissional ou superior.");
+                  return;
+                }
+                setStep("own-domain");
+              }}
               className="w-full flex items-start gap-4 border border-zinc-700 hover:border-blue-500 rounded-xl p-5 text-left transition-colors group"
             >
               <Globe className="text-blue-400 w-6 h-6 mt-0.5 shrink-0" />
               <div>
-                <p className="font-semibold text-white group-hover:text-blue-400 transition-colors">Sim, tenho um domínio</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-white group-hover:text-blue-400 transition-colors">Sim, tenho um domínio</p>
+                  {(!user?.tier || user.tier === "free" || user.tier === "starter") && (
+                    <span className="text-[9px] bg-zinc-800 text-zinc-400 border border-zinc-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                      PRO / ENTERPRISE
+                    </span>
+                  )}
+                </div>
                 <p className="text-zinc-400 text-sm mt-1">
                   Ex: <code className="text-zinc-300">files.meuservidor.com.br</code> — configure gratuitamente.
                 </p>
@@ -104,12 +119,25 @@ const StorageSetupTemplate = ({ onComplete }: { onComplete: () => void }) => {
             </button>
 
             <button
-              onClick={() => setStep("check-domain")}
+              onClick={() => {
+                if (!user?.tier || user.tier === "free" || user.tier === "starter") {
+                  toast.error("Seu plano não permite configuração de outros domínios. Faça upgrade para o plano Profissional ou superior.");
+                  return;
+                }
+                setStep("check-domain");
+              }}
               className="w-full flex items-start gap-4 border border-zinc-700 hover:border-purple-500 rounded-xl p-5 text-left transition-colors group"
             >
               <Search className="text-purple-400 w-6 h-6 mt-0.5 shrink-0" />
               <div>
-                <p className="font-semibold text-white group-hover:text-purple-400 transition-colors">Quero comprar um domínio</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-white group-hover:text-purple-400 transition-colors">Quero comprar um domínio</p>
+                  {(!user?.tier || user.tier === "free" || user.tier === "starter") && (
+                    <span className="text-[9px] bg-zinc-800 text-zinc-400 border border-zinc-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                      PRO / ENTERPRISE
+                    </span>
+                  )}
+                </div>
                 <p className="text-zinc-400 text-sm mt-1">
                   Verifique disponibilidade e preço via Cloudflare Registrar (preços no atacado, sem markup).
                 </p>

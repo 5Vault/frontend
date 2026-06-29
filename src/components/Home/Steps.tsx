@@ -11,7 +11,7 @@ const steps = [
   {
     number: "02",
     title: "Configure seu storage",
-    description: "Escolha entre domínio próprio ou subdomínio 5Vault.",
+    description: "Configure para outros domínios ou use subdomínio 5Vault.",
     code: `// Painel → Storage → Novo Storage
 domain_type: "shared"  // ou "own"
 custom_domain: "assets.meuservidor.com"`,
