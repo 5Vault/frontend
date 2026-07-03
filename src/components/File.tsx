@@ -14,12 +14,20 @@ const File = ({file, setFile}: {file: FileType,setFile: (file: FileType) => void
     const { setFileModal } = useFileModalContext();
 
     useEffect(() => {
+        // If the file already has a public URL, use it directly
+        if (file.file_url && file.file_url.startsWith("http")) {
+            setImageUrl(file.file_url);
+            setFile({ ...file, blob: file.file_url });
+            setLoading(false);
+            return;
+        }
+
         const fetchURL = async () => {
             try {
                 setLoading(true);
                 const url = await ToBlob(file.file_id, key || "");
                 setImageUrl(url);
-                setFile({ ...file, blob: url });                
+                setFile({ ...file, blob: url });
             } catch (error) {
                 console.error("Error fetching file:", error);
             } finally {
@@ -31,61 +39,54 @@ const File = ({file, setFile}: {file: FileType,setFile: (file: FileType) => void
             fetchURL();
         }
 
-        // Cleanup: revogar URL do blob quando o componente desmontar
         return () => {
-            if (imageUrl) {
+            if (imageUrl && imageUrl.startsWith("blob:")) {
                 URL.revokeObjectURL(imageUrl);
             }
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [file.file_id, key]); // Removed imageUrl from dependencies
+    }, [file.file_id, file.file_url, key]);
+
+    const typeLabel =
+        file.file_type?.startsWith("image") ? "Imagem" :
+        file.file_type?.startsWith("video") ? "Vídeo" :
+        file.file_type?.startsWith("audio") ? "Áudio" : "Arquivo";
+
+    const typeIcon =
+        file.file_type?.startsWith("image") ? Icons.image :
+        file.file_type?.startsWith("video") ? Icons.video :
+        file.file_type?.startsWith("audio") ? Icons.audio : Icons.files;
+
+    const shortId = file.file_id?.slice(-14) ?? "";
+    const sizeMB = file.file_size ? (file.file_size / (1024 * 1024)).toFixed(2) : "0.00";
 
     return (
-        <div className={` bg-[#00000036] hover:border-1 hover:border-zinc-100/10 rounded-lg p-2 flex items-center gap-4 justify-between w-full hover:scale-101 transition-transform duration-200 cursor-pointer`} onClick={() => setFileModal(file)}>
+        <div
+            className="bg-zinc-900/50 hover:bg-zinc-800/50 border border-zinc-800 hover:border-zinc-700 rounded-xl p-3 flex items-center gap-3 w-full transition-all duration-150 cursor-pointer"
+            onClick={() => setFileModal(file)}
+        >
+            {/* Thumbnail */}
             {loading ? (
-                <div className="h-21 w-21 rounded bg-zinc-800 animate-pulse" />
+                <div className="h-12 w-12 min-w-12 rounded-lg bg-zinc-800 animate-pulse shrink-0" />
             ) : (
                 <img
                     src={imageUrl}
                     alt={file.file_id}
-                    className="h-21 w-21 min-h-21 min-w-21 rounded object-cover"
+                    className="h-12 w-12 min-w-12 rounded-lg object-cover border border-zinc-700 shrink-0"
                 />
             )}
-            <span className="flex flex-col gap-2 p-2 w-full">
-                <h2 className="text-lg font-semibold">{file.file_id}</h2>
-                <div className="flex w-full justify-between text-xs">
-                    {file.file_type === "image/jpeg" ||
-                    file.file_type === "image/png" ? (
-                        <p className="flex items-center gap-2">
-                            {Icons.image} <span className="text-zinc-400">Imagem</span>
-                        </p>
-                    ) : file.file_type === "video/mp4" ? (
-                        <p className="flex items-center gap-2">
-                            {Icons.video} <span className="text-zinc-400">Vídeo</span>
-                        </p>
-                    ) : file.file_type === "audio/mpeg" ? (
-                        <p className="flex items-center gap-2">
-                            {Icons.audio} <span className="text-zinc-400">Áudio</span>
-                        </p>
-                    ) : (
-                        <p className="flex items-center gap-2">
-                            {Icons.files} <span className="text-zinc-400">Arquivo</span>
-                        </p>
-                    )}
-                    <p className="flex items-center gap-2">
-                        {Icons.date}
-                        <span className="text-zinc-400">
-                            {formatDate(file.uploaded_at)}
-                        </span>
-                    </p>
-                    <p className="text-sm flex items-center gap-2">
-                        {Icons.storage}
-                        <span className="text-zinc-400">
-                            {(file.file_size / (1024 * 1024)).toFixed(2)} MB
-                        </span>
-                    </p>
+
+            {/* Info */}
+            <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <p className="text-xs font-medium text-white font-mono truncate">…{shortId}</p>
+                <div className="flex items-center gap-2 text-[11px] text-zinc-500">
+                    <span className="flex items-center gap-1">{typeIcon} {typeLabel}</span>
+                    <span className="text-zinc-700">·</span>
+                    <span>{sizeMB} MB</span>
+                    <span className="text-zinc-700">·</span>
+                    <span>{formatDate(file.uploaded_at)}</span>
                 </div>
-            </span>
+            </div>
         </div>
     );
 }

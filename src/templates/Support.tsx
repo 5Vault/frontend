@@ -360,19 +360,21 @@ const TicketList = ({ onOpen }: { onOpen: (t: Ticket) => void }) => {
   const axiosInstance = useAxios();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [showNew, setShowNew] = useState(false);
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);
+    setFetchError(false);
     try {
       const res = await axiosInstance.get<{ tickets: Ticket[] }>("/ticket/");
       setTickets(res.data.tickets ?? []);
     } catch {
-      toast.error("Erro ao carregar tickets.");
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [axiosInstance]);
 
   useEffect(() => { fetchTickets(); }, [fetchTickets]);
 
@@ -395,6 +397,16 @@ const TicketList = ({ onOpen }: { onOpen: (t: Ticket) => void }) => {
       {loading ? (
         <div className="flex items-center justify-center py-24">
           <Loader2 size={24} className="animate-spin text-zinc-600" />
+        </div>
+      ) : fetchError ? (
+        <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+            <AlertCircle size={22} className="text-red-400" />
+          </div>
+          <p className="text-sm text-zinc-400">Não foi possível carregar os tickets.</p>
+          <button onClick={fetchTickets} className="text-xs text-zinc-500 hover:text-white underline transition-colors">
+            Tentar novamente
+          </button>
         </div>
       ) : tickets.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 gap-4">

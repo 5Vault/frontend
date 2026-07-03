@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Key, Plus, Trash2, Eye, EyeOff, Globe, Database, ChevronDown, Check, X, Loader2, AlertTriangle } from "lucide-react";
+import { Key, Plus, Trash2, Eye, EyeOff, Globe, Database, ChevronDown, Check, X, Loader2, AlertTriangle, Copy } from "lucide-react";
 import toast from "react-hot-toast";
 import useAxios from "../utils/axiosConfig";
 import HeaderTemplate from "../components/Header";
@@ -299,11 +299,11 @@ const ApiKeysTemplate = () => {
 
   const permBadge = (p: string) =>
     p === "read" ? (
-      <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/25 font-semibold uppercase tracking-wide">
+      <span className="text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-400 border border-zinc-700 font-medium">
         Leitura
       </span>
     ) : (
-      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--primary-contrast-opacity)] text-[var(--primary-contrast-light)] border border-[var(--primary-contrast-light)]/25 font-semibold uppercase tracking-wide">
+      <span className="text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700 font-medium">
         Leitura e Escrita
       </span>
     );
@@ -319,9 +319,12 @@ const ApiKeysTemplate = () => {
         content={
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)] text-[var(--primary-contrast-light)] hover:bg-[var(--primary-contrast-light)] hover:text-white transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-700/60 rounded-xl text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-600 transition-all group"
           >
-            <Plus size={14} /> Nova Chave
+            <span className="p-1 rounded-md bg-zinc-800 group-hover:bg-zinc-700 transition-colors">
+              <Plus size={13} className="text-zinc-400 group-hover:text-white transition-colors" />
+            </span>
+            Nova Chave
           </button>
         }
       />
@@ -344,27 +347,37 @@ const ApiKeysTemplate = () => {
       ) : (
         <div className="flex flex-col gap-2">
           {keys.map((k) => (
-            <div key={k.id} className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+            <div key={k.id} className="rounded-xl border border-zinc-800 bg-zinc-900/50 hover:border-zinc-700 hover:bg-zinc-900/80 transition-all overflow-hidden">
               {/* Row */}
-              <div className="flex items-center gap-3 px-4 py-3">
+              <div className="flex items-center gap-4 px-4 py-3.5">
+                {/* Key icon */}
+                <div className="p-2 rounded-xl bg-zinc-800 border border-zinc-700 shrink-0">
+                  <Key size={14} className="text-zinc-400" />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-sm font-medium text-white">{k.label || "Sem label"}</span>
+                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                    {k.label
+                      ? <span className="text-sm font-semibold text-white">{k.label}</span>
+                      : <span className="text-sm font-medium text-zinc-500 italic">Sem nome</span>
+                    }
                     {permBadge(k.permission)}
                     {k.all_buckets ? (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--primary-contrast-opacity)] text-[var(--primary-contrast-light)] border border-[var(--primary-contrast-light)]/30 font-medium flex items-center gap-1">
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-400 border border-zinc-700 font-medium flex items-center gap-1">
                         <Globe size={9} /> Todos os buckets
                       </span>
                     ) : (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-500 border border-zinc-700 font-medium flex items-center gap-1">
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-400 border border-zinc-700 font-medium flex items-center gap-1">
                         <Database size={9} /> {(k.bucket_perms ?? []).length} bucket(s)
                       </span>
                     )}
                   </div>
-                  <code className="text-xs text-zinc-400 font-mono">
-                    {visibleKeys.has(k.id) ? k.key : maskKey(k.key)}
-                  </code>
-                  <span className="text-[10px] text-zinc-600 ml-3">{k.created_at?.slice(0, 10)}</span>
+                  <div className="flex items-center gap-3">
+                    <code className="text-xs text-zinc-500 font-mono">
+                      {visibleKeys.has(k.id) ? k.key : maskKey(k.key)}
+                    </code>
+                    <span className="text-[10px] text-zinc-700">·</span>
+                    <span className="text-[10px] text-zinc-600">{k.created_at?.slice(0, 10)}</span>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
@@ -377,10 +390,13 @@ const ApiKeysTemplate = () => {
                       <ChevronDown size={14} className={`transition-transform ${expandedKey === k.id ? "rotate-180" : ""}`} />
                     </button>
                   )}
-                  <button onClick={() => toggleVisibility(k.id)} className="p-1.5 text-zinc-500 hover:text-white transition-colors">
+                  <button onClick={() => { navigator.clipboard.writeText(k.key); toast.success("Chave copiada!"); }} className="p-1.5 rounded-lg text-zinc-600 hover:text-white hover:bg-zinc-800 transition-all" title="Copiar chave">
+                    <Copy size={14} />
+                  </button>
+                  <button onClick={() => toggleVisibility(k.id)} className="p-1.5 rounded-lg text-zinc-600 hover:text-white hover:bg-zinc-800 transition-all">
                     {visibleKeys.has(k.id) ? <EyeOff size={14} /> : <Eye size={14} />}
                   </button>
-                  <button onClick={() => setKeyToDelete(k.id)} className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors">
+                  <button onClick={() => setKeyToDelete(k.id)} className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-all">
                     <Trash2 size={14} />
                   </button>
                 </div>

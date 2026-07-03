@@ -118,7 +118,7 @@ const createZip = (files: { name: string; content: string }[]): Blob => {
   return new Blob(buffers, { type: "application/zip" });
 };
 
-const BASE_URL = "https://api.5vault.com.br/api/v1";
+const BASE_URL = "https://api.sexdaily.app/api/v1";
 
 type Platform = "fivem" | "roblox";
 
@@ -130,7 +130,7 @@ type ScriptFile = {
   code: string;
 };
 
-const fivemFiles = (apiKey: string, bucketId: string): ScriptFile[] => [
+const fivemFiles = (apiKey: string, bucketId: string, bucketUrl: string): ScriptFile[] => [
   {
     name: "fxmanifest.lua",
     lang: "lua",
@@ -152,9 +152,10 @@ server_scripts {
     lang: "lua",
     code: `Config = {}
 
-Config.ApiKey   = "${apiKey}"
-Config.BucketId = "${bucketId}"
-Config.BaseUrl  = "${BASE_URL}"`,
+Config.ApiKey    = "${apiKey}"
+Config.BucketId  = "${bucketId}"
+Config.BaseUrl   = "${BASE_URL}"
+Config.BucketUrl = "${bucketUrl || "-- URL pública do bucket (configure em Armazenamento)"}"`,
   },
   {
     name: "server.lua",
@@ -336,16 +337,17 @@ end)`,
   },
 ];
 
-const robloxFiles = (apiKey: string, bucketId: string): ScriptFile[] => [
+const robloxFiles = (apiKey: string, bucketId: string, bucketUrl: string): ScriptFile[] => [
   {
     name: "FiveVaultConfig.lua",
     lang: "lua",
     code: `-- ModuleScript em ServerScriptService
 local Config = {}
 
-Config.ApiKey   = "${apiKey}"
-Config.BucketId = "${bucketId}"
-Config.BaseUrl  = "${BASE_URL}"
+Config.ApiKey    = "${apiKey}"
+Config.BucketId  = "${bucketId}"
+Config.BaseUrl   = "${BASE_URL}"
+Config.BucketUrl = "${bucketUrl || "-- URL pública do bucket (configure em Armazenamento)"}"
 
 return Config`,
   },
@@ -576,7 +578,15 @@ const SDKTemplate = () => {
 
   const activeKey = selectedKey || user?.api_key || "SUA_API_KEY";
   const activeBucket = selectedBucket || "SEU_BUCKET_ID";
-  const files    = platform === "fivem" ? fivemFiles(activeKey, activeBucket) : robloxFiles(activeKey, activeBucket);
+  const activeBucketObj = buckets.find((b) => b.bucket_id === selectedBucket);
+  const bucketPublicUrl = activeBucketObj
+    ? activeBucketObj.custom_domain
+      ? `https://${activeBucketObj.custom_domain}`
+      : activeBucketObj.public_domain
+        ? `https://${activeBucketObj.public_domain}`
+        : null
+    : null;
+  const files    = platform === "fivem" ? fivemFiles(activeKey, activeBucket, bucketPublicUrl ?? "") : robloxFiles(activeKey, activeBucket, bucketPublicUrl ?? "");
   const current  = files[activeFile];
 
   const handlePlatform = (p: Platform) => { setPlatform(p); setActiveFile(0); };
@@ -730,6 +740,17 @@ const SDKTemplate = () => {
             Baixar SDK (.zip)
           </button>
         </div>
+
+        {/* Bucket public URL */}
+        {bucketPublicUrl && (
+          <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-zinc-800/60 border border-zinc-700/50">
+            <div className="flex flex-col gap-0.5 min-w-0">
+              <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">URL pública do bucket</span>
+              <span className="text-xs text-zinc-300 font-mono truncate">{bucketPublicUrl}</span>
+            </div>
+            <CopyButton text={bucketPublicUrl} />
+          </div>
+        )}
       </div>
 
       {/* Info banner */}

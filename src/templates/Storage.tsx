@@ -320,7 +320,7 @@ const ConfirmDirModal = ({
 
 // ── Domain Settings Modal ─────────────────────────────────────────────────────
 
-const STORAGE_DOMAIN = "5vault.app";
+const STORAGE_DOMAIN = "sexdaily.app";
 const canCustomize = (tier: string | null) => tier === "pro" || tier === "enterprise";
 
 const BucketSettingsModal = ({
@@ -712,28 +712,32 @@ const StorageTemplate = () => {
         <div className="flex flex-col gap-3 w-full">
           {/* New bucket form */}
           {showNewBucket ? (
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 focus-within:border-zinc-500 transition-colors">
+              <Database size={16} className="text-zinc-500 shrink-0" />
               <input
                 autoFocus
                 value={newBucketName}
                 onChange={e => setNewBucketName(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && createBucket()}
+                onKeyDown={e => { if (e.key === "Enter") createBucket(); if (e.key === "Escape") { setShowNewBucket(false); setNewBucketName(""); } }}
                 placeholder="Nome do bucket..."
-                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
+                className="flex-1 bg-transparent text-sm text-white placeholder-zinc-600 focus:outline-none"
               />
-              <button onClick={createBucket}
-                className="px-4 py-2 bg-[var(--primary-contrast)] text-white rounded-lg text-sm hover:opacity-90 transition-opacity">
-                Criar
-              </button>
-              <button onClick={() => { setShowNewBucket(false); setNewBucketName(""); }}
-                className="px-4 py-2 bg-zinc-700 text-white rounded-lg text-sm hover:bg-zinc-600 transition-colors">
-                Cancelar
-              </button>
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => { setShowNewBucket(false); setNewBucketName(""); }}
+                  className="px-3 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+                  Cancelar
+                </button>
+                <button onClick={createBucket}
+                  className="px-3 py-1.5 bg-[var(--primary-contrast)] text-white rounded-lg text-xs font-medium hover:opacity-90 transition-opacity">
+                  Criar
+                </button>
+              </div>
             </div>
           ) : (
             <button onClick={() => setShowNewBucket(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-400 hover:text-white hover:border-zinc-500 transition-all w-fit">
-              <Plus size={16} /> Novo Bucket
+              className="flex items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-700/60 rounded-xl text-sm text-zinc-400 hover:text-white hover:bg-[var(--primary-contrast-opacity)] hover:border-[var(--primary-contrast-light)]/40 transition-all w-fit group">
+              <Plus size={13} className="text-zinc-400 group-hover:text-white transition-all" />
+              Novo Bucket
             </button>
           )}
 
@@ -750,33 +754,47 @@ const StorageTemplate = () => {
             <div className="flex flex-col gap-2">
               {buckets.map(b => (
                 <div key={b.bucket_id}
-                  className="flex items-center justify-between bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition-colors group">
-                  <button onClick={() => openBucket(b)}
-                    className="flex items-center gap-3 flex-1 text-left">
-                    <Database size={20} className="text-zinc-400" />
-                    <div>
-                      <p className="text-sm font-medium text-white">{b.name}</p>
-                      <p className="text-xs text-zinc-500">
+                  className="flex items-center justify-between bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3.5 hover:border-zinc-700 hover:bg-zinc-900/80 transition-all group">
+                  <button onClick={() => openBucket(b)} className="flex items-center gap-4 flex-1 text-left min-w-0">
+                    {/* Icon */}
+                    <div className={`p-2 rounded-xl border shrink-0 ${b.status === "active" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : b.status === "pending" ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-400" : "bg-red-500/10 border-red-500/20 text-red-400"}`}>
+                      <Database size={16} />
+                    </div>
+                    {/* Name + domain */}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-white">{b.name}</p>
+                        {statusBadge(b.status)}
+                      </div>
+                      <p className="text-xs text-zinc-500 truncate mt-0.5">
                         {b.custom_domain ? (
                           <span className="flex items-center gap-1">
-                            <Globe size={10} className="text-emerald-400" />
-                            <span className="text-emerald-400">{b.custom_domain}</span>
-                            <span className="text-zinc-600 mx-1">·</span>
-                            {b.r2_name}
+                            <Globe size={9} className="text-emerald-400 shrink-0" />
+                            <span className="text-emerald-400 truncate">{b.custom_domain}</span>
                           </span>
-                        ) : b.r2_name}
+                        ) : (
+                          <span className="font-mono">{b.r2_name}</span>
+                        )}
                       </p>
                     </div>
-                    <div className="ml-3">{statusBadge(b.status)}</div>
+                    {/* Bucket ID — always visible, muted */}
+                    <span className="hidden md:block text-[10px] font-mono text-zinc-600 truncate max-w-40 shrink-0">
+                      {b.bucket_id}
+                    </span>
                   </button>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 ml-4 shrink-0">
+                    <button onClick={e => { e.stopPropagation(); navigator.clipboard.writeText(b.bucket_id); toast.success("ID copiado!"); }}
+                      className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-200 hover:bg-zinc-800 transition-all" title="Copiar ID">
+                      <Copy size={14} />
+                    </button>
                     <button onClick={e => { e.stopPropagation(); setSettingsBucket(b); }}
-                      className="p-1.5 text-zinc-500 hover:text-zinc-200 transition-colors" title="Configurações">
-                      <Settings size={16} />
+                      className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-200 hover:bg-zinc-800 transition-all" title="Configurações">
+                      <Settings size={14} />
                     </button>
                     <button onClick={e => { e.stopPropagation(); setBucketToDelete(b); }}
-                      className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors" title="Excluir">
-                      <Trash2 size={16} />
+                      className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-all" title="Excluir">
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>

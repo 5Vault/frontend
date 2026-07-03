@@ -98,14 +98,7 @@ const DashBoardTemplate = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
-      title: {
-        display: true,
-        text: "Uploads da Semana",
-        color: "#e4e4e7",
-        font: { size: 14, weight: "bold" as const },
-        padding: { bottom: 16 },
-        align: "start" as const,
-      },
+      title: { display: false },
       tooltip: {
         backgroundColor: "#18181b",
         borderColor: "#27272a",
@@ -118,13 +111,14 @@ const DashBoardTemplate = () => {
     scales: {
       y: {
         beginAtZero: true,
-        ticks: { color: "#71717a", stepSize: 1, font: { size: 11 } },
+        suggestedMax: 5,
+        ticks: { color: "#71717a", stepSize: 1, precision: 0, font: { size: 11 } },
         grid: { color: "#27272a" },
         border: { display: false },
       },
       x: {
         ticks: { color: "#71717a", font: { size: 11 } },
-        grid: { color: "#27272a" },
+        grid: { color: "#27272a40" },
         border: { display: false },
       },
     },
@@ -175,7 +169,7 @@ const DashBoardTemplate = () => {
   ];
 
   return (
-    <div className="flex flex-col h-full items-center gap-4">
+    <div className="flex flex-col h-full gap-4">
       <HeaderTemplate
         icon={<LayoutDashboard size={38} />}
         title={`Olá, ${user?.name || "Usuário"} 👋`}
@@ -189,26 +183,31 @@ const DashBoardTemplate = () => {
         }
       />
 
-      <span className="flex w-full gap-4 items-start justify-center">
-        <div className="flex flex-col justify-center items-center gap-4 flex-1">
-          <div className="w-full flex justify-center gap-4">
+      <div className="flex w-full gap-4 items-start min-h-0 flex-1">
+        <div className="flex flex-col gap-4 flex-1 min-w-0">
+          <div className="w-full flex gap-4">
             {boxes.map((box, i) => (
               <Box key={i} label={box.label} footer={box.footer} icon={box.icon}>
                 {box.content}
               </Box>
             ))}
           </div>
-          <div className="w-full border border-zinc-800 rounded-xl bg-zinc-900/50 p-6 h-110.5">
-            <Line data={chartData} options={chartOptions} />
+          <div className="w-full border border-zinc-800 rounded-xl bg-zinc-900/50 p-6 flex flex-col gap-4 h-96">
+            <p className="text-sm font-semibold text-zinc-200">Uploads da Semana</p>
+            <div className="flex-1 min-h-0">
+              <Line data={chartData} options={chartOptions} />
+            </div>
           </div>
         </div>
 
-        <RecentItems label="Arquivos Recentes" onFileUploaded={handleFileUploaded}>
-          {(dashData?.recent_files ?? []).map((file) => (
-            <File key={file.id} file={file} setFile={setBlob} />
-          ))}
-        </RecentItems>
-      </span>
+        <div className="w-80 shrink-0 h-full">
+          <RecentItems label="Arquivos Recentes" onFileUploaded={handleFileUploaded}>
+            {(dashData?.recent_files ?? []).map((file) => (
+              <File key={file.id} file={file} setFile={setBlob} />
+            ))}
+          </RecentItems>
+        </div>
+      </div>
     </div>
   );
 };
