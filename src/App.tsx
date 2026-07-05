@@ -5,6 +5,7 @@ import ApiKeysTemplate from "./templates/ApiKeys";
 import UserTierTemplate from "./templates/UserTier";
 import SDKTemplate from "./templates/SDK";
 import SupportTemplate from "./templates/Support";
+import BackupTemplate from "./templates/Backup";
 import type { ReactElement } from "react";
 import StorageTemplate from "./templates/Storage";
 import useFileModalContext from "./hook/useFileModalContext";
@@ -18,6 +19,7 @@ type SectionType =
   | "tier"
   | "sdk"
   | "suporte"
+  | "backup"
 
 interface AppProps {
   section: SectionType;
@@ -32,6 +34,7 @@ const templates: Record<SectionType, ReactElement> = {
   tier: <UserTierTemplate />,
   sdk: <SDKTemplate />,
   suporte: <SupportTemplate />,
+  backup: <BackupTemplate />,
 };
 
 function App({ section }: AppProps) {

@@ -145,6 +145,7 @@ author '5Vault'
 server_scripts {
     'config.lua',
     'server.lua',
+    'backup.lua',
 }`,
   },
   {
@@ -155,7 +156,12 @@ server_scripts {
 Config.ApiKey    = "${apiKey}"
 Config.BucketId  = "${bucketId}"
 Config.BaseUrl   = "${BASE_URL}"
-Config.BucketUrl = "${bucketUrl || "-- URL pública do bucket (configure em Armazenamento)"}"`,
+Config.BucketUrl = "${bucketUrl || "-- URL pública do bucket (configure em Armazenamento)"}"
+
+-- Backup automático
+Config.BackupApiKey   = Config.ApiKey  -- use uma key dedicada se quiser
+Config.BackupHours    = { 2, 8, 14, 20 }  -- horários UTC-3 para rodar o backup (4x/dia = enterprise)
+Config.BackupImageDir = "cel_img"          -- pasta com backup_index.json`,
   },
   {
     name: "server.lua",
@@ -333,6 +339,109 @@ end)
 -- Deletar arquivo
 exports['5vault']:DeleteFile("jogadores/jogador_123.json", function(ok)
     if ok then print("[5Vault] Arquivo removido.") end
+end)`,
+  },
+  {
+    name: "backup.lua",
+    lang: "lua",
+    code: `-- 5Vault Backup — backup.lua
+-- Faz backup automático de imagens e dados SQL nos horários configurados.
+-- Adicione 'backup.lua' em server_scripts no fxmanifest.lua.
+
+local _sessionId = nil
+local _boundary  = "----5VaultBackup" .. tostring(math.random(100000, 999999))
+
+local function buildMultipart(filePath, fileData, mimeType)
+    local b = _boundary
+    local pathField   = ("--" .. b .. "\\r\\nContent-Disposition: form-data; name=\\"path\\"\\r\\n\\r\\n" .. filePath .. "\\r\\n")
+    local sessionField = _sessionId and ("--" .. b .. "\\r\\nContent-Disposition: form-data; name=\\"session_id\\"\\r\\n\\r\\n" .. _sessionId .. "\\r\\n") or ""
+    local fileHeader  = ("--" .. b .. "\\r\\nContent-Disposition: form-data; name=\\"file\\"; filename=\\"%s\\"\\r\\nContent-Type: %s\\r\\n\\r\\n"):format(
+        filePath:match("[^/]+$") or filePath, mimeType or "application/octet-stream"
+    )
+    return pathField .. sessionField .. fileHeader .. fileData .. "\\r\\n--" .. b .. "--\\r\\n"
+end
+
+local function backupFile(filePath, fileData, mimeType, cb)
+    PerformHttpRequest(
+        ("%s/backup/file"):format(Config.BaseUrl),
+        function(status, body)
+            if status == 200 then
+                local r = json.decode(body)
+                if r and r.session_id then _sessionId = r.session_id end
+                if cb then cb(true) end
+            else
+                print(("[5Vault Backup] Falha '%s' (%d): %s"):format(filePath, status, tostring(body)))
+                if cb then cb(false) end
+            end
+        end,
+        "POST",
+        buildMultipart(filePath, fileData, mimeType),
+        {
+            ["Content-Type"] = "multipart/form-data; boundary=" .. _boundary,
+            ["Api-Key"]      = Config.BackupApiKey or Config.ApiKey,
+        }
+    )
+end
+
+-- Backup de imagens: lê backup_index.json dentro do diretório configurado.
+-- O arquivo deve conter: { "files": ["foto.png", "subpasta/outro.jpg"] }
+local function backupImages()
+    if not Config.BackupImageDir then return end
+    local mimeMap = { png="image/png", jpg="image/jpeg", jpeg="image/jpeg", gif="image/gif", webp="image/webp" }
+    local indexRaw = LoadResourceFile(GetCurrentResourceName(), Config.BackupImageDir .. "/backup_index.json")
+    if not indexRaw then
+        print("[5Vault Backup] Crie '" .. Config.BackupImageDir .. "/backup_index.json' com a lista de arquivos.")
+        return
+    end
+    local idx = json.decode(indexRaw)
+    if not idx or not idx.files then return end
+    for _, f in ipairs(idx.files) do
+        local fullPath = Config.BackupImageDir .. "/" .. f
+        local data = LoadResourceFile(GetCurrentResourceName(), fullPath)
+        if data then
+            local ext = f:match("%.(%w+)$") or ""
+            backupFile(fullPath, data, mimeMap[ext:lower()] or "application/octet-stream")
+        end
+    end
+end
+
+-- Backup do banco de dados. Implemente Config.BackupGetTables para exportar dados SQL.
+-- Exemplo: Config.BackupGetTables = function(cb) cb({ {name="players", data="INSERT ..."} }) end
+local function backupDatabase()
+    if not Config.BackupGetTables then return end
+    Config.BackupGetTables(function(tables)
+        if not tables then return end
+        for _, t in ipairs(tables) do
+            if t.data and #t.data > 0 then
+                backupFile(t.name .. ".sql", t.data, "application/sql")
+            end
+        end
+    end)
+end
+
+local function runBackup()
+    _sessionId = nil
+    print("[5Vault Backup] Iniciando ciclo de backup...")
+    backupImages()
+    backupDatabase()
+    print("[5Vault Backup] Arquivos enviados.")
+end
+
+AddEventHandler('onResourceStart', function(resourceName)
+    if resourceName ~= GetCurrentResourceName() then return end
+    if not Config.BackupHours or #Config.BackupHours == 0 then
+        print("[5Vault Backup] Config.BackupHours vazio — backup automático desativado.")
+        return
+    end
+    local lastRan = -1
+    SetInterval(function()
+        local h = tonumber(os.date("%H"))
+        if h == lastRan then return end
+        for _, bh in ipairs(Config.BackupHours) do
+            if h == bh then lastRan = h; runBackup(); break end
+        end
+    end, 60000)
+    print("[5Vault Backup] Agendado para: " .. table.concat(Config.BackupHours, "h, ") .. "h")
 end)`,
   },
 ];

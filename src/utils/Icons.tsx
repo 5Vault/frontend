@@ -1,5 +1,6 @@
 import {
   Activity,
+  ArchiveRestore,
   ArrowLeft,
   ArrowRight,
   CalendarArrowUp,
@@ -71,6 +72,7 @@ const Icons = {
   arrow_left: <ArrowLeft size={20} />,
   arrow_right: <ArrowRight size={20} />,
   support: <MessageSquare size={20} />,
+  backup: <ArchiveRestore size={20} />,
 };
 
 export default Icons;

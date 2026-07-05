@@ -99,6 +99,17 @@ const Content: ContentType = {
       },
       icon: Icons.settings,
     },
+    backup: {
+      labels: {
+        pt: "Backups",
+        en: "Backups",
+      },
+      sublabels: {
+        pt: "Histórico de backups automáticos",
+        en: "Automatic backup history",
+      },
+      icon: Icons.backup,
+    },
     suporte: {
       labels: {
         pt: "Suporte",
