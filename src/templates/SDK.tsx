@@ -351,23 +351,37 @@ end)`,
 local _sessionId = nil
 local _boundary  = "----5VaultBackup" .. tostring(math.random(100000, 999999))
 
-local function buildMultipart(filePath, fileData, mimeType)
-    local b = _boundary
-    local pathField   = ("--" .. b .. "\\r\\nContent-Disposition: form-data; name=\\"path\\"\\r\\n\\r\\n" .. filePath .. "\\r\\n")
-    local sessionField = _sessionId and ("--" .. b .. "\\r\\nContent-Disposition: form-data; name=\\"session_id\\"\\r\\n\\r\\n" .. _sessionId .. "\\r\\n") or ""
-    local fileHeader  = ("--" .. b .. "\\r\\nContent-Disposition: form-data; name=\\"file\\"; filename=\\"%s\\"\\r\\nContent-Type: %s\\r\\n\\r\\n"):format(
-        filePath:match("[^/]+$") or filePath, mimeType or "application/octet-stream"
-    )
-    return pathField .. sessionField .. fileHeader .. fileData .. "\\r\\n--" .. b .. "--\\r\\n"
+-- Constrói o body multipart com campos path, type, session_id (opcional) e file.
+local function buildMultipart(filePath, fileType, fileData, mimeType)
+    local b   = _boundary
+    local out = ""
+    -- campo: path
+    out = out .. ("--" .. b .. "\\r\\nContent-Disposition: form-data; name=\\"path\\"\\r\\n\\r\\n" .. filePath .. "\\r\\n")
+    -- campo: type
+    out = out .. ("--" .. b .. "\\r\\nContent-Disposition: form-data; name=\\"type\\"\\r\\n\\r\\n" .. fileType .. "\\r\\n")
+    -- campo: session_id (se já tiver uma sessão ativa)
+    if _sessionId then
+        out = out .. ("--" .. b .. "\\r\\nContent-Disposition: form-data; name=\\"session_id\\"\\r\\n\\r\\n" .. _sessionId .. "\\r\\n")
+    end
+    -- campo: file
+    local fname = filePath:match("[^/]+$") or filePath
+    out = out .. ("--" .. b .. "\\r\\nContent-Disposition: form-data; name=\\"file\\"; filename=\\"%s\\"\\r\\nContent-Type: %s\\r\\n\\r\\n"):format(fname, mimeType or "application/octet-stream")
+    out = out .. fileData .. "\\r\\n--" .. b .. "--\\r\\n"
+    return out
 end
 
-local function backupFile(filePath, fileData, mimeType, cb)
+-- Envia um arquivo para a API de backup.
+-- fileType = "image" (pasta fixa, ignora duplicatas) | "db" (pasta por data/hora)
+local function backupFile(filePath, fileType, fileData, mimeType, cb)
     PerformHttpRequest(
         ("%s/backup/file"):format(Config.BaseUrl),
         function(status, body)
             if status == 200 then
                 local r = json.decode(body)
                 if r and r.session_id then _sessionId = r.session_id end
+                if r and r.skipped then
+                    print(("[5Vault Backup] Ignorado (já existe): %s"):format(filePath))
+                end
                 if cb then cb(true) end
             else
                 print(("[5Vault Backup] Falha '%s' (%d): %s"):format(filePath, status, tostring(body)))
@@ -375,7 +389,7 @@ local function backupFile(filePath, fileData, mimeType, cb)
             end
         end,
         "POST",
-        buildMultipart(filePath, fileData, mimeType),
+        buildMultipart(filePath, fileType, fileData, mimeType),
         {
             ["Content-Type"] = "multipart/form-data; boundary=" .. _boundary,
             ["Api-Key"]      = Config.BackupApiKey or Config.ApiKey,
@@ -384,7 +398,8 @@ local function backupFile(filePath, fileData, mimeType, cb)
 end
 
 -- Backup de imagens: lê backup_index.json dentro do diretório configurado.
--- O arquivo deve conter: { "files": ["foto.png", "subpasta/outro.jpg"] }
+-- Arquivo: { "files": ["foto.png", "subpasta/banner.jpg"] }
+-- Imagens já existentes no bucket de backup são automaticamente ignoradas.
 local function backupImages()
     if not Config.BackupImageDir then return end
     local mimeMap = { png="image/png", jpg="image/jpeg", jpeg="image/jpeg", gif="image/gif", webp="image/webp" }
@@ -400,12 +415,13 @@ local function backupImages()
         local data = LoadResourceFile(GetCurrentResourceName(), fullPath)
         if data then
             local ext = f:match("%.(%w+)$") or ""
-            backupFile(fullPath, data, mimeMap[ext:lower()] or "application/octet-stream")
+            backupFile(fullPath, "image", data, mimeMap[ext:lower()] or "application/octet-stream")
         end
     end
 end
 
--- Backup do banco de dados. Implemente Config.BackupGetTables para exportar dados SQL.
+-- Backup do banco de dados — cada ciclo vai para uma pasta nova com data/hora.
+-- Implemente Config.BackupGetTables para retornar os dados SQL.
 -- Exemplo: Config.BackupGetTables = function(cb) cb({ {name="players", data="INSERT ..."} }) end
 local function backupDatabase()
     if not Config.BackupGetTables then return end
@@ -413,18 +429,18 @@ local function backupDatabase()
         if not tables then return end
         for _, t in ipairs(tables) do
             if t.data and #t.data > 0 then
-                backupFile(t.name .. ".sql", t.data, "application/sql")
+                backupFile(t.name .. ".sql", "db", t.data, "application/sql")
             end
         end
     end)
 end
 
 local function runBackup()
-    _sessionId = nil
+    _sessionId = nil  -- nova sessão por ciclo
     print("[5Vault Backup] Iniciando ciclo de backup...")
     backupImages()
     backupDatabase()
-    print("[5Vault Backup] Arquivos enviados.")
+    print("[5Vault Backup] Ciclo de backup concluído.")
 end
 
 AddEventHandler('onResourceStart', function(resourceName)
