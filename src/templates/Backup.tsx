@@ -43,7 +43,8 @@ const BackupTemplate = () => {
     } finally {
       setLoading(false);
     }
-  }, [axiosInstance, page, dateFilter]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, dateFilter]);
 
   useEffect(() => {
     fetchSessions();
