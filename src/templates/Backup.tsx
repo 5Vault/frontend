@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArchiveRestore, Calendar, FileArchive, HardDrive, Search } from "lucide-react";
+import { ArchiveRestore, Calendar, FileArchive, HardDrive } from "lucide-react";
 import useAxios from "../utils/axiosConfig";
 import HeaderTemplate from "../components/Header";
 
