@@ -161,7 +161,7 @@ Config.BucketUrl = "${bucketUrl || "-- URL pública do bucket (configure em Arma
 -- Backup automático
 Config.BackupApiKey   = Config.ApiKey  -- use uma key dedicada se quiser
 Config.BackupHours    = { 2, 8, 14, 20 }  -- horários UTC-3 para rodar o backup (4x/dia = enterprise)
-Config.BackupImageDir = "cel_img"          -- pasta com backup_index.json`,
+Config.BackupImageDir = "imagens"          -- pasta com backup_index.json`,
   },
   {
     name: "server.lua",
