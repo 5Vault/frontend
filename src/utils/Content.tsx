@@ -128,8 +128,8 @@ const Content: ContentType = {
       cost: { pt: "R$0/mês", en: "R$0/month" },
       description: { pt: "Para testar a plataforma. Sem cartão de crédito.", en: "To test the platform. No credit card required." },
       included: {
-        pt: ["10GB de Armazenamento", "1 Chave de API", "500 Requisições/semana", "Subdomínio compartilhado"],
-        en: ["10GB Storage", "1 API Key", "500 Requests/week", "Shared subdomain"],
+        pt: ["10GB de Armazenamento", "1 Chave de API", "5000 Requisições/semana", "Subdomínio compartilhado"],
+        en: ["10GB Storage", "1 API Key", "5000 Requests/week", "Shared subdomain"],
       },
     },
     starter: {

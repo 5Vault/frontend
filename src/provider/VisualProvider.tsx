@@ -12,7 +12,7 @@ const defaultTiers: TierType[] = [
     included: [
       { pt: "1GB de Armazenamento", en: "1GB Storage" },
       { pt: "1 Chave de API", en: "1 API Key" },
-      { pt: "500 Requisições/semana", en: "500 Requests/week" },
+      { pt: "5000 Requisições/semana", en: "5000 Requests/week" },
       { pt: "Subdomínio compartilhado", en: "Shared subdomain" },
     ],
   },
