@@ -300,7 +300,7 @@ const TicketDetail = ({ ticket, onBack }: { ticket: Ticket; onBack: () => void }
                   </div>
                   <div className="flex items-center gap-1.5 px-1">
                     <span className={`text-[10px] font-semibold ${isAdmin ? "text-zinc-500" : "text-zinc-500"}`}>
-                      {isAdmin ? "Suporte FiveVault" : "Você"}
+                      {isAdmin ? "Suporte FiveKeepr" : "Você"}
                     </span>
                     <span className="text-[10px] text-zinc-700">
                       {new Date(msg.created_at).toLocaleString("pt-BR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}

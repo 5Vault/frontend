@@ -21,9 +21,9 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           script: |
-            cd /opt/fivevault/frontend
+            cd /opt/fivekeepr/frontend
             git pull origin main
-            cd /opt/fivevault
+            cd /opt/fivekeepr
             docker compose build frontend
             docker compose up -d --no-deps frontend
             docker image prune -f

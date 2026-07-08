@@ -1,6 +1,6 @@
 {
-  "name": "5Vault — Storage para FiveM",
-  "short_name": "5Vault",
+  "name": "5Keepr — Storage para FiveM",
+  "short_name": "5Keepr",
   "description": "Armazenamento em nuvem rápido e seguro feito para servidores FiveM.",
   "start_url": "/",
   "display": "standalone",

@@ -5,7 +5,7 @@ type SessionSnapshot = {
   userToken: string | null;
 };
 
-const STORAGE_KEY = "@fivevault/session";
+const STORAGE_KEY = "@fivekeepr/session";
 
 const loadSnapshot = (): SessionSnapshot => {
   try {

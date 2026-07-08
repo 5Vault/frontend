@@ -8,7 +8,7 @@ const Top = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md border-b border-white/5 bg-[#080809]/80">
-      <span className="font-black text-white text-lg tracking-tight cursor-pointer" onClick={() => navigate("/")}>5Vault</span>
+      <span className="font-black text-white text-lg tracking-tight cursor-pointer" onClick={() => navigate("/")}>5Keepr</span>
 
       <div className="hidden md:flex items-center gap-8">
         <button

@@ -133,8 +133,8 @@ const AccountTemplate = () => {
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-7 shadow-2xl shadow-black/40">
           {/* Logo inside card */}
           <div className="flex flex-col items-center mb-6 gap-3">
-            <img src="/logo.svg" alt="5Vault" className="w-14 h-14 rounded-2xl shadow-lg shadow-black/40" />
-            <img src={logoW} alt="5Vault" className="h-6 object-contain" />
+            <img src="/logo.svg" alt="5Keepr" className="w-14 h-14 rounded-2xl shadow-lg shadow-black/40" />
+            <img src={logoW} alt="5Keepr" className="h-6 object-contain" />
           </div>
           {validMode != null ? modes[validMode] : <Login />}
         </div>
@@ -213,7 +213,7 @@ const Login = () => {
   return (
     <div className="w-full">
       <h2 className="text-lg font-bold text-white mb-0.5">Entrar</h2>
-      <p className="text-zinc-500 text-sm mb-5">Bem-vindo de volta ao 5Vault.</p>
+      <p className="text-zinc-500 text-sm mb-5">Bem-vindo de volta ao 5Keepr.</p>
 
       <div className="flex gap-2 mb-1">
         <SocialButton

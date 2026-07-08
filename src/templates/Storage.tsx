@@ -336,7 +336,7 @@ const BucketSettingsModal = ({
   const { user } = useAuthContext();
   const isPro = canCustomize(user?.tier ?? null);
 
-  // O prefixo atual sem o sufixo ".5vault.app"
+  // O prefixo atual sem o sufixo ".5keepr.app"
   const currentPrefix = bucket.custom_domain?.endsWith("." + STORAGE_DOMAIN)
     ? bucket.custom_domain.slice(0, -(STORAGE_DOMAIN.length + 1))
     : "";

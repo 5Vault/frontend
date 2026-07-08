@@ -5,13 +5,13 @@ const steps = [
     number: "01",
     title: "Crie sua conta",
     description: "Registre-se gratuitamente e acesse o painel em segundos.",
-    code: `// Acesse 5vault.app e clique em "Criar conta"
+    code: `// Acesse 5keepr.app e clique em "Criar conta"
 // Nenhum cartão de crédito necessário no plano gratuito`,
   },
   {
     number: "02",
     title: "Configure seu storage",
-    description: "Configure para outros domínios ou use subdomínio 5Vault.",
+    description: "Configure para outros domínios ou use subdomínio 5Keepr.",
     code: `// Painel → Storage → Novo Storage
 domain_type: "shared"  // ou "own"
 custom_domain: "assets.meuservidor.com"`,
@@ -27,7 +27,7 @@ API_KEY="fv_live_xxxxxxxxxxxxxxxx"`,
     number: "04",
     title: "Faça upload dos assets",
     description: "Envie texturas, modelos e sons diretamente pelo painel ou API.",
-    code: `curl -X POST https://api.5vault.app/v1/files \\
+    code: `curl -X POST https://api.5keepr.app/v1/files \\
   -H "Api-Key: fv_live_xxx" \\
   -F "file=@texture.ytd"`,
   },

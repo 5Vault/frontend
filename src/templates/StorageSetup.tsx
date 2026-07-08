@@ -161,7 +161,7 @@ const StorageSetupTemplate = ({ onComplete }: { onComplete: () => void }) => {
                 </div>
                 <p className="text-zinc-400 text-sm mt-1">
                   Você receberá um endereço como{" "}
-                  <code className="text-zinc-300">seu-slug.storage.5vault.app</code>
+                  <code className="text-zinc-300">seu-slug.storage.5keepr.app</code>
                 </p>
               </div>
             </button>

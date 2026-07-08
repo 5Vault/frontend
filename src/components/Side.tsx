@@ -7,7 +7,7 @@ import useAuthContext from "../hook/useAuthContext";
 import { LogOut, ChevronRight } from "lucide-react";
 import { useNotifications, NOTIF_ROUTE_MAP } from "../hooks/useNotifications";
 
-const SIDEBAR_KEY = "@fivevault/sidebar_expanded";
+const SIDEBAR_KEY = "@fivekeepr/sidebar_expanded";
 
 function NotifBadge({ count, collapsed }: { count: number; collapsed: boolean }) {
   if (count <= 0) return null;
@@ -86,7 +86,7 @@ const Side = () => {
           <img src={Logo} alt="Logo" className="h-8 w-8 shrink-0" />
           {expanded && (
             <span className="flex-1 text-left">
-              <p className="text-white font-bold text-base leading-tight">5Vault</p>
+              <p className="text-white font-bold text-base leading-tight">5Keepr</p>
               <p className="text-xs text-zinc-500">Host your files securely</p>
             </span>
           )}

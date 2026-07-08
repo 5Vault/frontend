@@ -137,10 +137,10 @@ const fivemFiles = (apiKey: string, bucketId: string, bucketUrl: string): Script
     code: `fx_version 'cerulean'
 game 'gta5'
 
-name '5vault'
-description '5Vault SDK — armazenamento de arquivos para FiveM'
+name '5keepr'
+description '5Keepr SDK — armazenamento de arquivos para FiveM'
 version '1.0.0'
-author '5Vault'
+author '5Keepr'
 
 server_scripts {
     'config.lua',
@@ -166,11 +166,11 @@ Config.BackupImageDir = "imagens"          -- pasta com backup_index.json`,
   {
     name: "server.lua",
     lang: "lua",
-    code: `-- 5Vault SDK — server.lua
+    code: `-- 5Keepr SDK — server.lua
 -- Todos os exports devem ser chamados server-side.
--- Uso em outro resource: exports['5vault']:UploadFile(...)
+-- Uso em outro resource: exports['5keepr']:UploadFile(...)
 
-local _boundary = "----5VaultBoundary" .. tostring(math.random(100000, 999999))
+local _boundary = "----5KeeprBoundary" .. tostring(math.random(100000, 999999))
 
 --- Constrói o body multipart/form-data a partir de um arquivo lido com LoadResourceFile.
 --- @param fileName  string  Nome do arquivo (com extensão)
@@ -196,7 +196,7 @@ end
 exports('UploadFile', function(fileName, mimeType, callback)
     local data = LoadResourceFile(GetCurrentResourceName(), fileName)
     if not data then
-        print("[5Vault] Arquivo não encontrado: " .. tostring(fileName))
+        print("[5Keepr] Arquivo não encontrado: " .. tostring(fileName))
         return callback(false, nil)
     end
 
@@ -209,7 +209,7 @@ exports('UploadFile', function(fileName, mimeType, callback)
                 local result = json.decode(responseBody)
                 callback(true, result and result.url)
             else
-                print(("[5Vault] Erro no upload (%d): %s"):format(status, tostring(responseBody)))
+                print(("[5Keepr] Erro no upload (%d): %s"):format(status, tostring(responseBody)))
                 callback(false, nil)
             end
         end,
@@ -238,7 +238,7 @@ exports('UploadRaw', function(fileName, rawData, mimeType, callback)
                 local result = json.decode(responseBody)
                 callback(true, result and result.url)
             else
-                print(("[5Vault] Erro no upload (%d): %s"):format(status, tostring(responseBody)))
+                print(("[5Keepr] Erro no upload (%d): %s"):format(status, tostring(responseBody)))
                 callback(false, nil)
             end
         end,
@@ -266,7 +266,7 @@ exports('ListFiles', function(dirName, callback)
             if status == 200 then
                 callback(json.decode(responseBody))
             else
-                print(("[5Vault] Erro ao listar arquivos (%d)"):format(status))
+                print(("[5Keepr] Erro ao listar arquivos (%d)"):format(status))
                 callback(nil)
             end
         end,
@@ -286,7 +286,7 @@ exports('DeleteFile', function(fileName, callback)
             if status == 204 or status == 200 then
                 callback(true)
             else
-                print(("[5Vault] Erro ao deletar '%s' (%d)"):format(fileName, status))
+                print(("[5Keepr] Erro ao deletar '%s' (%d)"):format(fileName, status))
                 callback(false)
             end
         end,
@@ -296,40 +296,40 @@ exports('DeleteFile', function(fileName, callback)
     )
 end)
 
-print("[5Vault] SDK carregado.")`
+print("[5Keepr] SDK carregado.")`
   },
   {
     name: "uso.lua",
     lang: "lua",
     code: `-- Exemplo de uso em outro resource (server-side)
--- Certifique-se que '5vault' está listado em dependencies no seu fxmanifest.lua
+-- Certifique-se que '5keepr' está listado em dependencies no seu fxmanifest.lua
 
 -- Salvar dados de um jogador como JSON dentro da pasta "jogadores"
 RegisterNetEvent('meuResource:salvarJogador', function(data)
     local src    = source
     local conteudo = json.encode(data)
 
-    exports['5vault']:UploadRaw(
+    exports['5keepr']:UploadRaw(
         ("jogadores/jogador_%d.json"):format(src),
         conteudo,
         "application/json",
         function(ok, url)
             if ok then
-                print(("[5Vault] Salvo: %s"):format(url))
+                print(("[5Keepr] Salvo: %s"):format(url))
             end
         end
     )
 end)
 
 -- Upload de um arquivo local para a pasta "banners"
-exports['5vault']:UploadFile("banners/banner.png", "image/png", function(ok, url)
+exports['5keepr']:UploadFile("banners/banner.png", "image/png", function(ok, url)
     if ok then
-        print("[5Vault] Banner enviado: " .. url)
+        print("[5Keepr] Banner enviado: " .. url)
     end
 end)
 
 -- Listar arquivos da pasta "jogadores"
-exports['5vault']:ListFiles("jogadores", function(res)
+exports['5keepr']:ListFiles("jogadores", function(res)
     if not res or not res.files then return end
     for _, f in ipairs(res.files) do
         print(f.key .. " — " .. f.public_url)
@@ -337,19 +337,19 @@ exports['5vault']:ListFiles("jogadores", function(res)
 end)
 
 -- Deletar arquivo
-exports['5vault']:DeleteFile("jogadores/jogador_123.json", function(ok)
-    if ok then print("[5Vault] Arquivo removido.") end
+exports['5keepr']:DeleteFile("jogadores/jogador_123.json", function(ok)
+    if ok then print("[5Keepr] Arquivo removido.") end
 end)`,
   },
   {
     name: "backup.lua",
     lang: "lua",
-    code: `-- 5Vault Backup — backup.lua
+    code: `-- 5Keepr Backup — backup.lua
 -- Faz backup automático de imagens e dados SQL nos horários configurados.
 -- Adicione 'backup.lua' em server_scripts no fxmanifest.lua.
 
 local _sessionId = nil
-local _boundary  = "----5VaultBackup" .. tostring(math.random(100000, 999999))
+local _boundary  = "----5KeeprBackup" .. tostring(math.random(100000, 999999))
 
 -- Constrói o body multipart com campos path, type, session_id (opcional) e file.
 local function buildMultipart(filePath, fileType, fileData, mimeType)
@@ -380,11 +380,11 @@ local function backupFile(filePath, fileType, fileData, mimeType, cb)
                 local r = json.decode(body)
                 if r and r.session_id then _sessionId = r.session_id end
                 if r and r.skipped then
-                    print(("[5Vault Backup] Ignorado (já existe): %s"):format(filePath))
+                    print(("[5Keepr Backup] Ignorado (já existe): %s"):format(filePath))
                 end
                 if cb then cb(true) end
             else
-                print(("[5Vault Backup] Falha '%s' (%d): %s"):format(filePath, status, tostring(body)))
+                print(("[5Keepr Backup] Falha '%s' (%d): %s"):format(filePath, status, tostring(body)))
                 if cb then cb(false) end
             end
         end,
@@ -405,7 +405,7 @@ local function backupImages()
     local mimeMap = { png="image/png", jpg="image/jpeg", jpeg="image/jpeg", gif="image/gif", webp="image/webp" }
     local indexRaw = LoadResourceFile(GetCurrentResourceName(), Config.BackupImageDir .. "/backup_index.json")
     if not indexRaw then
-        print("[5Vault Backup] Crie '" .. Config.BackupImageDir .. "/backup_index.json' com a lista de arquivos.")
+        print("[5Keepr Backup] Crie '" .. Config.BackupImageDir .. "/backup_index.json' com a lista de arquivos.")
         return
     end
     local idx = json.decode(indexRaw)
@@ -437,16 +437,16 @@ end
 
 local function runBackup()
     _sessionId = nil  -- nova sessão por ciclo
-    print("[5Vault Backup] Iniciando ciclo de backup...")
+    print("[5Keepr Backup] Iniciando ciclo de backup...")
     backupImages()
     backupDatabase()
-    print("[5Vault Backup] Ciclo de backup concluído.")
+    print("[5Keepr Backup] Ciclo de backup concluído.")
 end
 
 AddEventHandler('onResourceStart', function(resourceName)
     if resourceName ~= GetCurrentResourceName() then return end
     if not Config.BackupHours or #Config.BackupHours == 0 then
-        print("[5Vault Backup] Config.BackupHours vazio — backup automático desativado.")
+        print("[5Keepr Backup] Config.BackupHours vazio — backup automático desativado.")
         return
     end
     local lastRan = -1
@@ -457,14 +457,14 @@ AddEventHandler('onResourceStart', function(resourceName)
             if h == bh then lastRan = h; runBackup(); break end
         end
     end, 60000)
-    print("[5Vault Backup] Agendado para: " .. table.concat(Config.BackupHours, "h, ") .. "h")
+    print("[5Keepr Backup] Agendado para: " .. table.concat(Config.BackupHours, "h, ") .. "h")
 end)`,
   },
 ];
 
 const robloxFiles = (apiKey: string, bucketId: string, bucketUrl: string): ScriptFile[] => [
   {
-    name: "FiveVaultConfig.lua",
+    name: "FiveKeeprConfig.lua",
     lang: "lua",
     code: `-- ModuleScript em ServerScriptService
 local Config = {}
@@ -477,15 +477,15 @@ Config.BucketUrl = "${bucketUrl || "-- URL pública do bucket (configure em Arma
 return Config`,
   },
   {
-    name: "FiveVaultService.lua",
+    name: "FiveKeeprService.lua",
     lang: "lua",
     code: `-- ModuleScript em ServerScriptService
 -- Habilite HTTP Requests em: Game Settings → Security → Allow HTTP Requests
 
 local HttpService = game:GetService("HttpService")
-local Config = require(script.Parent.FiveVaultConfig)
+local Config = require(script.Parent.FiveKeeprConfig)
 
-local FiveVault = {}
+local FiveKeepr = {}
 
 local function filesUrl(fileName)
     if fileName then 
@@ -503,8 +503,8 @@ end
 --- @param rawData   string   Conteúdo do arquivo
 --- @param mimeType  string   MIME type (ex: "application/json", "image/png")
 --- @return boolean, string?
-function FiveVault.UploadRaw(fileName: string, rawData: string, mimeType: string): (boolean, string?)
-    local boundary = "----5VaultBoundary" .. tostring(math.random(100000, 999999))
+function FiveKeepr.UploadRaw(fileName: string, rawData: string, mimeType: string): (boolean, string?)
+    local boundary = "----5KeeprBoundary" .. tostring(math.random(100000, 999999))
     local body = table.concat({
         "--" .. boundary,
         ('Content-Disposition: form-data; name="file"; filename="%s"'):format(fileName),
@@ -531,7 +531,7 @@ function FiveVault.UploadRaw(fileName: string, rawData: string, mimeType: string
         local data = HttpService:JSONDecode(result.Body)
         return true, data.url
     else
-        warn("[5Vault] Erro no upload:", result)
+        warn("[5Keepr] Erro no upload:", result)
         return false, nil
     end
 end
@@ -539,7 +539,7 @@ end
 --- Lista todos os arquivos de um diretório específico.
 --- @param dirName string? (opcional)
 --- @return table?
-function FiveVault.ListFiles(dirName: string?): {any}?
+function FiveKeepr.ListFiles(dirName: string?): {any}?
     local url = filesUrl()
     if dirName and dirName ~= "" then
         url = url .. "?dir=" .. dirName
@@ -555,7 +555,7 @@ function FiveVault.ListFiles(dirName: string?): {any}?
     if ok and result.Success then
         return HttpService:JSONDecode(result.Body)
     else
-        warn("[5Vault] Erro ao listar:", result)
+        warn("[5Keepr] Erro ao listar:", result)
         return nil
     end
 end
@@ -563,7 +563,7 @@ end
 --- Remove um arquivo pelo nome (incluindo o caminho, ex: "dir/arquivo.jpg").
 --- @param fileName string
 --- @return boolean
-function FiveVault.DeleteFile(fileName: string): boolean
+function FiveKeepr.DeleteFile(fileName: string): boolean
     local ok, result = pcall(function()
         return HttpService:RequestAsync({
             Url     = filesUrl(fileName),
@@ -575,18 +575,18 @@ function FiveVault.DeleteFile(fileName: string): boolean
     if ok and result.StatusCode == 204 then
         return true
     else
-        warn("[5Vault] Erro ao deletar:", result)
+        warn("[5Keepr] Erro ao deletar:", result)
         return false
     end
 end
 
-return FiveVault`,
+return FiveKeepr`,
   },
   {
     name: "uso.lua",
     lang: "lua",
     code: `-- Script (server) de exemplo
-local FiveVault = require(game.ServerScriptService.FiveVaultService)
+local FiveKeepr = require(game.ServerScriptService.FiveKeeprService)
 
 -- Salvar dados de um jogador como JSON na pasta "jogadores"
 game.Players.PlayerRemoving:Connect(function(player)
@@ -597,19 +597,19 @@ game.Players.PlayerRemoving:Connect(function(player)
     }
 
     local json = game:GetService("HttpService"):JSONEncode(dados)
-    local ok, url = FiveVault.UploadRaw(
+    local ok, url = FiveKeepr.UploadRaw(
         ("jogadores/jogador_%d.json"):format(player.UserId),
         json,
         "application/json"
     )
 
     if ok then
-        print("[5Vault] Salvo: " .. url)
+        print("[5Keepr] Salvo: " .. url)
     end
 end)
 
 -- Listar arquivos da pasta "jogadores"
-local res = FiveVault.ListFiles("jogadores")
+local res = FiveKeepr.ListFiles("jogadores")
 if res and res.files then
     for _, f in ipairs(res.files) do
         print(f.key .. " — " .. f.public_url)
@@ -617,8 +617,8 @@ if res and res.files then
 end
 
 -- Deletar arquivo
-local removido = FiveVault.DeleteFile("jogadores/jogador_123.json")
-if removido then print("[5Vault] Removido.") end`,
+local removido = FiveKeepr.DeleteFile("jogadores/jogador_123.json")
+if removido then print("[5Keepr] Removido.") end`,
   },
 ];
 
@@ -719,7 +719,7 @@ const SDKTemplate = () => {
   const handleDownloadSDK = () => {
     const zipBlob = createZip(
       files.map(f => ({
-        name: platform === "fivem" ? `5vault/${f.name}` : `FiveVault/${f.name}`,
+        name: platform === "fivem" ? `5keepr/${f.name}` : `FiveKeepr/${f.name}`,
         content: f.code,
       }))
     );
@@ -727,7 +727,7 @@ const SDKTemplate = () => {
     const url = URL.createObjectURL(zipBlob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = platform === "fivem" ? "5vault-sdk-fivem.zip" : "5vault-sdk-roblox.zip";
+    a.download = platform === "fivem" ? "5keepr-sdk-fivem.zip" : "5keepr-sdk-roblox.zip";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -743,17 +743,17 @@ const SDKTemplate = () => {
   ];
 
   const robloxMethods = [
-    { name: "FiveVault.UploadRaw(fileName, rawData, mimeType)", desc: "Envia dados via form multipart. Retorna (ok, url)" },
-    { name: "FiveVault.ListFiles()",                             desc: "Lista arquivos do diretório. Retorna table?" },
-    { name: "FiveVault.DeleteFile(fileName)",                    desc: "Remove um arquivo. Retorna boolean" },
+    { name: "FiveKeepr.UploadRaw(fileName, rawData, mimeType)", desc: "Envia dados via form multipart. Retorna (ok, url)" },
+    { name: "FiveKeepr.ListFiles()",                             desc: "Lista arquivos do diretório. Retorna table?" },
+    { name: "FiveKeepr.DeleteFile(fileName)",                    desc: "Remove um arquivo. Retorna boolean" },
   ];
 
   const infoFiveM = (
     <>
       Copie os 4 arquivos para uma pasta chamada{" "}
-      <code className="text-[var(--primary-contrast-light)] bg-zinc-800 px-1 rounded">5vault</code> dentro de{" "}
+      <code className="text-[var(--primary-contrast-light)] bg-zinc-800 px-1 rounded">5keepr</code> dentro de{" "}
       <code className="text-zinc-300 bg-zinc-800 px-1 rounded">resources/</code> e adicione{" "}
-      <code className="text-zinc-300 bg-zinc-800 px-1 rounded">ensure 5vault</code> no{" "}
+      <code className="text-zinc-300 bg-zinc-800 px-1 rounded">ensure 5keepr</code> no{" "}
       <code className="text-zinc-300 bg-zinc-800 px-1 rounded">server.cfg</code>. Todos os exports são <strong className="text-white">server-side</strong>.
     </>
   );
@@ -770,7 +770,7 @@ const SDKTemplate = () => {
       <HeaderTemplate
         icon={<Code2 size={22} />}
         title="SDKs"
-        description="Scripts prontos para integrar o 5Vault ao seu jogo"
+        description="Scripts prontos para integrar o 5Keepr ao seu jogo"
       />
 
       {/* Platform selector */}

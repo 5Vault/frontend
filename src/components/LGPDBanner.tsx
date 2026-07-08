@@ -3,7 +3,7 @@ import { ShieldCheck, X } from "lucide-react";
 import useAxios from "../utils/axiosConfig";
 import useAuthContext from "../hook/useAuthContext";
 
-const CONSENT_KEY = "@fivevault/lgpd_consent";
+const CONSENT_KEY = "@fivekeepr/lgpd_consent";
 
 const LGPDBanner = () => {
   const [visible, setVisible] = useState(false);

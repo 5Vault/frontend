@@ -926,7 +926,7 @@ const Admin = () => {
 
         {/* ── Footer ── */}
         <footer className="pt-4 border-t border-zinc-900 flex items-center justify-between text-[11px] text-zinc-700">
-          <span>5Vault Admin Panel</span>
+          <span>5Keepr Admin Panel</span>
           <span className="flex items-center gap-1.5">
             <Clock size={11} /> {new Date().toLocaleString("pt-BR")}
           </span>

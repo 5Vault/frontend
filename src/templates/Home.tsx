@@ -53,13 +53,13 @@ const benefits = [
   {
     icon: <Globe size={20} />,
     title: "Configuração de Outros Domínios",
-    description: "Configure para outros domínios ou use um subdomínio compartilhado da 5Vault.",
+    description: "Configure para outros domínios ou use um subdomínio compartilhado da 5Keepr.",
   },
 ];
 
 const steps = [
   { icon: <Upload size={22} />, step: "01", title: "Crie sua conta", desc: "Registre-se grátis em segundos. Sem cartão de crédito." },
-  { icon: <Server size={22} />, step: "02", title: "Configure o storage", desc: "Configure para outros domínios ou use subdomínio 5Vault com 1 clique." },
+  { icon: <Server size={22} />, step: "02", title: "Configure o storage", desc: "Configure para outros domínios ou use subdomínio 5Keepr com 1 clique." },
   { icon: <Key size={22} />, step: "03", title: "Gere sua API Key", desc: "Crie chaves de leitura ou escrita para cada servidor FiveM." },
   { icon: <Zap size={22} />, step: "04", title: "Faça upload", desc: "Envie texturas, modelos e assets direto pelo painel ou API." },
 ];
@@ -150,7 +150,7 @@ const Home = () => {
       {/* ── BENEFÍCIOS ───────────────────────────────────────────── */}
       <Section className="py-28">
         <div className="scroll-fade text-center mb-16">
-          <span className="text-xs font-semibold uppercase tracking-widest text-[#e8073f] mb-3 block">Por que 5Vault</span>
+          <span className="text-xs font-semibold uppercase tracking-widest text-[#e8073f] mb-3 block">Por que 5Keepr</span>
           <h2 className="text-4xl md:text-5xl font-black mb-4">Tudo que seu servidor precisa</h2>
           <p className="text-zinc-500 max-w-xl mx-auto">Infraestrutura de nível enterprise, acessível para qualquer tamanho de comunidade.</p>
         </div>
@@ -308,7 +308,7 @@ const Home = () => {
 
       {/* ── FOOTER ───────────────────────────────────────────────── */}
       <footer className="border-t border-white/5 py-8 text-center text-zinc-600 text-sm">
-        © {new Date().getFullYear()} 5Vault. Todos os direitos reservados.
+        © {new Date().getFullYear()} 5Keepr. Todos os direitos reservados.
       </footer>
     </div>
   );

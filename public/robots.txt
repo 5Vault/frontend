@@ -10,4 +10,4 @@ Disallow: /checkout
 Disallow: /bucket
 Disallow: /api/
 
-Sitemap: https://5vault.app/sitemap.xml
+Sitemap: https://5keepr.app/sitemap.xml

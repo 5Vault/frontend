@@ -357,7 +357,7 @@ const CheckOut = () => {
               {/* Order summary line */}
               <div className="flex items-center justify-between mb-5 px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800">
                 <div>
-                  <p className="text-sm font-semibold">5Vault {tier.name}</p>
+                  <p className="text-sm font-semibold">5Keepr {tier.name}</p>
                   <p className="text-xs text-zinc-500">Assinatura mensal</p>
                 </div>
                 <p className="font-extrabold text-white">{formatBRL(tier.cost)}</p>

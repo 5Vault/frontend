@@ -315,7 +315,7 @@ const ApiKeysTemplate = () => {
       <HeaderTemplate
         icon={<Key size={22} />}
         title="Chaves de API"
-        description="Autentique requisições ao 5Vault. Não compartilhe suas chaves."
+        description="Autentique requisições ao 5Keepr. Não compartilhe suas chaves."
         content={
           <button
             onClick={() => setShowCreate(true)}

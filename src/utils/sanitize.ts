@@ -49,6 +49,6 @@ export const isAllowedRedirectUrl = (
 export const ALLOWED_PAYMENT_DOMAINS = [
   "stripe.com",
   "js.stripe.com",
-  "5vault.app",
+  "5keepr.app",
   "cloudflare.com",
 ];
