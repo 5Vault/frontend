@@ -136,10 +136,18 @@ const Home = () => {
       </div>
 
       {/* ── MARQUEE PARCEIROS ─────────────────────────────────────── */}
-      <div className="border-y border-white/5 py-5 overflow-hidden bg-white/[0.02]">
-        <div className="flex animate-marquee w-max">
-          {[...partners, ...partners].map((p, i) => (
-            <div key={i} className="flex items-center gap-3 mx-8 opacity-40 hover:opacity-70 transition-opacity">
+      <div className="border-y border-white/5 py-5 overflow-hidden bg-white/[0.02] flex gap-0 relative">
+        <div className="flex animate-marquee whitespace-nowrap shrink-0">
+          {partners.map((p, i) => (
+            <div key={i} className="flex items-center gap-3 mx-12 opacity-40 hover:opacity-70 transition-opacity">
+              <img src={p.logo} alt={p.name} className="h-7 object-contain grayscale" />
+              <span className="text-sm font-medium text-zinc-400 whitespace-nowrap">{p.name}</span>
+            </div>
+          ))}
+        </div>
+        <div className="flex animate-marquee whitespace-nowrap shrink-0" aria-hidden="true">
+          {partners.map((p, i) => (
+            <div key={`dup-${i}`} className="flex items-center gap-3 mx-12 opacity-40 hover:opacity-70 transition-opacity">
               <img src={p.logo} alt={p.name} className="h-7 object-contain grayscale" />
               <span className="text-sm font-medium text-zinc-400 whitespace-nowrap">{p.name}</span>
             </div>
