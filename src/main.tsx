@@ -28,14 +28,15 @@ const toasterConfig = {
   containerStyle: { zIndex: 9999, right: "16px", top: "16px" },
   toastOptions: {
     style: {
-      backgroundColor: "#18181b",
+      backgroundColor: "#111113",
       color: "#fff",
-      borderRadius: "10px",
+      borderRadius: "0px",
       padding: "12px 16px",
       fontSize: "13px",
       fontWeight: "500",
-      border: "1px solid #27272a",
-      boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+      border: "1px solid #1e1e21",
+      borderLeft: "2px solid #e8073f",
+      boxShadow: "4px 4px 24px rgba(0,0,0,0.6)",
     },
     success: {
       duration: 4000,
@@ -46,7 +47,7 @@ const toasterConfig = {
       iconTheme: { primary: "#e8073f", secondary: "#fff" },
     },
     loading: {
-      iconTheme: { primary: "#e8073f", secondary: "#18181b" },
+      iconTheme: { primary: "#e8073f", secondary: "#111113" },
     },
   },
 };

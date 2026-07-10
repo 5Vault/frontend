@@ -10,15 +10,15 @@ type HeaderTemplateProps = {
 
 const HeaderTemplate = ({ icon, title, description, content, breadcrumb }: HeaderTemplateProps) => {
   return (
-    <header className="w-full border border-zinc-800 rounded-xl bg-zinc-900/50 flex flex-col">
+    <header className="w-full border border-zinc-800 border-l-2 border-l-[var(--primary-contrast-light)] bg-zinc-900/40 flex flex-col">
       <div className="flex items-center justify-between px-5 py-4">
-        <div className="flex gap-3 items-center">
-          <span className="text-[var(--primary-contrast-light)] flex items-center [&>svg]:w-7 [&>svg]:h-7">
+        <div className="flex gap-4 items-center">
+          <span className="text-[var(--primary-contrast-light)] flex items-center [&>svg]:w-6 [&>svg]:h-6 bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]/20 p-2.5">
             {icon}
           </span>
           <div>
-            <h2 className="text-lg font-semibold text-white leading-tight">{title}</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">{description}</p>
+            <h2 className="text-base font-bold text-white leading-tight tracking-wide uppercase">{title}</h2>
+            <p className="text-xs text-zinc-500 mt-0.5 tracking-wide">{description}</p>
           </div>
         </div>
         {content && <div className="flex items-center gap-2">{content}</div>}

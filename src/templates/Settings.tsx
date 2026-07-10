@@ -471,13 +471,15 @@ const SettingsTemplate = () => {
           <button
             onClick={() => !savingExtra && handleToggleExtraStorage(!extraStorage)}
             disabled={savingExtra}
-            className="shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none disabled:opacity-50"
-            style={{ backgroundColor: extraStorage ? "var(--primary-contrast-light)" : "#3f3f46" }}
+            className={`shrink-0 relative inline-flex h-6 w-11 items-center border transition-colors duration-200 focus:outline-none disabled:opacity-50 ${
+              extraStorage ? "border-[var(--primary-contrast-light)] bg-[var(--primary-contrast-opacity)]" : "border-zinc-700 bg-zinc-800"
+            }`}
             aria-label="Ativar armazenamento extra"
           >
             <span
-              className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200"
-              style={{ transform: extraStorage ? "translateX(1.375rem)" : "translateX(0.25rem)" }}
+              className={`inline-block h-4 w-4 transform transition-all duration-200 ${
+                extraStorage ? "bg-[var(--primary-contrast-light)] translate-x-[1.375rem]" : "bg-zinc-500 translate-x-1"
+              }`}
             />
           </button>
         </div>

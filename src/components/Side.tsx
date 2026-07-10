@@ -14,12 +14,12 @@ function NotifBadge({ count, collapsed }: { count: number; collapsed: boolean })
   return (
     <span
       className={`
-        inline-flex items-center justify-center rounded-full
+        inline-flex items-center justify-center
         bg-[var(--primary-contrast)] text-white font-bold leading-none
         shrink-0 tabular-nums
         ${collapsed
           ? "absolute -top-1 -right-1 w-4 h-4 text-[9px]"
-          : "min-w-[20px] h-5 px-1.5 text-[11px]"
+          : "min-w-[18px] h-4 px-1 text-[10px]"
         }
       `}
     >
@@ -81,25 +81,25 @@ const Side = () => {
       <div>
         <button
           onClick={() => setExpanded((p) => !p)}
-          className="flex w-full h-16 border-b border-zinc-800 items-center px-4 gap-3 hover:bg-zinc-900/60 transition-colors"
+          className="flex w-full h-14 border-b border-zinc-800 items-center px-4 gap-3 hover:bg-zinc-900/60 transition-colors"
         >
-          <img src={Logo} alt="Logo" className="h-8 w-8 shrink-0" />
+          <img src={Logo} alt="Logo" className="h-7 w-7 shrink-0" />
           {expanded && (
             <span className="flex-1 text-left">
-              <p className="text-white font-bold text-base leading-tight">5Keepr</p>
-              <p className="text-xs text-zinc-500">Host your files securely</p>
+              <p className="text-white font-bold text-sm leading-tight tracking-wider uppercase">5Keepr</p>
+              <p className="text-[10px] text-zinc-600 tracking-widest">SECURE FILE HOST</p>
             </span>
           )}
           {expanded && (
             <ChevronRight
-              size={16}
-              className="text-zinc-500 rotate-180 transition-transform duration-200"
+              size={14}
+              className="text-zinc-600 rotate-180 transition-transform duration-200"
             />
           )}
         </button>
 
         {/* Nav items */}
-        <nav className="flex flex-col mt-2 px-2 gap-0.5">
+        <nav className="flex flex-col mt-1 gap-0">
           {Object.entries(Content.side).map(([key, value]) => {
             const isActive = location.pathname === `/${key}`;
             const badge = getBadge(key);
@@ -110,11 +110,11 @@ const Side = () => {
                 title={expanded ? undefined : value.labels[language]}
                 onClick={() => navigate(`/${key}`)}
                 className={`
-                  relative flex items-center gap-3 rounded-xl w-full text-left transition-all
-                  ${expanded ? "px-3 py-3" : "px-0 py-3 justify-center"}
+                  relative flex items-center gap-3 w-full text-left transition-all duration-150
+                  ${expanded ? "px-4 py-3" : "px-0 py-3 justify-center"}
                   ${isActive
-                    ? "bg-zinc-800/80 text-white"
-                    : "text-zinc-400 hover:bg-zinc-900/70 hover:text-zinc-200"
+                    ? "bg-zinc-800/50 text-white border-l-[3px] border-l-[var(--primary-contrast-light)]"
+                    : "text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200 border-l-[3px] border-l-transparent"
                   }
                 `}
               >
@@ -135,14 +135,14 @@ const Side = () => {
                   <>
                     <div className="flex flex-col min-w-0 flex-1">
                       <span
-                        className={`text-xs font-bold uppercase tracking-wider truncate ${
-                          isActive ? "text-white" : "text-zinc-300"
+                        className={`text-[11px] font-bold uppercase tracking-widest truncate ${
+                          isActive ? "text-white" : "text-zinc-400"
                         }`}
                       >
                         {value.labels[language]}
                       </span>
                       {value.sublabels && (
-                        <span className="text-[11px] text-zinc-500 truncate mt-0.5">
+                        <span className="text-[10px] text-zinc-600 truncate mt-0.5 tracking-wide">
                           {value.sublabels[language]}
                         </span>
                       )}
@@ -162,7 +162,7 @@ const Side = () => {
       <div className={`border-t border-zinc-800 p-3 relative ${!expanded ? "flex justify-center" : ""}`}>
         {expanded ? (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]/40 flex items-center justify-center text-sm font-bold text-white shrink-0 overflow-hidden">
+            <div className="w-8 h-8 bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]/40 flex items-center justify-center text-xs font-bold text-white shrink-0 overflow-hidden">
               {user?.avatar_url ? (
                 <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
@@ -171,9 +171,9 @@ const Side = () => {
             </div>
             <div className="flex flex-col flex-1 min-w-0">
               <span className="text-sm font-semibold text-white truncate">{user?.name || "Usuário"}</span>
-              <span className="text-xs text-zinc-500 truncate">{user?.email || ""}</span>
+              <span className="text-[10px] text-zinc-600 truncate tracking-wide">{user?.email || ""}</span>
               {user?.tier_name && (
-                <span className="text-[10px] text-[var(--primary-contrast-light)] font-bold uppercase tracking-wider">
+                <span className="text-[9px] text-[var(--primary-contrast-light)] font-bold uppercase tracking-widest">
                   {user.tier_name}
                 </span>
               )}
@@ -181,9 +181,9 @@ const Side = () => {
             <button
               onClick={logout}
               title="Sair"
-              className="shrink-0 p-2 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-700 transition-colors"
+              className="shrink-0 p-1.5 text-zinc-600 hover:text-white hover:bg-zinc-800 transition-colors"
             >
-              <LogOut size={15} />
+              <LogOut size={14} />
             </button>
           </div>
         ) : (
@@ -191,7 +191,7 @@ const Side = () => {
             <button
               ref={avatarRef}
               onClick={() => setPopoverOpen((p) => !p)}
-              className="w-9 h-9 rounded-full bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]/40 flex items-center justify-center text-sm font-bold text-white hover:border-[var(--primary-contrast-light)] transition-colors overflow-hidden"
+              className="w-8 h-8 bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]/40 flex items-center justify-center text-xs font-bold text-white hover:border-[var(--primary-contrast-light)] transition-colors overflow-hidden"
             >
               {user?.avatar_url ? (
                 <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
@@ -203,12 +203,10 @@ const Side = () => {
             {popoverOpen && (
               <div
                 ref={popoverRef}
-                className="absolute bottom-14 left-14 z-50 w-56 rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl p-3 flex flex-col gap-3"
+                className="absolute bottom-14 left-14 z-50 w-56 border border-zinc-700 border-l-2 border-l-[var(--primary-contrast-light)] bg-zinc-900 shadow-2xl p-3 flex flex-col gap-3"
               >
-                <div className="absolute -bottom-2 left-4 w-3 h-3 bg-zinc-900 border-b border-l border-zinc-700 rotate-[-45deg]" />
-
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]/40 flex items-center justify-center text-sm font-bold text-white shrink-0 overflow-hidden">
+                  <div className="w-9 h-9 bg-[var(--primary-contrast-opacity)] border border-[var(--primary-contrast-light)]/40 flex items-center justify-center text-sm font-bold text-white shrink-0 overflow-hidden">
                     {user?.avatar_url ? (
                       <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
@@ -217,9 +215,9 @@ const Side = () => {
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm font-semibold text-white truncate">{user?.name || "Usuário"}</span>
-                    <span className="text-xs text-zinc-500 truncate">{user?.email || ""}</span>
+                    <span className="text-[10px] text-zinc-500 truncate">{user?.email || ""}</span>
                     {user?.tier_name && (
-                      <span className="text-[10px] text-[var(--primary-contrast-light)] font-bold uppercase tracking-wider">
+                      <span className="text-[9px] text-[var(--primary-contrast-light)] font-bold uppercase tracking-widest">
                         {user.tier_name}
                       </span>
                     )}
@@ -230,7 +228,7 @@ const Side = () => {
 
                 <button
                   onClick={logout}
-                  className="flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                  className="flex items-center gap-2 w-full px-2 py-1.5 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
                 >
                   <LogOut size={14} />
                   Sair

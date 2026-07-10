@@ -11,6 +11,7 @@ import File from "../components/File";
 import { Database, LayoutDashboard } from "lucide-react";
 import DashButton from "../components/DashButton";
 import { Line } from "react-chartjs-2";
+import type { ScriptableContext } from "chart.js";
 import { saveCardFromIntent } from "../api/payment";
 import {
   Chart as ChartJS,
@@ -82,14 +83,24 @@ const DashBoardTemplate = () => {
       label: "Arquivos Enviados",
       data: dashData?.weekly_usage?.map((i) => i.file_amount) || [],
       borderColor: "#e8073f",
-      backgroundColor: "#e8073f20",
-      tension: 0.4,
+      backgroundColor: (context: ScriptableContext<"line">) => {
+        const ctx = context.chart.ctx;
+        const chartArea = context.chart.chartArea;
+        if (!chartArea) return "#e8073f15";
+        const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+        gradient.addColorStop(0, "#e8073f35");
+        gradient.addColorStop(1, "#e8073f00");
+        return gradient;
+      },
+      tension: 0,
       fill: true,
       pointBackgroundColor: "#e8073f",
-      pointBorderColor: "#18181b",
+      pointBorderColor: "#0a0a0b",
       pointBorderWidth: 2,
-      pointRadius: 4,
-      pointHoverRadius: 6,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      pointStyle: "rect",
+      borderWidth: 2,
     }],
   };
 
@@ -100,25 +111,27 @@ const DashBoardTemplate = () => {
       legend: { display: false },
       title: { display: false },
       tooltip: {
-        backgroundColor: "#18181b",
-        borderColor: "#27272a",
+        backgroundColor: "#111113",
+        borderColor: "#e8073f",
         borderWidth: 1,
         titleColor: "#fff",
         bodyColor: "#a1a1aa",
         padding: 10,
+        cornerRadius: 0,
+        displayColors: false,
       },
     },
     scales: {
       y: {
         beginAtZero: true,
         suggestedMax: 5,
-        ticks: { color: "#71717a", stepSize: 1, precision: 0, font: { size: 11 } },
-        grid: { color: "#27272a" },
-        border: { display: false },
+        ticks: { color: "#52525b", stepSize: 1, precision: 0, font: { size: 10 } },
+        grid: { color: "#1e1e21" },
+        border: { display: false, dash: [4, 4] },
       },
       x: {
-        ticks: { color: "#71717a", font: { size: 11 } },
-        grid: { color: "#27272a40" },
+        ticks: { color: "#52525b", font: { size: 10 } },
+        grid: { color: "#1e1e21" },
         border: { display: false },
       },
     },
@@ -133,9 +146,9 @@ const DashBoardTemplate = () => {
       content: (
         <div className="flex flex-col gap-2 justify-center h-[80%]">
           <h2 className="text-2xl font-bold">{formatGB(dashData?.used_size)} GB</h2>
-          <div className="w-full h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-zinc-800 overflow-hidden">
             <div
-              className="h-full rounded-full transition-all"
+              className="h-full transition-all"
               style={{
                 width: `${storagePercent}%`,
                 backgroundColor: storagePercent > 80 ? "#ef4444" : "#e8073f",
@@ -192,8 +205,14 @@ const DashBoardTemplate = () => {
               </Box>
             ))}
           </div>
-          <div className="w-full border border-zinc-800 rounded-xl bg-zinc-900/50 p-6 flex flex-col gap-4 h-96">
-            <p className="text-sm font-semibold text-zinc-200">Uploads da Semana</p>
+          <div className="w-full border border-zinc-800 border-t-2 border-t-[var(--primary-contrast-light)] bg-zinc-900/40 p-6 flex flex-col gap-4 h-96">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Uploads da Semana</p>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 bg-[var(--primary-contrast-light)]" />
+                <span className="text-[10px] text-zinc-600 tracking-wide">Arquivos enviados</span>
+              </div>
+            </div>
             <div className="flex-1 min-h-0">
               <Line data={chartData} options={chartOptions} />
             </div>

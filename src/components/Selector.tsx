@@ -152,10 +152,10 @@ const Selector = ({
         <div
           onClick={handleOpen}
           className={`
-            h-10 w-full flex items-center justify-between px-4 rounded-xl border transition-colors duration-200
+            h-10 w-full flex items-center justify-between px-4 border transition-colors duration-200
             ${open
-              ? "bg-zinc-800 border-zinc-600"
-              : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
+              ? "bg-zinc-800 border-zinc-600 border-l-[var(--primary-contrast-light)] border-l-2"
+              : "bg-zinc-900/60 border-zinc-800 hover:border-zinc-700 hover:border-l-[var(--primary-contrast-light)]/60 hover:border-l-2"
             }
             cursor-pointer group ${className || ""}
           `}
@@ -168,7 +168,7 @@ const Selector = ({
             <svg
               width="10" height="6" viewBox="0 0 12 8"
               fill="none" xmlns="http://www.w3.org/2000/svg"
-              className={`transition-colors ${open ? "text-zinc-300" : "text-zinc-500 group-hover:text-zinc-400"}`}
+              className={`transition-colors ${open ? "text-[var(--primary-contrast-light)]" : "text-zinc-500 group-hover:text-zinc-400"}`}
             >
               <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -188,7 +188,7 @@ const Selector = ({
                 width: `${coords.width}px`,
               }}
             >
-              <div className="mt-1 bg-zinc-900 border border-zinc-800 rounded-xl p-1 shadow-xl shadow-black/60 overflow-hidden">
+              <div className="mt-0 bg-zinc-900 border border-zinc-700 border-l-2 border-l-[var(--primary-contrast-light)] p-1 shadow-2xl shadow-black/80 overflow-hidden">
                 <div className="max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
                   {children}
                 </div>

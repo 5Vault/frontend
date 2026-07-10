@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArchiveRestore, Calendar, FileArchive, HardDrive } from "lucide-react";
 import useAxios from "../utils/axiosConfig";
 import HeaderTemplate from "../components/Header";
+import DatePicker from "../components/DatePicker";
 
 interface BackupSession {
   session_id: string;
@@ -52,8 +53,8 @@ const BackupTemplate = () => {
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDateFilter(e.target.value);
+  const handleDateChange = (date: string) => {
+    setDateFilter(date);
     setPage(1);
   };
 
@@ -67,23 +68,13 @@ const BackupTemplate = () => {
 
       {/* Filtros */}
       <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-xs">
-          <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-          <input
-            type="date"
+        <div className="w-64">
+          <DatePicker
             value={dateFilter}
             onChange={handleDateChange}
-            className="w-full pl-9 pr-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-sm text-zinc-300 focus:outline-none focus:border-zinc-600 placeholder:text-zinc-600"
+            placeholder="Filtrar por data"
           />
         </div>
-        {dateFilter && (
-          <button
-            onClick={() => { setDateFilter(""); setPage(1); }}
-            className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors px-3 py-2 rounded-xl border border-zinc-800 hover:border-zinc-700"
-          >
-            Limpar filtro
-          </button>
-        )}
         <span className="ml-auto text-xs text-zinc-600">{total} sessão{total !== 1 ? "ões" : ""} encontrada{total !== 1 ? "s" : ""}</span>
       </div>
 

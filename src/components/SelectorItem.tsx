@@ -16,10 +16,10 @@ const SelectorItem = ({ value, label, children }: SelectorItemProps) => {
   return (
     <div
       className={`
-        px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer flex items-center justify-between
+        px-3 py-2 text-xs font-medium transition-all duration-150 cursor-pointer flex items-center justify-between
         ${
           isSelected
-            ? "bg-[var(--primary-contrast-light)]/10 text-[var(--primary-contrast-light)]"
+            ? "border-l-2 border-l-[var(--primary-contrast-light)] bg-[var(--primary-contrast-light)]/10 text-[var(--primary-contrast-light)] pl-[10px]"
             : "text-zinc-400 hover:text-white hover:bg-zinc-800/40"
         }
       `}
@@ -28,15 +28,15 @@ const SelectorItem = ({ value, label, children }: SelectorItemProps) => {
       <span>{content}</span>
       {isSelected && (
         <svg
-          width="14"
-          height="14"
+          width="12"
+          height="12"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           strokeWidth="3"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="animate-in zoom-in duration-300"
+          className="animate-in zoom-in duration-200"
         >
           <polyline points="20 6 9 17 4 12" />
         </svg>
